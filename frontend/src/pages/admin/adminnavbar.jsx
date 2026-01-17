@@ -116,12 +116,18 @@ const AdminNavbar = () => {
   }, []);
 
   const handleLogout = () => {
-    // Clear basic auth/session keys if any, then navigate to login
+    // Clear the same keys used in AdminLogin.jsx
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+
+    // Also clear other admin-specific keys if they exist
     localStorage.removeItem('admin_token');
     localStorage.removeItem('admin_profile');
     localStorage.removeItem('admin_activity');
     localStorage.removeItem('admin_theme');
-    navigate('/admin/login');
+
+    // Replace the history entry so the "Back" button doesn't work
+    navigate('/admin/login', { replace: true });
   };
 
 

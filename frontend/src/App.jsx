@@ -14,6 +14,7 @@ import AdminOrder from "./pages/admin/adminorder";
 import AdminReport from "./pages/admin/adminreport";
 import AdminSetting from "./pages/admin/adminsetting";
 import AdminSupplier from "./pages/admin/AdminSupplier";
+import ProtectedRoute from "./components/ProtectedRoute";
 import CustomerLogin from "./pages/customer/login";
 import CustomerRegister from "./pages/customer/register";
 import CustomerDashboard from "./pages/customer/dashboard";
@@ -32,20 +33,24 @@ function App() {
         <Route path="/customer/dashboard" element={<CustomerDashboard />} />
         <Route path="/customer/checkout" element={<CheckoutPage />} />
 
-        {/* Admin Routes */}
+        {/* Public Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/register" element={<AdminRegister />} />
         <Route path="/admin/forgot-password" element={<AdminForgotPass />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/notifications" element={<AdminNotification />} />
-        <Route path="/admin/profile" element={<AdminProfile />} />
-        <Route path="/admin/buyers" element={<AdminBuyer />} />
-        <Route path="/admin/sellers" element={<AdminSeller />} />
-        <Route path="/admin/products" element={<AdminProduct />} />
-        <Route path="/admin/orders" element={<AdminOrder />} />
-        <Route path="/admin/reports" element={<AdminReport />} />
-        <Route path="/admin/settings" element={<AdminSetting />} />
-        <Route path="/admin/suppliers" element={<AdminSupplier />} />
+
+        {/* Protected Admin Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/notifications" element={<AdminNotification />} />
+          <Route path="/admin/profile" element={<AdminProfile />} />
+          <Route path="/admin/buyers" element={<AdminBuyer />} />
+          <Route path="/admin/sellers" element={<AdminSeller />} />
+          <Route path="/admin/products" element={<AdminProduct />} />
+          <Route path="/admin/orders" element={<AdminOrder />} />
+          <Route path="/admin/reports" element={<AdminReport />} />
+          <Route path="/admin/settings" element={<AdminSetting />} />
+          <Route path="/admin/suppliers" element={<AdminSupplier />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
