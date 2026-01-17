@@ -1,0 +1,483 @@
+.admin-sellers {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-light);
+  width: 100vw;
+  overflow-y: auto;
+  padding-top: calc(var(--topbar-height) - 18px);
+  z-index: 1;
+}
+
+.admin-sellers .main-content {
+  padding-top: 0px;
+}
+
+.admin-sellers .page-inner {
+  max-width: 100%;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.sellers-container {
+  background: var(--card-bg);
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgba(2, 6, 23, 0.06);
+  padding: 20px;
+  margin: 0 0 12px 0;
+}
+
+.page-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 4px 0;
+  flex-wrap: wrap;
+}
+
+.page-controls h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.page-controls .page-sub {
+  margin: 4px 0 0 0;
+  color: rgba(44, 62, 80, 0.65);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.control-select {
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--primary);
+  background: var(--card-bg);
+  color: var(--text);
+  font-weight: 600;
+  min-width: 160px;
+  transition: box-shadow 140ms ease;
+  cursor: pointer;
+}
+
+.control-select:focus {
+  outline: none;
+  box-shadow: 0 6px 18px rgba(0, 86, 179, 0.1);
+}
+
+.control-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary) 85%, black 15%));
+  box-shadow: 0 6px 12px rgba(0, 86, 179, 0.08);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 86, 179, 0.12);
+}
+
+.sellers-table {
+  overflow-x: auto;
+  border-radius: 10px;
+  background: transparent;
+}
+
+.sellers-table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: transparent;
+}
+
+.sellers-table table thead tr th:first-child { border-top-left-radius: 10px }
+.sellers-table table thead tr th:last-child { border-top-right-radius: 10px }
+.sellers-table thead th {
+  background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary) 80%, black 20%));
+  color: #fff;
+  font-weight: 700;
+  padding: 12px 14px;
+  text-align: left;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.sellers-table tbody td {
+  padding: 14px;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.sellers-table tbody tr{
+  background: transparent;
+  transition: background 160ms ease, transform 140ms ease;
+}
+
+.sellers-table tbody tr:hover {
+  background: rgba(0,86,179,0.03);
+  transform: translateY(-2px);
+}
+
+
+.action-btn {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  margin-right: 6px;
+  transition: all 140ms ease;
+}
+
+.action-view {
+  background: rgba(0, 86, 179, 0.06);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.action-view:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+.action-delete {
+  background: rgba(220, 53, 69, 0.06);
+  color: #dc3545;
+  font-weight: 700;
+}
+
+.action-delete:hover {
+  background: #dc3545;
+  color: #fff;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.status-verified {
+  background: rgba(40, 167, 69, 0.08);
+  color: #28a745;
+}
+
+.status-pending {
+  background: rgba(255, 193, 7, 0.08);
+  color: #ffb300;
+}
+
+.status-suspended {
+  background: rgba(244, 67, 54, 0.08);
+  color: #f44336;
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(2, 6, 23, 0.12);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 300ms ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.close-btn {
+  font-size: 28px;
+  font-weight: 300;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color 140ms ease;
+}
+
+.close-btn:hover {
+  color: var(--text);
+}
+
+.modal-form {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-form input,
+.modal-form select {
+  padding: 10px;
+  border: 1px solid rgba(44, 62, 80, 0.08);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 14px;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.modal-form input:focus,
+.modal-form select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(11, 95, 184, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.btn-cancel {
+  padding: 9px 16px;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 140ms ease;
+}
+
+.btn-cancel:hover {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.btn-submit {
+  padding: 9px 16px;
+  background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary) 85%, black 15%));
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 140ms ease;
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 86, 179, 0.15);
+}
+
+.seller-profile {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seller-profile img {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 85%, black 15%));
+  object-fit: cover;
+  margin-bottom: 8px;
+}
+
+.seller-profile h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.seller-profile p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: rgba(44, 62, 80, 0.75);
+  line-height: 1.5;
+}
+
+.seller-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.seller-stat {
+  text-align: center;
+}
+
+.seller-stat h5 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.seller-stat p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Dark Mode Support */
+body.dark-mode .modal-content {
+  background: #0f1823;
+}
+
+body.dark-mode .modal-header {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .modal-form input,
+body.dark-mode .modal-form select {
+  background: #0f1823;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .modal-form input:focus,
+body.dark-mode .modal-form select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(11, 95, 184, 0.2);
+}
+
+body.dark-mode .btn-cancel {
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+body.dark-mode .btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .sellers-table tbody tr:hover {
+  background: rgba(11, 95, 184, 0.05);
+}
+
+body.dark-mode .seller-profile p {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+body.dark-mode .sellers-container {
+  background: #0f1823;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .sellers-table tbody td {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .page-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .control-select,
+  .control-btn {
+    width: 100%;
+  }
+
+  .sellers-table table {
+    min-width: 720px;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-controls h2 {
+    font-size: 22px;
+  }
+
+  .sellers-table thead th {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+
+  .sellers-table tbody td {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+
+  .action-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+    margin-right: 4px;
+  }
+
+  .filters {
+    gap: 8px;
+  }
+}
+
+/* Dark mode text overrides for sellers page */
+body.dark-mode { --text: #ffffff; --muted: rgba(255,255,255,0.7); }
+body.dark-mode .page-controls h2,
+body.dark-mode .page-sub,
+body.dark-mode .sellers-container,
+body.dark-mode .sellers-table tbody td,
+body.dark-mode .sellers-table thead th { color: #ffffff; }
+body.dark-mode a { color: #eaf4ff; } 

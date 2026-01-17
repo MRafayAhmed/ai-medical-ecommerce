@@ -1,0 +1,58 @@
+/* Notifications page styles - full screen, refined */
+:root { --card-bg: #fff; --primary: #0b5fb8; --muted: #6b7280; --text: #1f2933 }
+
+/* Page background uses the global --bg-light so it follows theme changes */
+.admin-notifications{ position: fixed; inset: 0; background: var(--bg-light); color: var(--text); width: 100vw; box-sizing: border-box; overflow-x: hidden; overflow-y: auto; padding-top: calc(var(--topbar-height) + 12px); z-index: 1 }
+.admin-notifications .main-content { padding-top: 22px; padding-bottom: 40px; background: transparent }
+.page-wide { max-width: 1400px }
+.full-screen .main-content{ min-height: calc(100vh - var(--topbar-height) - 24px) }
+
+.welcome-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 18px }
+.welcome-header h2 { font-size:20px; color:var(--text) }
+.welcome-sub { font-size:13px; color: rgba(44,62,80,0.65) }
+
+.header-actions{ display:flex; align-items:center; gap:12px }
+.search-inline input{ padding:8px 12px; border-radius:8px; border:1px solid rgba(16,24,40,0.06); width:260px }
+.filter-tabs{ display:flex; gap:8px; align-items:center }
+.filter-tabs button{ padding:8px 10px; border-radius:8px; border:1px solid rgba(16,24,40,0.06); background:transparent; cursor:pointer }
+.filter-tabs button.active{ background: var(--primary); color:#fff; border-color:transparent }
+.btn.small { padding:8px 12px; border-radius:8px; background:var(--primary); color:#fff; border:none; cursor:pointer }
+.btn.small:disabled { opacity:0.6; cursor:not-allowed }
+
+.notifications-grid{ display:grid; grid-template-columns: 420px 1fr; gap:22px }
+.notif-list{ overflow:auto; max-height: calc(100vh - 260px); display:flex; flex-direction:column; gap:8px }
+.notif-item { display:flex; align-items:flex-start; gap:12px; background:var(--card-bg); border-radius:10px; padding:12px; box-shadow: 0 6px 18px rgba(16,24,40,0.04); border:1px solid rgba(16,24,40,0.04); cursor:pointer }
+.notif-item.unread { border-left: 4px solid var(--primary); background: linear-gradient(90deg, rgba(11,95,184,0.03), transparent) }
+.notif-item.selected{ box-shadow: 0 8px 26px rgba(16,24,40,0.06); transform: translateY(-2px) }
+
+.notif-left{ display:flex; align-items:center }
+.notif-icon { width:44px; height:44px; border-radius:8px; display:flex; align-items:center; justify-content:center; background: rgba(11,95,184,0.06); color:var(--primary); font-size:18px }
+.notif-body{ flex:1 }
+.notif-title { font-weight:700; color:var(--text) }
+.notif-snippet{ font-size:13px; color:var(--muted); margin-top:6px }
+.notif-meta { font-size:12px; color: rgba(44,62,80,0.45); margin-top:6px }
+
+.notif-actions { margin-left:auto; display:flex; align-items:center }
+.link-btn { background:transparent; border:none; color:var(--primary); cursor:pointer }
+.muted { color:var(--muted); font-size:13px }
+
+.notif-details{ background:var(--card-bg); border-radius:10px; padding:18px; min-height:300px; box-shadow: 0 6px 18px rgba(16,24,40,0.04); border:1px solid rgba(16,24,40,0.04) }
+.detail-card .detail-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px }
+.detail-card h3{ margin:0 }
+.detail-body{ color:var(--muted); line-height:1.5 }
+.detail-actions{ display:flex; gap:8px; margin-top:18px }
+
+.empty{ padding:30px; text-align:center; color:var(--muted); background:var(--card-bg); border-radius:10px }
+
+/* Dark mode */
+body.dark-mode .notif-item { background:#071120; border:1px solid rgba(255,255,255,0.03); box-shadow: 0 6px 18px rgba(2,6,23,0.4) }
+
+/* Dark mode text overrides for notifications page */
+body.dark-mode { --text: #ffffff; --muted: rgba(255,255,255,0.7); }
+body.dark-mode .notif-item, body.dark-mode .notif-list, body.dark-mode .notif-details, body.dark-mode .no-notifs { color: #fff; }
+body.dark-mode a { color: #eaf4ff; } 
+body.dark-mode .notif-icon { background: rgba(96,165,250,0.08); color:var(--primary) }
+body.dark-mode .empty { background: #071120; color: #9aa6b2 }
+
+/* Responsive */
+@media (max-width: 1000px){ .notifications-grid{ grid-template-columns: 1fr } .notif-list{ max-height: 360px } }

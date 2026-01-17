@@ -1,0 +1,446 @@
+/* Supplier management styles copied/adapted from adminbuyer.css */
+:root {
+    --primary: #0b5fb8;
+    --card-bg: #fff;
+    --text: #1f2933;
+    --muted: #6b7280
+}
+
+.admin-suppliers {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-light);
+    color: var(--text);
+    width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-top: calc(var(--topbar-height) - 18px);
+    z-index: 1
+}
+
+.admin-suppliers .main-content {
+    padding-top: 0px
+}
+
+.page-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 4px 0;
+    flex-wrap: wrap
+}
+
+.page-controls h2 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.1
+}
+
+.page-controls .page-sub {
+    margin: 6px 0 0 0;
+    color: rgba(44, 62, 80, 0.65);
+    font-size: 15px;
+    font-weight: 600
+}
+
+@media (max-width: 900px) {
+    .page-controls h2 {
+        font-size: 22px
+    }
+
+    .page-controls .page-sub {
+        font-size: 13px
+    }
+}
+
+.suppliers-container {
+    background: var(--card-bg);
+    border-radius: 14px;
+    box-shadow: 0 8px 22px rgba(2, 6, 23, 0.06);
+    padding: 24px;
+    margin: 0 0 12px 0;
+    transition: box-shadow 180ms ease, transform 180ms ease
+}
+
+.suppliers-container:hover {
+    box-shadow: 0 12px 36px rgba(2, 6, 23, 0.08)
+}
+
+.admin-suppliers .page-inner {
+    max-width: 100%;
+    padding-left: 16px;
+    padding-right: 16px;
+    box-sizing: border-box
+}
+
+.centered-card {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+    width: 100%
+}
+
+.suppliers-table table thead tr th:first-child {
+    border-top-left-radius: 10px
+}
+
+.suppliers-table table thead tr th:last-child {
+    border-top-right-radius: 10px
+}
+
+.suppliers-table thead th {
+    background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary) 80%, black 20%));
+    color: #fff;
+    font-weight: 700;
+    padding: 12px 14px;
+    font-size: 15px;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 2
+}
+
+.suppliers-table tbody td {
+    padding: 14px;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04)
+}
+
+.suppliers-table tbody tr {
+    background: transparent;
+    transition: background 160ms ease, transform 140ms ease
+}
+
+.suppliers-table tbody tr:hover {
+    background: rgba(0, 86, 179, 0.03);
+    transform: translateY(-2px);
+}
+
+.action-btn {
+    border: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer
+}
+
+.action-view {
+    background: rgba(11, 95, 184, 0.06);
+    color: var(--primary);
+    font-weight: 700
+}
+
+.action-view:hover {
+    background: var(--primary);
+    color: #fff
+}
+
+.action-delete {
+    background: rgba(220, 53, 69, 0.06);
+    color: #dc3545;
+    font-weight: 700
+}
+
+.action-delete:hover {
+    background: #dc3545;
+    color: #fff
+}
+
+.page-footer {
+    text-align: center;
+    color: var(--muted);
+    margin-top: 44px;
+    padding-bottom: 60px
+}
+
+@media (max-width:900px) {
+    .admin-suppliers .page-inner {
+        padding-left: 12px;
+        padding-right: 12px
+    }
+
+    .centered-card {
+        max-width: 100%;
+        padding: 12px
+    }
+
+    .suppliers-table table thead th {
+        font-size: 13px
+    }
+
+    .suppliers-table tbody td {
+        padding: 10px
+    }
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+    align-items: center
+}
+
+.control-select {
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--primary);
+    background: var(--card-bg);
+    color: var(--text);
+    font-weight: 600;
+    min-width: 160px
+}
+
+.control-select:focus {
+    outline: none;
+    box-shadow: 0 6px 18px rgba(0, 86, 179, 0.10);
+}
+
+.control-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary) 85%, black 15%));
+    box-shadow: 0 6px 12px rgba(0, 86, 179, 0.08)
+}
+
+.control-btn i {
+    font-size: 16px
+}
+
+.control-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 86, 179, 0.1)
+}
+
+.suppliers-table {
+    overflow-x: auto;
+    overflow: hidden;
+    border-radius: 10px;
+    background: transparent;
+    padding: 0 16px;
+    box-sizing: border-box;
+}
+
+.suppliers-table table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: transparent
+}
+
+.suppliers-table thead th {
+    background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary) 80%, black 20%));
+    color: #fff;
+    font-weight: 700;
+    padding: 12px 14px;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 2
+}
+
+.suppliers-table tbody td {
+    padding: 14px;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04)
+}
+
+.suppliers-table tbody tr {
+    background: transparent;
+    transition: background 160ms ease, transform 140ms ease
+}
+
+.suppliers-table tbody tr:hover {
+    background: rgba(0, 86, 179, 0.03);
+    transform: translateY(-2px);
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.status-verified {
+    background: rgba(40, 167, 69, 0.08);
+    color: #28a745
+}
+
+.status-pending {
+    background: rgba(255, 193, 7, 0.08);
+    color: #ffb300
+}
+
+.add-btn {
+    background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary) 85%, black 15%));
+    color: #fff;
+    border: none;
+    padding: 9px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 12px rgba(0, 86, 179, 0.08)
+}
+
+.add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 86, 179, 0.10)
+}
+
+.action-btn {
+    border: none;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer
+}
+
+.action-view {
+    background: rgba(0, 86, 179, 0.06);
+    color: var(--primary);
+    font-weight: 700
+}
+
+.action-view:hover {
+    background: var(--primary);
+    color: #fff
+}
+
+.action-delete {
+    background: rgba(220, 53, 69, 0.06);
+    color: #dc3545;
+    font-weight: 700
+}
+
+.action-delete:hover {
+    background: #dc3545;
+    color: #fff
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2, 6, 23, 0.45);
+    z-index: 10000
+}
+
+.modal.active {
+    display: flex
+}
+
+.modal-content {
+    background: var(--card-bg);
+    padding: 18px;
+    border-radius: 10px;
+    width: 480px;
+    max-width: 96%;
+    box-shadow: 0 12px 36px rgba(2, 6, 23, 0.12)
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between
+}
+
+.modal-header h3 {
+    margin: 0
+}
+
+.close-btn {
+    cursor: pointer;
+    font-size: 22px
+}
+
+.supplier-info p {
+    margin: 6px 0
+}
+
+.add-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px
+}
+
+.add-form input,
+.add-form select {
+    padding: 10px;
+    border: 1px solid rgba(44, 62, 80, 0.08);
+    border-radius: 8px
+}
+
+.form-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 6px
+}
+
+/* Responsive */
+@media (max-width:720px) {
+    .filters {
+        flex-direction: column;
+        align-items: stretch
+    }
+
+    .control-select {
+        width: 100%
+    }
+
+    .control-btn {
+        width: 100%;
+        justify-content: center
+    }
+}
+
+@media (max-width:900px) {
+    .page-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px
+    }
+
+    .control-select,
+    .control-btn {
+        width: 100%
+    }
+
+    .suppliers-table table {
+        min-width: 720px
+    }
+}
+
+/* Dark mode text overrides */
+body.dark-mode {
+    --text: #ffffff;
+    --muted: rgba(255, 255, 255, 0.7);
+}
+
+body.dark-mode .page-controls h2,
+body.dark-mode .page-sub,
+body.dark-mode .suppliers-container,
+body.dark-mode .suppliers-table tbody td,
+body.dark-mode .suppliers-table thead th,
+body.dark-mode .page-footer {
+    color: #ffffff;
+}
+
+body.dark-mode a {
+    color: #eaf4ff;
+}

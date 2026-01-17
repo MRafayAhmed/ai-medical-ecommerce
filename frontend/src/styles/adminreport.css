@@ -1,0 +1,58 @@
+/* adminreport.css - matches admin theme and unified table header */
+.admin-reports { --primary: #0b5fb8; --bg-light: #f7f9fc; --card-bg: #fff; --text: #1f2933; --muted: #6b7280; }
+
+/* Ensure the reports page fills the viewport and doesn't shift horizontally */
+.admin-reports { position: fixed; inset: 0; background: var(--bg-light); color: var(--text); width: 100vw; box-sizing: border-box; overflow-x: hidden; overflow-y: auto; padding-top: calc(var(--topbar-height) - 12px); z-index: 1 }
+
+/* Slightly increase side padding for better breathing room */
+.admin-reports .main-content { padding: 0 20px 40px; color: var(--text); min-height: calc(100vh - var(--topbar-height)); }
+/* Use same inner gutters as other admin pages for consistent left/right margins */
+.admin-reports .page-inner { max-width: 100%; padding-left: 32px; padding-right: 32px; box-sizing: border-box; margin: 0 auto; }
+
+@media (max-width:900px) {
+  .admin-reports .page-inner { padding-left: 16px; padding-right: 16px }
+}
+
+.page-controls { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
+.page-controls h2 { margin:0; font-size:1.35rem; color:var(--text); }
+.page-controls .page-sub { margin:2px 0 0; color:var(--muted); }
+.page-controls .filters { display:flex; gap:8px; align-items:center; }
+.control-select, .control-btn, .control-btn.positive { padding:8px 12px; border-radius:8px; background:var(--card-bg); border:1px solid rgba(0,0,0,0.06); color:var(--text); }
+.control-btn.accent { background: linear-gradient(90deg,var(--primary), #0b79d1); color:#fff; }
+.control-btn.positive { background: #e9f6ef; color: #096a22; }
+
+.report-grid { display:grid; grid-template-columns: repeat(4,1fr); gap:12px; margin-bottom:16px; }
+.kpi-box { background:var(--card-bg); padding:14px; border-radius:8px; box-shadow:var(--card-shadow); }
+.kpi-box h3 { margin:0 0 6px; }
+
+.report-card { background:var(--card-bg); border-radius:12px; padding:14px; margin-bottom:14px; box-shadow:var(--card-shadow); }
+.report-title { font-weight:600; margin-bottom:12px; }
+.report-card { position: relative; }
+.table-wrap { max-height: 320px; overflow-y: auto; border-radius:8px; }
+.table-wrap table { width:100%; border-collapse:collapse; }
+.chart-inner { height:220px; overflow:hidden; }
+.chart-inner canvas { max-width:100% !important; height:auto !important; display:block; }
+
+.report-card table { width:100%; border-collapse:collapse; background:transparent; color:var(--text); }
+.report-card thead th { background: linear-gradient(90deg, rgba(11,95,184,0.12), rgba(11,95,184,0.06)); position: sticky; top: calc(var(--topbar-height) + 12px); z-index:40; padding:10px 12px; text-align:left; border-bottom: none; color: #111; box-shadow: 0 6px 12px rgba(2,6,23,0.04); }
+.table-wrap thead th { top: 0; box-shadow: none; }
+.report-card tbody td { padding:10px 12px; border-top: 1px solid rgba(0,0,0,0.06); vertical-align:middle; color:var(--text); }
+.report-card tbody tr:hover { background: rgba(11,95,184,0.03); transform: translateY(-1px); }
+
+/* Responsiveness */
+@media (max-width: 900px) {
+  .report-grid { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 600px) {
+  .report-grid { grid-template-columns: 1fr; }
+  .page-controls { flex-direction:column; align-items:flex-start; }
+}
+
+/* Dark mode overrides */
+/* When global dark mode is active, override container variables so page follows theme */
+body.dark-mode .admin-reports { --bg-light: #0b1220; --card-bg: #0f1724; --card-bg-dark: #0f1724; --text: #ffffff; --muted: rgba(255,255,255,0.75); }
+body.dark-mode .admin-reports .main-content { background: var(--bg-light); color: var(--text); }
+body.dark-mode .report-card, body.dark-mode .kpi-box { background: var(--card-bg); color: var(--text); }
+body.dark-mode .report-card thead th { background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); color:var(--text) }
+body.dark-mode .report-card tbody td { border-top: 1px solid rgba(255,255,255,0.03); color:var(--text) }
+body.dark-mode .page-controls .page-sub { color: rgba(255,255,255,0.75); }

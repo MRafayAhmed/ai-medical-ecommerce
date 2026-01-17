@@ -1,0 +1,261 @@
+/* Admin Navbar (sidebar + topbar) - adapted from Blade styles */
+:root{
+  --primary: #0b5fb8;
+  --bg-light: #f7f9fc;
+  --card-bg: #ffffff;
+  --text-color: #2c3e50;
+  --sidebar-bg: #003366;
+  --topbar-height: 65px;
+  --sidebar-width: 220px; /* increased for larger content */
+  --sidebar-collapsed: 72px; /* slightly larger collapsed width */
+  --sidebar-gap: 100px;
+} 
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--sidebar-bg);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  padding: 25px 15px;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.08);
+  transition: width 0.3s ease, transform 0.25s ease;
+  z-index: 200;
+}
+
+.sidebar.open{ transform: translateX(0); }
+.sidebar.collapsed{ width: var(--sidebar-collapsed); align-items:center; }
+
+.sidebar .logo{ font-size: 26px; font-weight:700; margin-bottom:48px; width:100%; text-align:left; padding-right:44px; }
+.sidebar .logo small{ display:block; font-size:18px; font-weight:600; opacity:1; margin-top:6px; color:#ffffff }
+
+.nav-links{ display:flex; flex-direction:column; gap:8px; width:100%; }
+.nav-links a{ color:#fff; text-decoration:none; font-size:18px; display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:8px; width:100%; transition: background 0.25s ease, transform 0.2s ease; }
+.nav-links a i{ font-size:20px; min-width:30px; text-align:center }
+.nav-links a.active, .nav-links a:hover{ background: rgba(255,255,255,0.08); transform: translateX(4px); }
+
+.sidebar-bottom{
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  box-sizing: border-box;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.sidebar-footer{
+  display: block;
+  width: 100%;
+  padding: 0;
+}
+
+.sidebar-footer a{
+  color: #fff;
+  text-decoration: none;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: transparent;
+  width: 100%;
+}
+
+.sidebar-footer a:hover{ background: rgba(255,255,255,0.06); }
+
+.sidebar-logout{ padding: 0; width: 100%; }
+
+.logout-btn{
+  padding: 8px 12px;
+  background: transparent;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.logout-btn:hover{ background: rgba(255,255,255,0.06); color: #ff4d4f; }
+
+@media (max-width: 900px){
+  .sidebar-bottom{ flex-direction: column; gap:8px; padding-bottom:12px; }
+}
+
+/* Topbar */
+.topbar{ position: fixed; top:0; left: calc(var(--sidebar-width) - var(--sidebar-gap)); right:0; height: var(--topbar-height); background: var(--card-bg); display:flex; align-items:center; padding:0 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); z-index:150; transition:left 0.3s ease }
+.topbar.collapsed{ left: calc(var(--sidebar-collapsed) - var(--sidebar-gap)); }
+
+.topbar .topbar-left{ display:flex; align-items:center; gap:12px }
+.topbar .brand{ font-weight:700; color:var(--text-color); display:none }
+
+/* Mobile toggle visibility: hidden on desktop, shown on small screens */
+.mobile-toggle { display: none; }
+
+@media (max-width: 900px){
+  .mobile-toggle { display: inline-flex !important; }
+  .search-bar{ display:none }
+  .sidebar{ transform:translateX(-100%) }
+  .sidebar.open{ transform:translateX(0) }
+  .topbar{ left: 0 }
+}
+
+/* Dark mode overrides for navbar/sidebar */
+body.dark-mode .sidebar {
+  background: #071120;
+}
+body.dark-mode .topbar {
+  background: #0b1220;
+  box-shadow: 0 2px 6px rgba(255,255,255,0.02);
+}
+body.dark-mode .sidebar a{ color: #dbe9ff }
+body.dark-mode .sidebar .logo{ color: #fff }
+body.dark-mode .sidebar .logo small{ color: #cde1ff }
+body.dark-mode .nav-links a.active, body.dark-mode .nav-links a:hover { background: rgba(255,255,255,0.04); transform: translateX(4px); }
+
+/* Add smooth transitions for navbar elements */
+.sidebar, .topbar, .nav-links a { transition: background-color 1.2s ease, color 1.2s ease, transform 0.8s ease; }
+
+/* Overlay handled in global styles (admindashboard.css) */
+
+.topbar-center{ flex:1; display:flex; justify-content:center; align-items:center }
+.topbar-right{ display:flex; align-items:center; gap:10px; margin-left:12px }
+
+.search-bar{ display:flex; align-items:center; gap:8px; min-width:260px; max-width:720px; width:60%; position:relative }
+.search-bar input[type="search"]{ width:100%; padding:8px 40px 8px 10px; border-radius:10px; border:1px solid rgba(44,62,80,0.08); background:var(--card-bg); color:var(--text-color) }
+.search-bar button{ position:absolute; right:6px; top:50%; transform: translateY(-50%); width:34px; height:34px; border-radius:8px; border:none; background:transparent; color:var(--primary); cursor:pointer; }
+
+.icon-btn{ appearance:none; background:transparent; border:none; color:var(--primary); cursor:pointer; padding:8px; border-radius:6px }
+.icon-btn:hover{ background: rgba(0,0,0,0.03) }
+
+.icon-btn.active{ background: rgba(11,95,184,0.12); color: #0b5fb8; }
+.icon-btn[aria-pressed="true"]{ background: rgba(11,95,184,0.12); color: #0b5fb8; }
+
+.account-avatar .avatar-circle{ width:40px; height:40px; border-radius:50%; background:var(--primary); color:#fff; display:inline-flex; align-items:center; justify-content:center; font-weight:700 }
+
+/* Avatar button */
+.avatar-btn{ background:transparent; border:none; padding:0; cursor:pointer; display:inline-flex; align-items:center }
+
+/* Notification badge */
+.notif-wrapper{ position:relative; display:inline-flex; align-items:center; overflow: visible }
+
+/* Larger circular bell button */
+.notif-btn.large { width:44px; height:44px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px; font-size:20px; padding:6px; transition: background 0.18s ease, transform 0.12s ease }
+.notif-btn.large i { font-size:20px }
+.notif-btn.large:hover{ background: rgba(11,95,184,0.06); transform: translateY(-1px) }
+
+/* Filled state: solid primary background and white icon (matches the provided sample image) */
+.notif-btn.large.filled{ background: var(--primary); color: #fff; border: none; border-radius:50%; box-shadow: 0 6px 18px rgba(11,95,184,0.18) }
+.notif-btn.large.filled i{ color:#fff }
+.notif-btn.large.filled:hover{ filter: brightness(0.95); transform: translateY(-1px) }
+
+/* ensure the badge is drawn above the filled circle */
+.notif-badge{ z-index:10001 }
+
+
+/* badge sits on the top-right corner of the button */
+.notif-badge{ display:inline-flex; position:absolute; top:-6px; right:-6px; background:#ff4d4f; color:#fff; border-radius:12px; font-size:12px; padding:2px 6px; min-width:20px; height:20px; align-items:center; justify-content:center; box-shadow: 0 4px 12px rgba(255,77,79,0.14); transform-origin: center; border: 2px solid var(--card-bg); z-index:10001 }
+
+/* pulse animation for attention */
+@keyframes notifPulse { 0% { transform: scale(1); opacity: 1 } 50% { transform: scale(1.08); opacity: .95 } 100% { transform: scale(1); opacity: 1 } }
+
+.notif-badge.pulse { animation: notifPulse 1.6s infinite ease-in-out; }
+
+/* Anchor notifications dropdown to the button and ensure it's below it */
+.notif-wrapper .dropdown{ position:absolute; right:0; top:calc(100% + 10px); left:auto; min-width:300px; z-index:10000 }
+
+/* make sure dropdown looks over topbar content but under badge */
+.dropdown{ z-index:10000 }
+
+/* adjust in dark mode to keep badge border visible */
+body.dark-mode .notif-badge{ border: 2px solid #071120 }
+
+@media (max-width: 900px){
+  .notif-btn.large{ width:40px; height:40px }
+  .notif-badge{ top:-4px; right:-4px }
+}
+
+
+/* Dropdowns */
+.dropdown{ position:absolute; right:0; top:calc(var(--topbar-height) + 8px); min-width:260px; background:var(--card-bg); color:var(--text-color); border-radius:10px; box-shadow: 0 8px 20px rgba(2,6,23,0.08); padding:12px; z-index:9999 }
+.dropdown-header{ font-weight:700; font-size:13px; margin-bottom:8px }
+.dropdown.notifications ul, .dropdown.profile ul{ list-style:none; padding:0; margin:0; max-height:240px; overflow:auto }
+.dropdown.notifications ul li, .dropdown.profile ul li{ padding:8px 6px; border-bottom:1px solid rgba(0,0,0,0.04); font-size:13px }
+.dropdown.notifications ul li:last-child, .dropdown.profile ul li:last-child{ border-bottom:none }
+.dropdown-footer{ margin-top:8px; text-align:right }
+.dropdown-footer button{ background:transparent; border:none; color:var(--primary); cursor:pointer }
+
+/* make dropdown adapt in dark mode */
+body.dark-mode .dropdown{ background:#071120; color:#eaf4ff; box-shadow: 0 8px 20px rgba(2,6,23,0.6) }
+
+/* Responsive: position full width on small screens */
+@media (max-width: 900px){
+  .dropdown{ left:12px; right:12px; top:calc(var(--topbar-height) + 12px); min-width: unset }
+}
+
+.no-notifs { padding: 18px 8px; color: var(--muted-text, #6b7280); font-size: 14px; text-align: center }
+
+
+/* Backdrop for mobile */
+.sidebar-backdrop{ display:none }
+.sidebar-open .sidebar-backdrop.active{ display:block; position:fixed; inset:0; background: rgba(0,0,0,0.3); z-index:140 }
+
+/* Responsive tweaks */
+@media (max-width: 900px){
+  .search-bar{ display:none }
+  .sidebar{ transform:translateX(-100%) }
+  .sidebar.open{ transform:translateX(0) }
+  .topbar{ left: 0 }
+}
+
+/* Global dark-mode text overrides (make admin text white) */
+body.dark-mode {
+  --text: #ffffff;
+  --text-color: #ffffff;
+  --muted: rgba(255,255,255,0.70);
+  --card-bg: #0f1724;
+}
+body.dark-mode,
+body.dark-mode .main-content,
+body.dark-mode .page-inner,
+body.dark-mode .page-controls,
+body.dark-mode .kpi-card,
+body.dark-mode .sellers-container,
+body.dark-mode .buyers-container,
+body.dark-mode .sellers-table,
+body.dark-mode .buyers-table,
+body.dark-mode table,
+body.dark-mode th,
+body.dark-mode td,
+body.dark-mode p,
+body.dark-mode .page-sub,
+body.dark-mode .kpi-info p,
+body.dark-mode .seller-profile p {
+  color: #ffffff;
+}
+body.dark-mode a,
+body.dark-mode .nav-links a {
+  color: #eaf4ff;
+} 
+
+/* When body has sidebar-collapsed class, adjust topbar and main-content via CSS selectors */
+body.sidebar-collapsed .topbar{ left: calc(var(--sidebar-collapsed) - var(--sidebar-gap)) }
+body.sidebar-collapsed .sidebar{ width: var(--sidebar-collapsed); align-items:center }
+body.sidebar-collapsed .nav-links a span{ display:none }
+body.sidebar-collapsed .logo .logo-text{ display:none }
+body.sidebar-collapsed .logo .logo-compact{ display:inline-block }
+
+/* When body has sidebar-open, show mobile sidebar */
+body.sidebar-open .sidebar{ transform: translateX(0) }
+body.sidebar-open .sidebar-backdrop{ display:block }

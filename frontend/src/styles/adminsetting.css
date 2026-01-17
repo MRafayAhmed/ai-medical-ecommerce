@@ -1,0 +1,61 @@
+/* Admin Settings page - self-contained styles */
+.admin-settings { --primary:#0b5fb8; --card-bg:#fff; --text:#1f2933; --muted:#6b7280 }
+
+.admin-settings { position: fixed; inset: 0; background: var(--bg-light); color: var(--text); width: 100vw; box-sizing: border-box; overflow-x: hidden; overflow-y: auto; padding-top: calc(var(--topbar-height) - 45px); z-index: 1 }
+
+.admin-settings .main-content { padding: 0 16px 30px; }
+
+.admin-settings .settings-container { display:flex; flex-direction:column; gap:20px; background: var(--card-bg); padding:20px; border-radius:12px; box-shadow: 0 12px 30px rgba(2,6,23,0.06); max-width: 100%; margin:0 auto; color: var(--text); }
+.admin-settings .settings-container.dark{ background:#0f1724; color:#fff }
+
+.admin-settings .settings-section{ border-bottom:1px solid rgba(0,0,0,0.06); padding-bottom:16px }
+.admin-settings .settings-section:last-child{ border-bottom:none }
+.admin-settings .settings-section h4{ margin:0 0 12px; color: var(--text); font-weight:700 }
+
+.admin-settings .settings-group{ display:grid; grid-template-columns: 1fr 1fr; gap:14px }
+@media (max-width:768px){ .admin-settings .settings-group{ grid-template-columns:1fr } }
+
+.admin-settings label{ font-weight:600; display:block; margin-bottom:6px; color: var(--text); }
+.admin-settings input[type="text"], .admin-settings input[type="email"], .admin-settings input[type="password"], .admin-settings select{ width:100%; padding:10px; border-radius:8px; border:1px solid rgba(0,0,0,0.08); font-size:14px; color: var(--text); background: #f5f5f5; }
+.admin-settings input[readonly]{ background: #f0f0f0; color: var(--text); }
+
+.admin-settings .profile-picture{ display:flex; align-items:center; gap:12px }
+.admin-settings .profile-picture img{ width:80px; height:80px; border-radius:50%; border:3px solid var(--primary); object-fit:cover }
+.admin-settings .profile-actions{ display:flex; gap:8px; }
+.admin-settings .profile-actions .btn-upload{ height:40px; display:inline-flex; align-items:center; justify-content:center }
+.admin-settings .btn-upload{ background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary) 85%, black 15%)); border:none; color:white; padding:9px 16px; border-radius:8px; cursor:pointer; font-weight:600 }
+.admin-settings .btn-upload:hover{ background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 90%, black 10%), color-mix(in srgb, var(--primary) 75%, black 25%)); transform: translateY(-1px) }
+
+.admin-settings .toggle-switch{ display:flex; align-items:center; gap:10px }
+.admin-settings .toggle-switch input{ width:44px; height:22px; -webkit-appearance:none; appearance:none; background:#ccc; border-radius:15px; position:relative; outline:none; cursor:pointer; }
+.admin-settings .toggle-switch input:checked{ background:var(--primary) }
+.admin-settings .toggle-switch input::before{ content:''; position:absolute; width:18px; height:18px; border-radius:50%; top:2px; left:2px; background:#fff; transition:0.25s }
+.admin-settings .toggle-switch input:checked::before{ transform:translateX(22px) }
+.admin-settings .toggle-switch.wide{ grid-column: 1 / -1 }
+
+.admin-settings .text-end{ text-align:right }
+.admin-settings .save-btn{ background: linear-gradient(180deg,var(--primary), color-mix(in srgb, var(--primary) 85%, black 15%)); color:#fff; border:none; padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer }
+.admin-settings .save-toast{ position:fixed; right:20px; bottom:24px; background: #111; color:#fff; padding:8px 12px; border-radius:8px; opacity:0; transform: translateY(8px); transition:all 220ms ease }
+.admin-settings .save-toast.visible{ opacity:1; transform:translateY(0) }
+
+/* Dark mode tweaks local to the container */
+/* Respond to both local container dark class and global body.dark-mode */
+.admin-settings .settings-container.dark input[type="text"], .admin-settings .settings-container.dark input[type="email"], .admin-settings .settings-container.dark select{ background:#1a1a1a; border:1px solid rgba(255,255,255,0.06); color:#fff }
+.admin-settings .settings-container.dark input[readonly]{ background:#0f1010 }
+.admin-settings .settings-container.dark .btn-upload{ background:#1f6f8b }
+.admin-settings .settings-container.dark label{ color: #eaf4ff }
+.admin-settings .settings-container.dark .settings-section{ border-bottom:1px solid rgba(255,255,255,0.03) }
+
+body.dark-mode .admin-settings { --card-bg: #0f1724; --text: #ffffff; --muted: rgba(255,255,255,0.75); }
+body.dark-mode .admin-settings .settings-container { background: var(--card-bg); color: var(--text); }
+body.dark-mode .admin-settings input[type="text"], body.dark-mode .admin-settings input[type="email"], body.dark-mode .admin-settings input[type="password"], body.dark-mode .admin-settings select{ background:#1a1a1a; border:1px solid rgba(255,255,255,0.1); color: #fff }
+body.dark-mode .admin-settings input[readonly]{ background:#0f1010; color: #fff }
+body.dark-mode .admin-settings .btn-upload{ background: linear-gradient(180deg, #2e7a99, #1f5a75) }
+body.dark-mode .admin-settings .btn-upload:hover{ background: linear-gradient(180deg, #3a8fa8, #2a6880); transform: translateY(-1px) }
+body.dark-mode .admin-settings .settings-section{ border-bottom:1px solid rgba(255,255,255,0.03) }
+body.dark-mode .admin-settings label{ color: var(--muted) }
+
+/* small screens: center and reduce width */
+@media (max-width:900px){
+  .admin-settings .settings-container{ padding:16px; margin: 10px; border-radius:10px }
+}
