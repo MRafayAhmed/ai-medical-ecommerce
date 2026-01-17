@@ -101,7 +101,7 @@ export default function AdminOrder() {
                         <td>#ORD-{o.id}</td>
                         <td>{o.customer?.name || 'Unknown User'}</td>
                         <td>{new Date(o.order_date).toLocaleString()}</td>
-                        <td>{parseFloat(o.total_amount).toFixed(2)}</td>
+                        <td>Rs. {parseFloat(o.total_amount).toFixed(2)}</td>
                         <td>{o.payment_preference}</td>
                         <td><span className={`status ${o.status}`}>{o.status}</span></td>
                         <td>
@@ -167,8 +167,8 @@ export default function AdminOrder() {
                     <tr key={item.id}>
                       <td>{item.inventory?.product_name || 'Item Removed'}</td>
                       <td>{item.qty}</td>
-                      <td>{parseFloat(item.price).toFixed(2)}</td>
-                      <td>{parseFloat(item.total_price).toFixed(2)}</td>
+                      <td>Rs. {parseFloat(item.price).toFixed(2)}</td>
+                      <td>Rs. {parseFloat(item.total_price).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>

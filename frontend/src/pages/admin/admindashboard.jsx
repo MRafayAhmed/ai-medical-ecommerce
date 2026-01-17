@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../../api/axios';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -45,39 +46,17 @@ const AdminDashboard = () => {
     avgOrderValue: 0
   });
 
-  // Animate counter numbers on mount
+  // Fetch real data from API
   useEffect(() => {
-    const targets = {
-      buyers: 1245,
-      sellers: 312,
-      ordersToday: 78,
-      revenue: 24560,
-      verifications: 9,
-      newSignups: 34,
-      returns: 2,
-      deliveryDays: 3,
-      supportTickets: 16,
-      avgOrderValue: 58
+    const fetchStats = async () => {
+      try {
+        const response = await api.get('/admin/stats');
+        setCounts(response.data);
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+      }
     };
-
-    const duration = 80;
-    let frame = 0;
-
-    const interval = setInterval(() => {
-      frame++;
-      const progress = Math.min(frame / duration, 1);
-
-      const newCounts = {};
-      Object.keys(targets).forEach(key => {
-        newCounts[key] = Math.ceil(targets[key] * progress);
-      });
-
-      setCounts(newCounts);
-
-      if (progress === 1) clearInterval(interval);
-    }, 20);
-
-    return () => clearInterval(interval);
+    fetchStats();
   }, []);
 
   const getPrimary = () => getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#0b5fb8';
@@ -100,7 +79,7 @@ const AdminDashboard = () => {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
     datasets: [
       {
-        label: 'Revenue ($)',
+        label: 'Revenue (Rs)',
         data: [12000, 15000, 14000, 18000, 20000, 24000],
         backgroundColor: getPrimary(),
         borderRadius: 6
@@ -213,7 +192,7 @@ const AdminDashboard = () => {
               <div className="kpi-icon"><i className="bi bi-cash-stack" /></div>
               <div className="kpi-info">
                 <h3>Revenue</h3>
-                <p>${counts.revenue.toLocaleString()}</p>
+                <p>Rs {counts.revenue ? counts.revenue.toLocaleString() : 0}</p>
               </div>
             </div>
 
@@ -261,7 +240,7 @@ const AdminDashboard = () => {
               <div className="kpi-icon"><i className="bi bi-currency-dollar" /></div>
               <div className="kpi-info">
                 <h3>Avg Order Value</h3>
-                <p>${counts.avgOrderValue}</p>
+                <p>Rs {counts.avgOrderValue ? Math.round(counts.avgOrderValue).toLocaleString() : 0}</p>
               </div>
             </div>
           </div>
@@ -279,7 +258,7 @@ const AdminDashboard = () => {
               <div className="chart-box">
                 <h4>Revenue</h4>
                 <div className="chart-inner">
-                  <Bar data={revenueData()} options={chartOptions} key={themeKey+1} />
+                  <Bar data={revenueData()} options={chartOptions} key={themeKey + 1} />
                 </div>
               </div>
             </div>
@@ -288,21 +267,21 @@ const AdminDashboard = () => {
               <div className="chart-box">
                 <h4>Category Distribution</h4>
                 <div className="chart-inner">
-                  <Doughnut data={categoryData()} options={chartOptions} key={themeKey+2} />
+                  <Doughnut data={categoryData()} options={chartOptions} key={themeKey + 2} />
                 </div>
               </div>
 
               <div className="chart-box">
                 <h4>User Growth</h4>
                 <div className="chart-inner">
-                  <Line data={userGrowthData()} options={chartOptions} key={themeKey+3} />
+                  <Line data={userGrowthData()} options={chartOptions} key={themeKey + 3} />
                 </div>
               </div>
 
               <div className="chart-box">
                 <h4>Top Products</h4>
                 <div className="chart-inner">
-                  <Bar data={topProductsData()} options={{ ...chartOptions, indexAxis: 'y' }} key={themeKey+4} />
+                  <Bar data={topProductsData()} options={{ ...chartOptions, indexAxis: 'y' }} key={themeKey + 4} />
                 </div>
               </div>
             </div>
@@ -312,10 +291,16 @@ const AdminDashboard = () => {
           <div className="recent-activity">
             <h4>Recent Activity</h4>
             <ul>
-              <li>New buyer "John Doe" registered.</li>
-              <li>Order #2025 completed successfully.</li>
-              <li>Seller "MediMart" verified.</li>
-              <li>New product "Smart Stethoscope" added.</li>
+              {counts.recentActivity && counts.recentActivity.length > 0 ? (
+                counts.recentActivity.map((act) => (
+                  <li key={act.id}>
+                    <span>{act.message}</span>
+                    <small style={{ float: 'right', opacity: 0.7 }}>{act.time}</small>
+                  </li>
+                ))
+              ) : (
+                <li>No recent activity recorded.</li>
+              )}
             </ul>
           </div>
         </div>

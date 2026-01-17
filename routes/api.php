@@ -146,4 +146,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('suppliers', SupplierController::class);
     Route::apiResource('sellers', SellerController::class);
+    Route::get('/admin/stats', [App\Http\Controllers\Admin\DashboardController::class, 'index']);
 });

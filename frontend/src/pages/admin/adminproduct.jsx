@@ -224,7 +224,7 @@ export default function AdminProduct() {
                       <td>{p.generic_name}</td>
                       <td>{p.category ? p.category.name : p.category_id}</td>
                       <td>{p.brand ? p.brand.name : p.brand_id}</td>
-                      <td>{p.price}</td>
+                      <td>Rs {p.price}</td>
                       <td>{p.stock}</td>
                       <td>
                         <span className={`status-badge ${p.stock <= 0 ? 'status-outofstock' : p.stock < 10 ? 'status-lowstock' : 'status-instock'}`}>
@@ -353,8 +353,8 @@ export default function AdminProduct() {
                 <p><strong>Category:</strong> {selectedProduct.category ? selectedProduct.category.name : 'N/A'}</p>
                 <p><strong>Branch:</strong> {selectedProduct.branch ? selectedProduct.branch.name : 'N/A'}</p>
 
-                <p><strong>Price:</strong> {selectedProduct.price}</p>
-                <p><strong>MRP:</strong> {selectedProduct.mrp}</p>
+                <p><strong>Price:</strong> Rs {selectedProduct.price}</p>
+                <p><strong>MRP:</strong> Rs {selectedProduct.mrp}</p>
                 <p><strong>Discount:</strong> {selectedProduct.discount}%</p>
                 <p><strong>Stock:</strong> {selectedProduct.stock}</p>
 

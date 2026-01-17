@@ -31,7 +31,7 @@ export default function AdminReport() {
 
   // Sample KPI values
   const kpis = {
-    revenue: '$120,540',
+    revenue: 'Rs 120,540',
     orders: 1245,
     buyers: 320,
     sellers: 58
@@ -39,10 +39,10 @@ export default function AdminReport() {
 
   // Chart data (sample)
   const salesData = {
-    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'],
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
     datasets: [{
-      label: 'Sales ($)',
-      data: [9000,12000,8000,15000,18000,16000,19000,21000,25000,28000],
+      label: 'Sales (Rs)',
+      data: [9000, 12000, 8000, 15000, 18000, 16000, 19000, 21000, 25000, 28000],
       borderColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#0b5fb8',
       backgroundColor: 'rgba(11,95,184,0.08)',
       tension: 0.3,
@@ -51,8 +51,8 @@ export default function AdminReport() {
   };
 
   const orderData = {
-    labels: ['Completed','Pending','Cancelled'],
-    datasets: [{ data: [65,25,10], backgroundColor: ['#28a745','#ffc107','#dc3545'] }]
+    labels: ['Completed', 'Pending', 'Cancelled'],
+    datasets: [{ data: [65, 25, 10], backgroundColor: ['#28a745', '#ffc107', '#dc3545'] }]
   };
 
   const chartOptions = {
@@ -66,7 +66,7 @@ export default function AdminReport() {
     const firstTable = document.querySelector('.report-card table');
     if (!firstTable) return alert('No table available to export.');
     const rows = Array.from(firstTable.querySelectorAll('tr'));
-    const csv = rows.map(r => Array.from(r.querySelectorAll('th,td')).map(c => '"' + c.innerText.replace(/"/g,'""') + '"').join(',')).join('\n');
+    const csv = rows.map(r => Array.from(r.querySelectorAll('th,td')).map(c => '"' + c.innerText.replace(/"/g, '""') + '"').join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = 'top-products.csv'; document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); a.remove();
@@ -78,7 +78,7 @@ export default function AdminReport() {
       const { jsPDF } = await import('jspdf');
       const report = document.getElementById('reportContent');
       if (!report) return alert('Nothing to export.');
-      const pdf = new jsPDF('p','mm','a4');
+      const pdf = new jsPDF('p', 'mm', 'a4');
       const canvas = await html2canvas(report, { scale: 1.5 });
       const imgData = canvas.toDataURL('image/png');
       const imgWidth = 210; const pageHeight = 295; const imgHeight = (canvas.height * imgWidth) / canvas.width; let heightLeft = imgHeight; let position = 0;
@@ -127,7 +127,7 @@ export default function AdminReport() {
 
             <div className="report-card">
               <div className="report-title">Order Status Overview</div>
-              <div className="chart-inner"><Doughnut key={themeVersion} data={orderData} options={{ maintainAspectRatio:false }} /></div>
+              <div className="chart-inner"><Doughnut key={themeVersion} data={orderData} options={{ maintainAspectRatio: false }} /></div>
             </div>
 
             <div className="report-card">
@@ -136,10 +136,10 @@ export default function AdminReport() {
                 <table>
                   <thead><tr><th>Product</th><th>Category</th><th>Seller</th><th>Units Sold</th><th>Revenue</th></tr></thead>
                   <tbody>
-                    <tr><td>Paracetamol</td><td>Medicine</td><td>HealthPlus</td><td>320</td><td>$3,200</td></tr>
-                    <tr><td>Vitamin C</td><td>Supplements</td><td>CareMeds</td><td>280</td><td>$2,500</td></tr>
-                    <tr><td>BP Monitor</td><td>Device</td><td>MediZone</td><td>150</td><td>$7,800</td></tr>
-                    <tr><td>Face Mask</td><td>Protection</td><td>SafeLife</td><td>500</td><td>$1,200</td></tr>
+                    <tr><td>Paracetamol</td><td>Medicine</td><td>HealthPlus</td><td>320</td><td>Rs 3,200</td></tr>
+                    <tr><td>Vitamin C</td><td>Supplements</td><td>CareMeds</td><td>280</td><td>Rs 2,500</td></tr>
+                    <tr><td>BP Monitor</td><td>Device</td><td>MediZone</td><td>150</td><td>Rs 7,800</td></tr>
+                    <tr><td>Face Mask</td><td>Protection</td><td>SafeLife</td><td>500</td><td>Rs 1,200</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -151,9 +151,9 @@ export default function AdminReport() {
                 <table>
                   <thead><tr><th>Buyer Name</th><th>Email</th><th>Orders</th><th>Total Spent</th><th>Last Login</th><th>Status</th></tr></thead>
                   <tbody>
-                    <tr><td>John Doe</td><td>john@example.com</td><td>25</td><td>$2,800</td><td>2025-10-22</td><td style={{color:'green'}}>Active</td></tr>
-                    <tr><td>Mary Smith</td><td>mary@medmail.com</td><td>15</td><td>$1,600</td><td>2025-10-20</td><td style={{color:'orange'}}>Pending</td></tr>
-                    <tr><td>Ali Khan</td><td>ali@health.pk</td><td>12</td><td>$950</td><td>2025-10-19</td><td style={{color:'green'}}>Active</td></tr>
+                    <tr><td>John Doe</td><td>john@example.com</td><td>25</td><td>Rs 2,800</td><td>2025-10-22</td><td style={{ color: 'green' }}>Active</td></tr>
+                    <tr><td>Mary Smith</td><td>mary@medmail.com</td><td>15</td><td>Rs 1,600</td><td>2025-10-20</td><td style={{ color: 'orange' }}>Pending</td></tr>
+                    <tr><td>Ali Khan</td><td>ali@health.pk</td><td>12</td><td>Rs 950</td><td>2025-10-19</td><td style={{ color: 'green' }}>Active</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -165,9 +165,9 @@ export default function AdminReport() {
                 <table>
                   <thead><tr><th>Store Name</th><th>Owner</th><th>Products Listed</th><th>Total Orders</th><th>Revenue</th><th>Status</th></tr></thead>
                   <tbody>
-                    <tr><td>HealthPlus</td><td>Dr. Ahmed</td><td>45</td><td>230</td><td>$12,000</td><td style={{color:'green'}}>Active</td></tr>
-                    <tr><td>MediZone</td><td>Sarah Lee</td><td>38</td><td>190</td><td>$10,400</td><td style={{color:'green'}}>Active</td></tr>
-                    <tr><td>CareMeds</td><td>Ali Raza</td><td>25</td><td>85</td><td>$4,800</td><td style={{color:'orange'}}>Pending</td></tr>
+                    <tr><td>HealthPlus</td><td>Dr. Ahmed</td><td>45</td><td>230</td><td>Rs 12,000</td><td style={{ color: 'green' }}>Active</td></tr>
+                    <tr><td>MediZone</td><td>Sarah Lee</td><td>38</td><td>190</td><td>Rs 10,400</td><td style={{ color: 'green' }}>Active</td></tr>
+                    <tr><td>CareMeds</td><td>Ali Raza</td><td>25</td><td>85</td><td>Rs 4,800</td><td style={{ color: 'orange' }}>Pending</td></tr>
                   </tbody>
                 </table>
               </div>
