@@ -53,11 +53,11 @@ Route::post('/seller/signup', function (Request $request) {
 
 // Medical Inventory API Routes
 // Public Medical Inventory Routes
+Route::get('/medical-inventory/attributes', [MedicalInventoryController::class, 'attributes']);
 Route::get('/medical-inventory', [MedicalInventoryController::class, 'index']);
 Route::get('/medical-inventory/{medicalInventory}', [MedicalInventoryController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/medical-inventory/attributes', [MedicalInventoryController::class, 'attributes']);
     Route::post('/medical-inventory', [MedicalInventoryController::class, 'store']);
     Route::put('/medical-inventory/{medicalInventory}', [MedicalInventoryController::class, 'update']);
     Route::delete('/medical-inventory/{medicalInventory}', [MedicalInventoryController::class, 'destroy']);
@@ -138,8 +138,8 @@ Route::match(['get', 'post'], '/seller/login', function (Request $request) {
 Route::middleware(['auth:sanctum', 'seller'])->group(function () {
     Route::apiResource('brands', BrandController::class);
     Route::apiResource('branches', BranchController::class)->except(['index', 'show']);
-    Route::apiResource('categories', CategoryController::class);
-    Route::apiResource('categories', CategoryController::class)->except(['index', 'show']);
+    Route::match(['PUT', 'POST'], '/categories/{id}', [CategoryController::class, 'update']);
+    Route::apiResource('categories', CategoryController::class)->except(['index', 'show', 'update']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -154,3 +154,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Publicly accessible routes
 Route::apiResource('categories', CategoryController::class)->only(['index', 'show']);
+Route::apiResource('brands', BrandController::class)->only(['index', 'show']);
+Route::apiResource('branches', BranchController::class)->only(['index', 'show']);

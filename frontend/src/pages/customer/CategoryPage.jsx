@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Heart, Search, ShoppingCart, User, ArrowLeft, Loader2, X } from 'lucide-react';
 import api from '../../api/axios';
 import ProductCard from '../../components/ProductCard';
+import BuyerNavbar from '../../components/BuyerNavbar';
 import '../../styles/buyermainpage.css';
 
 const CategoryPage = () => {
@@ -11,16 +12,10 @@ const CategoryPage = () => {
     const [products, setProducts] = useState([]);
     const [category, setCategory] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [cartCount, setCartCount] = useState(0);
     const [wishlistIds, setWishlistIds] = useState(new Set());
     const isLoggedIn = !!localStorage.getItem('customer_token');
 
-    useEffect(() => {
-        const savedCart = localStorage.getItem('mediEcom_cart');
-        if (savedCart) {
-            setCartCount(JSON.parse(savedCart).length);
-        }
-    }, []);
+    // Cart count now handled by BuyerNavbar
 
     const fetchWishlist = async () => {
         const token = localStorage.getItem('customer_token');
@@ -86,7 +81,6 @@ const CategoryPage = () => {
         const cart = savedCart ? JSON.parse(savedCart) : [];
         cart.push(product);
         localStorage.setItem('mediEcom_cart', JSON.stringify(cart));
-        setCartCount(cart.length);
 
         try {
             const user = JSON.parse(userData);
@@ -137,54 +131,10 @@ const CategoryPage = () => {
 
     return (
         <div className="bm-page">
-            <header className="header">
-                <div className="header__container">
-                    <Link to="/buyer/dashboard" className="header__logo">
-                        <Heart className="header__heart-icon" />
-                        <span className="header__logo-text">MediEcom</span>
-                    </Link>
-
-                    <form className="header__search" onSubmit={handleSearch} style={{ marginLeft: '40px' }}>
-                        <div className="header__search-wrapper">
-                            <Search className="header__search-icon" size={18} />
-                            <input
-                                type="text"
-                                className="header__search-input"
-                                placeholder={`Search in ${category?.name || 'category'}...`}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                            {searchQuery && (
-                                <button
-                                    type="button"
-                                    onClick={clearSearch}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#999', padding: '4px', display: 'flex', alignItems: 'center' }}
-                                >
-                                    <X size={16} />
-                                </button>
-                            )}
-                            <button type="submit" className="header__search-btn">
-                                <Search size={16} />
-                            </button>
-                        </div>
-                    </form>
-
-                    <div className="header__actions" style={{ marginLeft: 'auto' }}>
-                        <div className="bm-action-bar">
-                            <Link to="/buyer/wishlist" className="bm-action"><Heart size={20} /></Link>
-                            <Link to="/buyer/cart" className="bm-action" style={{ position: 'relative' }}>
-                                <ShoppingCart size={20} />
-                                {cartCount > 0 && <span style={{ position: 'absolute', top: '-5px', right: '-5px', background: 'red', color: 'white', borderRadius: '50%', padding: '2px 6px', fontSize: '10px' }}>{cartCount}</span>}
-                            </Link>
-                            {isLoggedIn ? (
-                                <Link to="/buyer/profile" className="bm-action"><User size={20} /></Link>
-                            ) : (
-                                <button onClick={() => navigate('/buyer/login')} style={{ background: 'var(--primary-color)', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 600, marginLeft: '10px' }}>Login</button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <BuyerNavbar onSearch={(q) => {
+                setSearchQuery(q);
+                fetchData(q);
+            }} />
 
             <main className="header__container" style={{ paddingTop: '100px', minHeight: '80vh' }}>
                 <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -226,7 +176,7 @@ const CategoryPage = () => {
                                     product={{
                                         ...product,
                                         name: product.product_name || product.name,
-                                        image: `https://via.placeholder.com/300?text=${encodeURIComponent(product.product_name || product.name || 'Product')}`,
+                                        image: product.image?.startsWith('http') ? product.image : (product.image ? `http://127.0.0.1:8000/storage/${product.image}` : `https://via.placeholder.com/300?text=${encodeURIComponent(product.product_name || product.name || 'Product')}`),
                                         price: price,
                                         originalPrice: mrp,
                                         isWishlisted: wishlistIds.has(product.id)

@@ -9,8 +9,7 @@
   --sidebar-width: 220px;
   /* increased for larger content */
   --sidebar-collapsed: 72px;
-  /* slightly larger collapsed width */
-  --sidebar-gap: 100px;
+  --sidebar-gap: 0px;
 }
 
 .sidebar {
@@ -189,7 +188,14 @@
   padding: 0 18px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   z-index: 150;
-  transition: left 0.3s ease
+  transition: left 0.3s ease;
+  pointer-events: none;
+}
+
+.topbar-left,
+.topbar-center,
+.topbar-right {
+  pointer-events: auto;
 }
 
 .topbar.collapsed {

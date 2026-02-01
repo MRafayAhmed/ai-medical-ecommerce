@@ -32,6 +32,9 @@ class CategoryController extends Controller
         try {
             $category = new Category();
             $category->name = $request->name;
+            if ($request->hasFile('image')) {
+                $category->image = $request->file('image')->store('categories', 'public');
+            }
             $category->save();
             return $this->index();
         } catch (\Throwable $th) {
@@ -64,6 +67,9 @@ class CategoryController extends Controller
         try {
             $category = Category::find($id);
             $category->name = $request->name;
+            if ($request->hasFile('image')) {
+                $category->image = $request->file('image')->store('categories', 'public');
+            }
             $category->save();
             return $this->index();
         } catch (\Throwable $th) {

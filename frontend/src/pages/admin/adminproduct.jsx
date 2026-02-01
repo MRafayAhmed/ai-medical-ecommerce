@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 import AdminNavbar from './adminnavbar';
 import '../../styles/adminproduct.css';
+import '../../styles/admindashboard.css';
 
 export default function AdminProduct() {
   const [products, setProducts] = useState([]);
@@ -18,6 +19,7 @@ export default function AdminProduct() {
     category_id: '',
     brand_id: '',
     branch_id: '',
+    image: null,
     price: '',
     mrp: '',
     discount: '',
@@ -70,27 +72,37 @@ export default function AdminProduct() {
 
   // ... (fetchData and filter logic remain same)
 
-  const handleAddChange = (e) => { const { name, value } = e.target; setForm(prev => ({ ...prev, [name]: value })); };
+  const handleAddChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === 'image') {
+      setForm(prev => ({ ...prev, image: files[0] }));
+    } else {
+      setForm(prev => ({ ...prev, [name]: value }));
+    }
+  };
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const payload = {
-        ...form,
-        product_name: form.product_name,
-        generic_name: form.generic_name,
-        category_name: form.category_name,
-        price: Number(form.price),
-        mrp: Number(form.mrp),
-        stock: Number(form.stock),
-        discount: Number(form.discount || 0)
-      };
+      const formData = new FormData();
+      Object.keys(form).forEach(key => {
+        if (key === 'image') {
+          if (form.image) formData.append('image', form.image);
+        } else {
+          formData.append(key, form[key]);
+        }
+      });
 
       if (editId) {
-        await api.put(`/medical-inventory/${editId}`, payload);
+        formData.append('_method', 'PUT');
+        await api.post(`/medical-inventory/${editId}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
       } else {
-        await api.post('/medical-inventory', payload);
+        await api.post('/medical-inventory', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
       }
 
       setShowAddModal(false);
@@ -107,26 +119,36 @@ export default function AdminProduct() {
   const resetForm = () => {
     setForm({
       product_name: '', generic_name: '', category_id: '', brand_id: '', branch_id: '',
-      price: '', mrp: '', discount: '', stock: '', dosage: '', pack_size: '', description: ''
+      price: '', mrp: '', discount: '', stock: '', dosage: '', pack_size: '', description: '',
+      image: null,
+      price: '',
+      mrp: '',
+      discount: '0',
+      stock: '0',
+      dosage: '',
+      pack_size: '',
+      description: ''
     });
     setEditId(null);
+    setShowAddModal(false);
   };
 
   const handleEdit = (product) => {
     setEditId(product.id);
     setForm({
-      product_name: product.product_name,
+      product_name: product.product_name || '',
       generic_name: product.generic_name || '',
-      category_id: product.category_id || '',
-      brand_id: product.brand_id || '',
-      branch_id: product.branch_id || '',
-      price: product.price,
-      mrp: product.mrp,
-      discount: product.discount,
-      stock: product.stock,
+      category_id: String(product.category_id || ''),
+      brand_id: String(product.brand_id || ''),
+      branch_id: String(product.branch_id || ''),
+      price: product.price || '',
+      mrp: product.mrp || '',
+      discount: product.discount || '0',
+      stock: product.stock || '0',
       dosage: product.dosage || '',
       pack_size: product.pack_size || '',
-      description: product.description || ''
+      description: product.description || '',
+      image: null
     });
     setShowAddModal(true);
   };
@@ -149,13 +171,15 @@ export default function AdminProduct() {
   };
 
   const handleView = async (product) => {
+    setSelectedProduct(product);
+    setShowViewModal(true);
     try {
       const response = await api.get(`/medical-inventory/${product.id}`);
-      setSelectedProduct(response.data);
-      setShowViewModal(true);
+      if (response.data) {
+        setSelectedProduct(response.data);
+      }
     } catch (error) {
-      console.error('Failed to fetch product details', error);
-      alert('Failed to load product details.');
+      console.warn('Failed to fetch full details, using local data', error);
     }
   };
 
@@ -181,6 +205,7 @@ export default function AdminProduct() {
   return (
     <div className="admin-products">
       <AdminNavbar />
+
       <div className="main-content">
         <div className="page-inner">
           <div className="page-controls">
@@ -246,11 +271,11 @@ export default function AdminProduct() {
       </div>
 
       {showAddModal && (
-        <div className="modal" onClick={() => { setShowAddModal(false); resetForm(); }}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal" style={{ zIndex: 999999, display: 'flex', position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)' }} onClick={resetForm}>
+          <div className="modal-content" style={{ zIndex: 1000000, position: 'relative' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editId ? 'Edit Product' : 'Add Product'}</h3>
-              <span className="close-btn" onClick={() => { setShowAddModal(false); resetForm(); }}>&times;</span>
+              <span className="close-btn" onClick={resetForm}>&times;</span>
             </div>
             <form onSubmit={handleAddSubmit} className="modal-form">
               <div className="form-row">
@@ -317,6 +342,10 @@ export default function AdminProduct() {
                   <label>Discount (%)</label>
                   <input name="discount" type="number" placeholder="0" value={form.discount} onChange={handleAddChange} />
                 </div>
+                <div className="input-group">
+                  <label>Product Image</label>
+                  <input type="file" name="image" onChange={handleAddChange} accept="image/*" />
+                </div>
               </div>
               <div className="input-group">
                 <label>Description</label>
@@ -324,7 +353,7 @@ export default function AdminProduct() {
               </div>
 
               <div className="form-actions">
-                <button type="button" className="btn-cancel" onClick={() => { setShowAddModal(false); resetForm(); }}>Cancel</button>
+                <button type="button" className="btn-cancel" onClick={resetForm}>Cancel</button>
                 <button type="submit" className="btn-submit" disabled={loading}>{loading ? 'Saving...' : 'Save'}</button>
               </div>
             </form>
@@ -333,15 +362,22 @@ export default function AdminProduct() {
       )}
 
       {showViewModal && selectedProduct && (
-        <div className="modal" onClick={() => setShowViewModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal" style={{ zIndex: 999999, display: 'flex', position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)' }} onClick={() => setShowViewModal(false)}>
+          <div className="modal-content" style={{ zIndex: 1000000, position: 'relative' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Product Details</h3>
               <span className="close-btn" onClick={() => setShowViewModal(false)}>&times;</span>
             </div>
             <div className="product-detail">
-              {selectedProduct.image && <img src={selectedProduct.image} alt="Product" />}
-              <div className="detail-row">
+              {selectedProduct.image && (
+                <img
+                  src={selectedProduct.image.startsWith('http') ? selectedProduct.image : `/storage/${selectedProduct.image}`}
+                  alt="Product"
+                  onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=No+Image'; }}
+                  style={{ maxWidth: '200px', display: 'block', margin: '0 auto 15px' }}
+                />
+              )}
+              <div className="detail-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h4>{selectedProduct.product_name}</h4>
                 <span className={`status-badge ${selectedProduct.stock <= 0 ? 'status-outofstock' : selectedProduct.stock < 10 ? 'status-lowstock' : 'status-instock'}`}>
                   {selectedProduct.stock <= 0 ? 'Out of Stock' : selectedProduct.stock < 10 ? 'Low Stock' : 'In Stock'}
@@ -349,14 +385,14 @@ export default function AdminProduct() {
               </div>
               <div className="detail-grid">
                 <p><strong>Generic Name:</strong> {selectedProduct.generic_name || 'N/A'}</p>
-                <p><strong>Brand:</strong> {selectedProduct.brand ? selectedProduct.brand.name : 'N/A'}</p>
-                <p><strong>Category:</strong> {selectedProduct.category ? selectedProduct.category.name : 'N/A'}</p>
-                <p><strong>Branch:</strong> {selectedProduct.branch ? selectedProduct.branch.name : 'N/A'}</p>
+                <p><strong>Brand:</strong> {selectedProduct.brand?.name || selectedProduct.brand_name || 'N/A'}</p>
+                <p><strong>Category:</strong> {selectedProduct.category?.name || 'N/A'}</p>
+                <p><strong>Branch:</strong> {selectedProduct.branch?.name || 'N/A'}</p>
 
-                <p><strong>Price:</strong> Rs {selectedProduct.price}</p>
-                <p><strong>MRP:</strong> Rs {selectedProduct.mrp}</p>
-                <p><strong>Discount:</strong> {selectedProduct.discount}%</p>
-                <p><strong>Stock:</strong> {selectedProduct.stock}</p>
+                <p><strong>Price:</strong> Rs {selectedProduct.price || '0'}</p>
+                <p><strong>MRP:</strong> Rs {selectedProduct.mrp || '0'}</p>
+                <p><strong>Discount:</strong> {selectedProduct.discount || '0'}%</p>
+                <p><strong>Stock:</strong> {selectedProduct.stock || '0'}</p>
 
                 <p><strong>Dosage:</strong> {selectedProduct.dosage || 'N/A'}</p>
                 <p><strong>Pack Size:</strong> {selectedProduct.pack_size || 'N/A'}</p>

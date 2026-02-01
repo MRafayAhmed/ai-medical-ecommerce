@@ -26,7 +26,7 @@ const ProductCard = ({ product, onToggleWishlist, onAddToCart }) => {
             {/* Product Image */}
             <div className="bm-product-img-wrap">
                 <img
-                    src={product.image}
+                    src={product.image?.startsWith('http') ? product.image : (product.image ? `/storage/${product.image}` : `https://via.placeholder.com/300?text=${encodeURIComponent(product.product_name || product.name || 'Product')}`)}
                     alt={product.name}
                     className="bm-product-img"
                     onError={(e) => {

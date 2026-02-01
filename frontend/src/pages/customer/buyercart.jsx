@@ -4,6 +4,7 @@ import { Heart, ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Loader2, Package }
 import api from '../../api/axios';
 import '../../styles/buyermainpage.css';
 import CheckoutSidebar from '../../components/CheckoutSidebar';
+import BuyerNavbar from '../../components/BuyerNavbar';
 
 const BuyerCart = () => {
     const [cart, setCart] = useState([]);
@@ -73,14 +74,7 @@ const BuyerCart = () => {
 
     return (
         <div className="bm-page">
-            <header className="header">
-                <div className="header__container">
-                    <Link to="/buyer/dashboard" className="header__logo">
-                        <Heart className="header__heart-icon" />
-                        <span className="header__logo-text">MediEcom</span>
-                    </Link>
-                </div>
-            </header>
+            <BuyerNavbar />
 
             <main className="header__container" style={{ paddingTop: '100px', minHeight: '80vh', paddingBottom: '40px' }}>
                 <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -105,7 +99,7 @@ const BuyerCart = () => {
                                     gap: '20px'
                                 }}>
                                     <img
-                                        src={`https://via.placeholder.com/80?text=${encodeURIComponent(item.product_name || item.name)}`}
+                                        src={item.image || `https://via.placeholder.com/80?text=${encodeURIComponent(item.product_name || item.name)}`}
                                         alt={item.product_name || item.name}
                                         style={{ width: '80px', height: '80px', borderRadius: '8px', objectFit: 'cover', background: '#f8f9fa' }}
                                     />

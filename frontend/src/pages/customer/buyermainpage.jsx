@@ -5,10 +5,10 @@ import { User, ShoppingCart, Info } from 'lucide-react';
 import '../../styles/customerhome.css';
 import '../../styles/buyermainpage.css';
 import ProductCard from '../../components/ProductCard';
+import BuyerNavbar from '../../components/BuyerNavbar';
 import api from '../../api/axios';
 
 const Buyermainpage = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const pageRef = useRef(null);
@@ -18,17 +18,9 @@ const Buyermainpage = () => {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('customer_token'));
-  const [cartCount, setCartCount] = useState(0);
   const [wishlistIds, setWishlistIds] = useState(new Set());
 
-  // Initialize cart count from localStorage
-  useEffect(() => {
-    const savedCart = localStorage.getItem('mediEcom_cart');
-    if (savedCart) {
-      const cart = JSON.parse(savedCart);
-      setCartCount(cart.length);
-    }
-  }, []);
+  // Wishlist logic remains for product cards
 
   // Fetch wishlist from API
   const fetchWishlist = async () => {
@@ -58,6 +50,7 @@ const Buyermainpage = () => {
           id: cat.id,
           label: cat.name,
           to: `/buyer/category/${cat.id}/${slugify(cat.name)}`,
+          image: cat.image ? `/storage/${cat.image}` : (findImageForLabel(cat.name) || `https://via.placeholder.com/150?text=${encodeURIComponent(cat.name)}`),
           items: []
         }));
 
@@ -90,7 +83,7 @@ const Buyermainpage = () => {
       const mappedProducts = items.map(item => ({
         id: item.id,
         name: item.product_name,
-        image: 'https://via.placeholder.com/200x200/f8f9fa/333?text=' + encodeURIComponent(item.product_name),
+        image: item.image ? `http://127.0.0.1:8000/storage/${item.image}` : ('https://via.placeholder.com/200x200/f8f9fa/333?text=' + encodeURIComponent(item.product_name)),
         price: parseFloat(item.price),
         originalPrice: item.mrp ? parseFloat(item.mrp) : null,
         isWishlisted: wishlistIds.has(item.id),
@@ -111,12 +104,7 @@ const Buyermainpage = () => {
     fetchProducts(q);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('customer_token');
-    localStorage.removeItem('customer_user');
-    setIsLoggedIn(false);
-    navigate('/');
-  };
+  // Redundant logout removed, handled by BuyerNavbar
 
   const displayProducts = products.length > 0 ? products : [];
 
@@ -585,100 +573,11 @@ const Buyermainpage = () => {
 
   return (
     <div className="bm-page" ref={pageRef}>
-      <header className="header">
-        <div className="header__container">
-          <Link to="/" className="header__logo" aria-label="MediEcom Home">
-            <div className="header__logo-icon">
-              <Heart className="header__heart-icon" />
-            </div>
-            <span className="header__logo-text">MediEcom</span>
-          </Link>
-
-          {/* Header search - inline with logo and action bar on desktop */}
-          <form
-            className="header__search"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!searchQuery) return;
-              fetchProducts(searchQuery);
-              navigate(`/buyer/dashboard?q=${encodeURIComponent(searchQuery)}`);
-            }}
-            role="search"
-          >
-            <div className="header__search-wrapper">
-              <Search className="header__search-icon" aria-hidden="true" />
-              <input
-                type="search"
-                className="header__search-input"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                aria-label="Search products"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  className="header__search-clear"
-                  onClick={clearSearch}
-                  aria-label="Clear search"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#999', padding: '4px', display: 'flex', alignItems: 'center' }}
-                >
-                  <X size={16} />
-                </button>
-              )}
-              <button type="submit" className="header__search-btn" aria-label="Search">
-                <Search size={16} />
-              </button>
-            </div>
-          </form>
-
-          <Link to="/buyer/prescriptions" className="header__upload-pill" aria-label="Upload Prescription">
-            <UploadCloud size={18} />
-            <span>Upload Rx</span>
-          </Link>
-
-          <div className="header__actions">
-            <div className="bm-action-bar" role="toolbar" aria-label="Quick actions">
-              <Link to="/buyer/profile" className="bm-action" aria-label="Profile"><User size={20} /></Link>
-              <Link to="/buyer/wishlist" className="bm-action" aria-label="Wishlist"><Heart size={20} /></Link>
-              <Link to="/buyer/cart" className="bm-action" aria-label="Cart" style={{ position: 'relative' }}>
-                <ShoppingCart size={20} />
-                {cartCount > 0 && <span style={{ position: 'absolute', top: '-5px', right: '-5px', background: 'red', color: 'white', borderRadius: '50%', padding: '2px 6px', fontSize: '10px' }}>{cartCount}</span>}
-              </Link>
-              {isLoggedIn ? (
-                <button onClick={handleLogout} className="bm-action bm-action--info" aria-label="Logout" title="Logout"><i className="bi bi-box-arrow-right" style={{ fontSize: '20px' }}></i></button>
-              ) : (
-                <Link to="/buyer/login" className="bm-action bm-action--info" aria-label="Login" title="Login"><User size={20} /></Link>
-              )}
-            </div>
-          </div>
-
-          <button
-            className="header__mobile-toggle"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-expanded={isMobileMenuOpen}
-            aria-label="Toggle mobile menu"
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-
-        {isMobileMenuOpen && (
-          <div className="header__mobile-menu">
-            <nav aria-label="Mobile navigation">
-              <div className="header__mobile-actions">
-                <div className="bm-action-bar bm-action-bar--mobile">
-                  <Link to="/buyer/prescriptions" className="bm-action" onClick={() => setIsMobileMenuOpen(false)} aria-label="Upload Prescription"><UploadCloud size={20} /></Link>
-                  <Link to="/buyer/profile" className="bm-action" onClick={() => setIsMobileMenuOpen(false)} aria-label="Profile"><User size={20} /></Link>
-                  <Link to="/buyer/wishlist" className="bm-action" onClick={() => setIsMobileMenuOpen(false)} aria-label="Wishlist"><Heart size={20} /></Link>
-                  <Link to="/buyer/cart" className="bm-action" onClick={() => setIsMobileMenuOpen(false)} aria-label="Cart"><ShoppingCart size={20} /></Link>
-                  <Link to="/buyer/dashboard" className="bm-action bm-action--info" onClick={() => setIsMobileMenuOpen(false)} aria-label="About" title="About Us"><Info size={20} /></Link>
-                </div>
-              </div>
-            </nav>
-          </div>
-        )}
-      </header>
+      <BuyerNavbar onSearch={(q) => {
+        setSearchQuery(q);
+        fetchProducts(q);
+        navigate(`/buyer/dashboard?q=${encodeURIComponent(q)}`);
+      }} />
 
       {/* Categories nav under header */}
       <nav className="bm-categories" aria-label="Medicine categories">

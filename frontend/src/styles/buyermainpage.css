@@ -206,11 +206,13 @@ body {
   }
 }
 
-/* Header search - inline, visible on desktop only */
+/* Header search - inline */
 .header__search {
-  margin-left: 220px;
+  flex: 1;
+  max-width: 600px;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .header__upload-pill {
@@ -223,7 +225,7 @@ body {
   color: #fff !important;
   font-weight: 700;
   text-decoration: none;
-  margin-left: 12px;
+  margin-left: 0;
   transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
   box-shadow: 0 6px 16px rgba(14, 165, 233, 0.12);
   border: none;
@@ -268,8 +270,7 @@ body {
 .header__search-input {
   border: none;
   outline: none;
-  width: 420px;
-  max-width: 50vw;
+  width: 100%;
   font-size: 0.95rem;
   color: var(--color-text-primary);
   background: transparent;
@@ -717,13 +718,10 @@ body {
   }
 }
 
-/* Pin action bar to the top-right corner */
+/* Pin action bar - removed fixed positioning to allow natural flow */
 .bm-page .header__actions {
-  position: fixed;
-  right: 150px;
-  /* distance from viewport right edge */
-  top: var(--bm-about-top, 18px);
-  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
   z-index: 1000;
 }
 
@@ -751,11 +749,18 @@ body {
   text-decoration: none;
   background: transparent;
   transition: background .12s ease, transform .08s ease;
+  border: none;
+  cursor: pointer;
 }
 
-.bm-action:hover {
-  background: rgba(255, 255, 255, 0.12);
+.bm-action:hover,
+.bm-action.active {
+  background: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
+}
+
+.bm-action.active svg {
+  fill: white;
 }
 
 .bm-action svg {
@@ -776,9 +781,9 @@ body {
   position: relative;
 }
 
-/* Keep header content clear of the fixed action pill by adding right padding that matches the pill width */
+/* Keep header content clear */
 .bm-page .header__container {
-  padding-right: calc(var(--container-padding) + var(--bm-actionbar-offset, 220px));
+  padding-right: var(--container-padding);
 }
 
 /* On small screens, revert to normal flow so mobile menu remains primary */

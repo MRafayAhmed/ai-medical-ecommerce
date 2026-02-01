@@ -1,0 +1,190 @@
+/* admincategory.css - Based on adminproduct.css for consistency */
+
+.admin-categories .main-content {
+    padding: 24px;
+    background-color: #f7f9fc;
+    min-height: 100vh;
+}
+
+.admin-categories .page-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.admin-categories .page-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.admin-categories h2 {
+    font-size: 24px;
+    color: #1a202c;
+    margin: 0;
+}
+
+.admin-categories .page-sub {
+    color: #718096;
+    font-size: 14px;
+    margin: 4px 0 0;
+}
+
+.admin-categories .filters {
+    display: flex;
+    gap: 12px;
+}
+
+.admin-categories .control-btn {
+    padding: 10px 18px;
+    background: var(--primary-color, #0056b3);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.2s;
+}
+
+.admin-categories .control-btn:hover {
+    opacity: 0.9;
+}
+
+.admin-categories .categories-table {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.admin-categories table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-categories th {
+    background: #f8fafc;
+    padding: 16px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 700;
+    color: #4a5568;
+    border-bottom: 2px solid #edf2f7;
+}
+
+.admin-categories td {
+    padding: 16px;
+    border-bottom: 1px solid #edf2f7;
+    font-size: 14px;
+    color: #2d3748;
+}
+
+.admin-categories .cat-img-mini {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: 4px;
+    background: #f7f9fc;
+}
+
+.admin-categories .action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    margin-right: 8px;
+    background: #f1f5f9;
+    color: #475569;
+    transition: all 0.2s;
+}
+
+.admin-categories .action-btn:hover {
+    background: #e2e8f0;
+}
+
+.admin-categories .action-delete:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Modal Styles */
+.admin-categories .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.admin-categories .modal-content {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.admin-categories .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.admin-categories .close-btn {
+    cursor: pointer;
+    font-size: 24px;
+}
+
+.admin-categories .input-group {
+    margin-bottom: 16px;
+}
+
+.admin-categories label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.admin-categories input[type="text"],
+.admin-categories input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+}
+
+.admin-categories .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.admin-categories .btn-cancel {
+    padding: 10px 20px;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.admin-categories .btn-submit {
+    padding: 10px 20px;
+    background: var(--primary-color, #0056b3);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}

@@ -101,6 +101,9 @@ class MedicalInventoryController extends Controller
     public function show($id)
     {
         $medicalInventory = MedicalInventory::with(['brand', 'category', 'branch'])->find($id);
+        if (!$medicalInventory) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
         return response()->json($medicalInventory);
     }
 
@@ -119,25 +122,35 @@ class MedicalInventoryController extends Controller
     {
         try {
             $inventory = MedicalInventory::find($id);
-            // $inventory->update($request->all());
-            $inventory->branch_id = $request->branch_id;
-            $inventory->brand_id = $request->brand_id;
-            $inventory->category_id = $request->category_id;
-            $inventory->product_name = $request->product_name;
-            $inventory->price = $request->price;
-            $inventory->discount = filled($request->discount) ? $request->discount : 0;
-            $inventory->stock = $request->stock;
-            $inventory->generic_name = $request->generic_name;
-            $inventory->dosage = $request->dosage;
-            $inventory->pack_size = $request->pack_size;
-            $inventory->description = $request->description;
-            $inventory->mrp = $request->mrp;
+            if (!$inventory) {
+                return response()->json(['message' => 'Product not found'], 404);
+            }
+            
+            // Manual assignment to handle all fields safely
+            if ($request->has('branch_id')) $inventory->branch_id = $request->branch_id;
+            if ($request->has('brand_id')) $inventory->brand_id = $request->brand_id;
+            if ($request->has('category_id')) $inventory->category_id = $request->category_id;
+            if ($request->has('product_name')) $inventory->product_name = $request->product_name;
+            if ($request->has('price')) $inventory->price = $request->price;
+            if ($request->has('discount')) $inventory->discount = filled($request->discount) ? $request->discount : 0;
+            if ($request->has('stock')) $inventory->stock = $request->stock;
+            if ($request->has('generic_name')) $inventory->generic_name = $request->generic_name;
+            if ($request->has('dosage')) $inventory->dosage = $request->dosage;
+            if ($request->has('pack_size')) $inventory->pack_size = $request->pack_size;
+            if ($request->has('description')) $inventory->description = $request->description;
+            if ($request->has('mrp')) $inventory->mrp = $request->mrp;
+            
+            if ($request->hasFile('image')) {
+                $inventory->image = $request->file('image')->store('products', 'public');
+            }
+            
             $inventory->save();
 
             $this->clearCache();
-            return $this->index();
+            return response()->json(['message' => 'Product updated successfully', 'data' => $inventory]);
         } catch (\Throwable $th) {
-            return response()->json($th);
+            \Illuminate\Support\Facades\Log::error('MedicalInventory Update Error: ' . $th->getMessage());
+            return response()->json(['message' => 'Failed to update product', 'error' => $th->getMessage()], 500);
         }
     }
 
@@ -148,22 +161,23 @@ class MedicalInventoryController extends Controller
     {
         try {
             $inventory = MedicalInventory::find($id);
+            if (!$inventory) {
+                return response()->json(['message' => 'Product not found'], 404);
+            }
             $inventory->delete();
             
             $this->clearCache();
-            return $this->index();
+            return response()->json(['message' => 'Product deleted successfully']);
         } catch (\Throwable $th) {
-            return response()->json($th);
+            return response()->json(['message' => 'Deletion failed', 'error' => $th->getMessage()], 500);
         }
     }
 
     private function clearCache()
     {
         Cache::forget('inventory_attributes');
-        // Clear first 5 pages just to be safe, or use tags if driver supports it. 
-        // For file driver, we can't delete wildcards easily. 
-        // We'll clear the first few pages which is the most common use case.
-        for ($i = 1; $i <= 10; $i++) {
+        // Clear first 5 pages which is the most common use case.
+        for ($i = 1; $i <= 5; $i++) {
             Cache::forget('inventory_page_' . $i);
         }
     }

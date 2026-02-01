@@ -12,16 +12,19 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $userId = auth()->id();
-        if (!$userId) {
-            // Fallback for debugging if auth() is not set up correctly in this environment
-            // but ideally we should be using auth:sanctum
+        $user = auth()->user();
+        if (!$user) {
             return response()->json(['data' => []]);
         }
-        $orders = Order::with(['items.inventory', 'customer'])
-            ->where('usrer_id', $userId)
-            ->latest()
-            ->paginate(10);
+
+        $query = Order::with(['items.inventory', 'customer']);
+
+        // Admin (Seller) sees everything, Customers see only their own
+        if (!($user instanceof \App\Models\Seller)) {
+            $query->where('usrer_id', $user->id);
+        }
+
+        $orders = $query->latest()->paginate(10);
         return response()->json($orders);
     }
 

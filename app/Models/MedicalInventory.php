@@ -13,7 +13,7 @@ class MedicalInventory extends Model
     public $timestamps = false;
     protected $fillable = [
         'brand_name',
-        'brand_id',
+        'branch_id',
         'product_name',
         'price',
         'discount',
@@ -24,6 +24,7 @@ class MedicalInventory extends Model
         'description',
         'mrp',
         'stock',
+        'image',
     ];
 
     protected $casts = [
