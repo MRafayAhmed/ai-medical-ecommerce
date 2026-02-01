@@ -1,0 +1,342 @@
+/* Buyer Login Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.buyer-login-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: row;
+  z-index: 0;
+}
+
+.buyer-login-container .background-image {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  opacity: 1.0;
+}
+.background-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Header */
+.buyer-header {
+  position: fixed;
+  top: 20px;
+  left: 40px;
+  z-index: 20;
+  flex-shrink: 0;
+}
+
+.back-home-btn {
+  background: linear-gradient(135deg, #0EA5E9 0%, #14B8A6 100%);
+  color: white;
+  text-decoration: none;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-home-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4);
+  text-decoration: none;
+  color: white;
+}
+
+.back-home-btn:active {
+  transform: translateY(0);
+}
+
+/* Login Form */
+.buyer-login-container .login-form-wrapper {
+  flex: 0.65;
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1px;
+  background: rgba(255, 255, 255, 0.893);
+}
+
+.buyer-login-container .login-form-container {
+  background: transparent;
+  backdrop-filter: none;
+  border-radius: 20px;
+  padding: 50px 2px;
+  width: 100%;
+  max-width: 490px;
+  box-shadow: none;
+  animation: formAppear 0.8s ease-out;
+  border: none;
+}
+
+@keyframes formAppear {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.buyer-login-container .login-title {
+  color: #333;
+  font-size: 2.2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.buyer-login-container .login-subtitle {
+  color: #666;
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.buyer-login-container .login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.buyer-login-container .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.buyer-login-container .form-group label {
+  color: #333;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.buyer-login-container .form-group input {
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 16px 18px;
+  color: #333;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.buyer-login-container .form-group input::placeholder {
+  color: #adb5bd;
+}
+
+.buyer-login-container .form-group input:focus {
+  outline: none;
+  border-color: #0EA5E9;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  background: #ffffff;
+}
+
+.buyer-login-container .password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.buyer-login-container .password-input-container input {
+  flex: 1;
+  padding-right: 50px;
+}
+
+.buyer-login-container .password-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.buyer-login-container .password-toggle:hover {
+  color: #0EA5E9;
+  background: rgba(14, 165, 233, 0.1);
+}
+
+.buyer-login-container .password-toggle:focus {
+  outline: 2px solid #0EA5E9;
+  outline-offset: 2px;
+}
+
+.buyer-login-container .form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.buyer-login-container .remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.buyer-login-container .remember-me input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #0EA5E9;
+}
+
+.buyer-login-container .remember-me label {
+  color: #666;
+  font-size: 0.95rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.buyer-login-container .forgot-password {
+  color: #0EA5E9;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.buyer-login-container .forgot-password:hover {
+  color: #0284C7;
+  text-decoration: underline;
+}
+
+.buyer-login-container .login-btn {
+  background: linear-gradient(135deg, #0EA5E9 0%, #14B8A6 100%);
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+  text-transform: capitalize;
+}
+
+.buyer-login-container .login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4);
+}
+
+.buyer-login-container .login-btn:active {
+  transform: translateY(0);
+}
+
+.buyer-login-container .register-link {
+  text-align: center;
+  margin-top: 30px;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.buyer-login-container .register-link a {
+  color: #0EA5E9;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.buyer-login-container .register-link a:hover {
+  color: #0284C7;
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .buyer-login-container {
+    flex-direction: column;
+  }
+
+  .background-image {
+    order: -1;
+    height: 40vh;
+    min-height: 300px;
+  }
+
+  .buyer-header {
+    top: 15px;
+    left: 20px;
+  }
+
+  .back-home-btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  .buyer-login-container .login-form-wrapper {
+    padding: 30px 20px;
+  }
+
+  .buyer-login-container .login-form-container {
+    padding: 30px 25px;
+  }
+
+  .buyer-login-container .login-title {
+    font-size: 1.8rem;
+  }
+
+  .buyer-login-container .form-options {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .buyer-header {
+    top: 15px;
+    left: 15px;
+  }
+
+  .back-home-btn {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+
+  .background-image {
+    height: 30vh;
+    min-height: 200px;
+  }
+
+  .buyer-login-container .login-form-wrapper {
+    padding: 20px 15px;
+  }
+
+  .buyer-login-container .login-form-container {
+    padding: 25px 20px;
+  }
+}

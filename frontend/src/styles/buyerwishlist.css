@@ -1,0 +1,104 @@
+/* buyerwishlist.css */
+
+.bw-page {
+    background-color: #ffffff !important;
+    color: #1a1a1a;
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.bw-container {
+    max-width: var(--container-max, 1680px);
+    margin: 0 auto;
+    padding: 40px var(--container-padding, 8rem);
+    width: 100%;
+}
+
+.bw-header-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-bottom: 32px;
+    text-align: left;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 16px;
+}
+
+.bw-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+/* Reusing the same card design from Main Page via buyermainpage.css */
+/* Minimal adjustments if needed for the grid layout */
+
+.bw-empty-state {
+    text-align: center;
+    padding: 80px 24px;
+    background: #f8fafc;
+    border-radius: 16px;
+    margin-top: 20px;
+}
+
+.bw-empty-icon {
+    margin-bottom: 24px;
+    color: var(--color-primary);
+    opacity: 0.5;
+}
+
+.bw-empty-text {
+    font-size: 20px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 32px;
+}
+
+.bw-discover-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+}
+
+.bw-discover-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.3);
+    filter: brightness(1.05);
+}
+
+.bw-discover-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .bw-header-title {
+        font-size: 24px;
+    }
+
+    .bw-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .bw-grid {
+        grid-template-columns: 1fr;
+    }
+}

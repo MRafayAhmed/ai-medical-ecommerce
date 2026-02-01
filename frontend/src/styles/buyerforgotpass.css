@@ -1,0 +1,44 @@
+/* Styles for Buyer Forgot Password (match login theme) */
+*{box-sizing:border-box}
+
+.buyer-forgot-container{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  display:flex;
+  flex-direction:row;
+  align-items:stretch;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.background-image{flex:1;position:relative;z-index:1}
+.background-image img{width:100%;height:100%;object-fit:cover}
+
+.buyer-header{position:fixed;top:20px;left:40px;z-index:20}
+.back-home-btn{background:linear-gradient(135deg,#0EA5E9 0%,#14B8A6 100%);color:white;padding:12px 20px;border-radius:25px;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 15px rgba(14,165,233,0.3)}
+
+.forgot-form-wrapper{flex:0.65;position:relative;z-index:10;display:flex;justify-content:center;align-items:center;padding:1px;background:rgba(255,255,255,0.92)}
+
+.forgot-form-container{background:transparent;border-radius:20px;padding:50px 24px;width:100%;max-width:520px;box-shadow:none}
+.forgot-title{color:#213547;font-size:2rem;font-weight:700;text-align:center;margin-bottom:8px}
+.forgot-subtitle{color:#666;text-align:center;margin-bottom:20px}
+
+.forgot-form{display:flex;flex-direction:column;gap:16px}
+.form-group label{color:#213547;font-weight:600;margin-bottom:8px;display:block}
+.form-group input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(0,0,0,0.08);background:#fff;color:#213547}
+
+.forgot-btn{background:linear-gradient(135deg,#0EA5E9 0%,#14B8A6 100%);color:white;border:none;padding:14px;border-radius:12px;font-weight:700;cursor:pointer;margin-top:4px;box-shadow:0 6px 18px rgba(14,165,233,0.12)}
+.forgot-btn:hover{transform:translateY(-2px)}
+
+.register-link{margin-top:22px;text-align:center;color:#666}
+.register-link a{color:#0EA5E9;font-weight:700}
+
+.sent-note{padding:18px;background:#f0fff7;border-radius:10px;color:#0b6b55;text-align:center}
+
+@media (max-width:768px){
+  .buyer-forgot-container{flex-direction:column}
+  .background-image{height:36vh;order:-1}
+  .buyer-header{left:16px;top:14px}
+  .forgot-form-container{padding:28px}
+}

@@ -1,0 +1,91 @@
+/* Buyer Register Styles (based on provided blade layout) */
+:root{ --accent-a: #0EA5E9; --accent-b: #14B8A6; }
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;padding:0;font-family:'Poppins',sans-serif}
+
+.page-frame{position:fixed;inset:0;width:100vw;height:100vh;display:flex;align-items:stretch;justify-content:center;padding:0;overflow:auto;z-index:0}
+.page-frame::before{content:'';position:absolute;inset:0;background:rgba(3,15,20,0.03);pointer-events:none;z-index:1}
+.outer-card{width:100vw;max-width:100vw;display:flex;gap:0;align-items:stretch;justify-content:flex-start;height:100vh;position:relative;z-index:2}
+
+.left-visual{flex:0 0 60%;background:transparent;border-radius:0;padding:0;display:block;position:relative;overflow:hidden;height:100vh;min-width:0}
+.left-visual::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg, rgba(6,46,63,0.65) 0%, rgba(10,30,40,0.35) 55%, rgba(57,136,115,0.08) 100%);mix-blend-mode:multiply;pointer-events:none}
+.left-visual .art{position:absolute;inset:0;z-index:1}
+.left-visual .art img.login-art{width:calc(100% + 1px);height:100%;object-fit:cover;object-position:left center;display:block;border-radius:0;image-rendering:auto;transform:translateZ(0);backface-visibility:hidden}
+.left-visual .back-home{position:absolute;top:22px;left:22px;z-index:2;display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:999px;text-decoration:none;color:#fff;background:var(--accent-a);border:none;font-weight:600;font-size:14px;transition:all 0.2s ease}
+.left-visual .art img.login-art.tuned{filter:url(#sharpen) contrast(1.06) saturate(1.08) brightness(0.98)}
+
+.glass{flex:0 0 40%;width:100%;height:100vh;background:rgba(255,255,255,0.92);color:var(--accent-a);border-radius:0;box-shadow:0 12px 30px rgba(4,20,28,0.08);padding:46px 0;display:flex;flex-direction:column;gap:40px;align-self:stretch;margin:0;overflow-y:auto;min-width:0}
+.glass h1{margin:0;font-size:34px;color:#213547;text-align:center;font-weight:900}
+.glass p.lead{margin:0;color:#6b7780;text-align:center;font-size:14px}
+
+.register-container{width:100%;max-width:none;padding:0;border-radius:0;background:transparent}
+
+/* Ensure the form fills the available `.glass` area and isn't centered with a max-width */
+.register-container, .register-container form, .form-step {
+	width: 100%;
+	height: 110%;
+	min-height: fit-content;
+	max-width: none;
+	margin: 0;
+	padding: 20px 20px ;
+	box-sizing: border-box;
+}
+
+/* Make inputs stretch more horizontally inside the form and center them */
+.register-container .input-field,
+.register-container .input-field input,
+.register-container .input-field select,
+.register-container .input-field textarea {
+  max-width: 550px;
+  width: 100%;
+  margin: 7.6px auto; /* small vertical gap between fields */
+  box-sizing: border-box;
+}
+
+.register-container .btn-container{
+	max-width: 550px;
+	width: 100%;
+	margin: 0 auto;
+	box-sizing: border-box;
+}
+
+.title{text-align:center;color:var(--accent-a);margin-bottom:12px;font-weight:700;font-size:22px;width: 100%;display: block;}
+.section-title{color:var(--accent-b);font-size:16px;margin-bottom:8px;font-weight:700;border-left:3px solid var(--accent-b);padding-left:10px}
+.input-field{margin:19px 0}
+.input-field label{display:block;color:#213547;margin-bottom:6px;font-weight:700;font-size:13px}
+.input-field input,.input-field select,.input-field textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);background:#ffffff;font-family:inherit;font-size:14px;color:#213547;box-shadow:inset 0 1px 0 rgba(255,255,255,0.6)}
+
+/* darker placeholder for better contrast */
+.input-field input::placeholder, .input-field textarea::placeholder, .input-field select::placeholder { color: #97a0a6; }
+
+.btn-container{display:flex;justify-content:center;gap:10px;margin-top:20px;margin-bottom:20px}
+.btn{padding:14px 24px;border-radius:8px;border:none;background:linear-gradient(135deg, #0EA5E9 0%, #14B8A6 100%);color:white;font-weight:700;cursor:pointer;transition:all 0.2s ease;flex:1;min-width:140px;box-shadow:0 6px 18px rgba(14,165,233,0.12)}
+.btn:hover{opacity:0.9}
+
+/* Override back button styles to match login page */
+.left-visual .back-home{padding:12px 20px;border-radius:25px;background:linear-gradient(135deg, #0EA5E9 0%, #14B8A6 100%);box-shadow:0 4px 15px rgba(14,165,233,0.3);color:#fff;gap:8px}
+
+/* mobile back button uses same sizing and gradient when visible */
+.back-home-mobile{padding:10px 16px;border-radius:25px;background:linear-gradient(135deg, #0EA5E9 0%, #14B8A6 100%);box-shadow:0 4px 15px rgba(14,165,233,0.3);color:#fff}
+
+.divider{text-align:center;margin-top:12px;color:#6b7780;font-size:14px}
+.footer-row{display:flex;justify-content:center;align-items:center;margin-top:12px;margin-bottom:20px;color:#213547;font-size:14px;gap:4px}
+.footer-row a{color:var(--accent-b);font-weight:700;text-decoration:none}
+
+.back-home-mobile{display:none}
+@media (max-width:1000px){.outer-card{flex-direction:column;align-items:center;height:100vh}.left-visual{display:none}.glass{width:100%;height:100vh;border-radius:0;padding:36px 15px;overflow-y:auto;box-sizing:border-box}.left-visual .back-home{display:none}.back-home-mobile{display:inline-flex;position:fixed;top:16px;left:14px;z-index:60;gap:8px;align-items:center;padding:8px 12px;border-radius:999px;text-decoration:none;color:#ffffff;background:var(--accent-a);border:none;font-weight:600;font-size:14px}.back-home-mobile svg{width:14px;height:14px;fill:currentColor}}
+
+/* Step indicator */
+.step-indicator{display:flex;gap:8px;justify-content:center;margin-bottom:10px}
+.step{width:10px;height:10px;border-radius:50%;background:#e6e9eb;transition:all 0.2s ease}
+.step.active{background:var(--accent-b);width:28px;border-radius:6px}
+
+/* form-step visibility */
+.form-step{display:none}
+.form-step.active{display:block}
+
+/* small accessibility tweaks */
+input:focus,select:focus,textarea:focus{outline:2px solid rgba(57,136,115,0.18);outline-offset:2px}
+
+/* small screens */
+@media (max-width:480px){.back-home-mobile{display:inline-flex}.glass{padding:16px 10px}}
