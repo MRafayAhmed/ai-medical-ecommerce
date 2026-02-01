@@ -4,7 +4,8 @@ import { Heart, Menu, X, Search, UploadCloud } from 'lucide-react';
 import { User, ShoppingCart, Info } from 'lucide-react';
 import '../../styles/customerhome.css';
 import '../../styles/buyermainpage.css';
-import ProductCard from '../../components/customer/ProductCard';
+import ProductCard from '../../components/ProductCard';
+import api from '../../api/axios';
 
 const Buyermainpage = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -12,234 +13,195 @@ const Buyermainpage = () => {
   const navigate = useNavigate();
   const pageRef = useRef(null);
   const [openCategory, setOpenCategory] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('customer_token'));
+  const [cartCount, setCartCount] = useState(0);
+  const [wishlistIds, setWishlistIds] = useState(new Set());
 
-  // Featured Products State (mock data - backend ready structure)
-  const [featuredProducts, setFeaturedProducts] = useState([
-    {
-      id: 1,
-      name: 'Bonanza Notorious Intense 100ml',
-      image: 'https://via.placeholder.com/200x200/f8f9fa/333?text=Bonanza+Notorious',
-      price: 3174.00,
-      originalPrice: 5290.00,
-      isWishlisted: false,
-    },
-    {
-      id: 2,
-      name: 'Bonanza Perfume No.9 60ml',
-      image: 'https://via.placeholder.com/200x200/f8f9fa/333?text=Perfume+No.9',
-      price: 3450.00,
-      originalPrice: 4500.00,
-      isWishlisted: false,
-    },
-    {
-      id: 3,
-      name: 'Bonanza Musk Royale 100ml',
-      image: 'https://via.placeholder.com/200x200/f8f9fa/333?text=Musk+Royale',
-      price: 7290.00,
-      originalPrice: 9500.00,
-      isWishlisted: false,
-    },
-    {
-      id: 4,
-      name: 'Duphaston Tablets 10mg (1 Strip = 10 Tablets)',
-      image: 'https://via.placeholder.com/200x200/f8f9fa/333?text=Duphaston',
-      price: 593.80,
-      originalPrice: 625.00,
-      isWishlisted: false,
-    },
-    {
-      id: 5,
-      name: 'Methycobal Tablets 500mcg (1 Strip = 10 Tablets)',
-      image: 'https://via.placeholder.com/200x200/f8f9fa/333?text=Methycobal',
-      price: 299.30,
-      originalPrice: 315.01,
-      isWishlisted: false,
-    },
-    {
-      id: 6,
-      name: 'Cilavit Uc-ii Tablets (1 Bottle = 20 Tablets)',
-      image: 'https://via.placeholder.com/200x200/f8f9fa/333?text=Cilavit',
-      price: 3372.50,
-      originalPrice: 3550.00,
-      isWishlisted: false,
-    },
-    {
-      id: 7,
-      name: 'Panadol Extra Tablets (1 Strip = 10 Tablets)',
-      image: 'https://via.placeholder.com/200x200/f8f9fa/333?text=Panadol',
-      price: 45.00,
-      originalPrice: 50.00,
-      isWishlisted: false,
-    },
-    {
-      id: 8,
-      name: 'Brufen 400mg Tablets (1 Strip = 10 Tablets)',
-      image: 'https://via.placeholder.com/200x200/f8f9fa/333?text=Brufen',
-      price: 120.00,
-      originalPrice: 140.00,
-      isWishlisted: false,
-    },
-  ]);
-
-  // Sync featured products with saved wishlist on mount
+  // Initialize cart count from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('mediEcom_wishlist');
-    if (saved) {
-      const savedList = JSON.parse(saved);
-      const savedIds = new Set(savedList.map(p => p.id));
-      setFeaturedProducts(prev => prev.map(p => ({
-        ...p,
-        isWishlisted: savedIds.has(p.id)
-      })));
+    const savedCart = localStorage.getItem('mediEcom_cart');
+    if (savedCart) {
+      const cart = JSON.parse(savedCart);
+      setCartCount(cart.length);
     }
   }, []);
 
-  // Listen for wishlist updates from other pages
+  // Fetch wishlist from API
+  const fetchWishlist = async () => {
+    const token = localStorage.getItem('customer_token');
+    if (!token) return;
+    try {
+      const response = await api.get('/wishlist');
+      const items = response.data.data || [];
+      setWishlistIds(new Set(items.map(i => i.id)));
+    } catch (err) {
+      console.error('Error fetching wishlist:', err);
+    }
+  };
+
   useEffect(() => {
-    const handleUpdate = () => {
-      const saved = localStorage.getItem('mediEcom_wishlist');
-      if (saved) {
-        const savedIds = new Set(JSON.parse(saved).map(p => p.id));
-        setFeaturedProducts(prev => prev.map(p => ({
-          ...p,
-          isWishlisted: savedIds.has(p.id)
-        })));
+    if (isLoggedIn) fetchWishlist();
+  }, [isLoggedIn]);
+
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get('/categories');
+        const cats = response.data.data ? response.data.data : (Array.isArray(response.data) ? response.data : []);
+
+        const mappedCats = cats.map(cat => ({
+          id: cat.id,
+          label: cat.name,
+          to: `/buyer/category/${cat.id}/${slugify(cat.name)}`,
+          items: []
+        }));
+
+        setCategories(mappedCats);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      } finally {
+        setLoadingCategories(false);
       }
     };
-    window.addEventListener('wishlistUpdated', handleUpdate);
-    return () => window.removeEventListener('wishlistUpdated', handleUpdate);
+
+    fetchCategories();
   }, []);
 
+  // Fetch products from API
+  const fetchProducts = async (query = '', categoryId = '') => {
+    setLoadingProducts(true);
+    try {
+      let url = '/medical-inventory';
+      const params = new URLSearchParams();
+      if (query) params.append('q', query);
+      if (categoryId) params.append('category_id', categoryId);
+
+      const queryString = params.toString();
+      if (queryString) url += `?${queryString}`;
+
+      const response = await api.get(url);
+      const items = response.data.data ? response.data.data : (Array.isArray(response.data) ? response.data : []);
+
+      const mappedProducts = items.map(item => ({
+        id: item.id,
+        name: item.product_name,
+        image: 'https://via.placeholder.com/200x200/f8f9fa/333?text=' + encodeURIComponent(item.product_name),
+        price: parseFloat(item.price),
+        originalPrice: item.mrp ? parseFloat(item.mrp) : null,
+        isWishlisted: wishlistIds.has(item.id),
+      }));
+
+      setProducts(mappedProducts);
+    } catch (err) {
+      console.error('Error fetching products:', err);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q') || '';
+    setSearchQuery(q);
+    fetchProducts(q);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('customer_token');
+    localStorage.removeItem('customer_user');
+    setIsLoggedIn(false);
+    navigate('/');
+  };
+
+  const displayProducts = products.length > 0 ? products : [];
+
   // Toggle wishlist handler
-  const toggleWishlist = (productId) => {
-    setFeaturedProducts((prevProducts) => {
-      const updated = prevProducts.map((product) =>
-        product.id === productId
-          ? { ...product, isWishlisted: !product.isWishlisted }
-          : product
+  const toggleWishlist = async (productId) => {
+    if (!isLoggedIn) {
+      alert('Please login to add items to your wishlist.');
+      navigate('/buyer/login');
+      return;
+    }
+
+    const isCurrentlyWishlisted = wishlistIds.has(productId);
+
+    try {
+      if (isCurrentlyWishlisted) {
+        await api.delete(`/wishlist/${productId}`);
+        setWishlistIds(prev => {
+          const next = new Set(prev);
+          next.delete(productId);
+          return next;
+        });
+      } else {
+        await api.post('/wishlist', { inventory_id: productId });
+        setWishlistIds(prev => new Set(prev).add(productId));
+      }
+
+      setProducts((prevProducts) =>
+        prevProducts.map((p) =>
+          p.id === productId ? { ...p, isWishlisted: !isCurrentlyWishlisted } : p
+        )
       );
-
-      // Save to localStorage for sync with Wishlist page
-      const wishlistedItems = updated.filter(p => p.isWishlisted);
-      localStorage.setItem('mediEcom_wishlist', JSON.stringify(wishlistedItems));
-
-      return updated;
-    });
+    } catch (err) {
+      console.error('Error toggling wishlist:', err);
+      alert('Failed to update wishlist. Please try again.');
+    }
   };
 
   // Add to cart handler (frontend only - will integrate with backend later)
   const addToCart = (product) => {
+    if (!isLoggedIn) {
+      alert('Please login to add items to your cart.');
+      navigate('/buyer/login');
+      return;
+    }
     // eslint-disable-next-line no-console
     console.log('Adding to cart:', product);
     // TODO: Integrate with cart context/state management
+    const savedCart = localStorage.getItem('mediEcom_cart');
+    const cart = savedCart ? JSON.parse(savedCart) : [];
+    cart.push(product);
+    localStorage.setItem('mediEcom_cart', JSON.stringify(cart));
+    setCartCount(cart.length);
+
     alert(`${product.name} added to cart!`);
   };
 
+  const clearSearch = () => {
+    setSearchQuery('');
+    fetchProducts('');
+    navigate('/buyer/dashboard');
+  };
 
-  // Categories list for the quick nav under the header (with sample sub-items)
-  const categories = [
+
+  // Categories fallback (if API fails or is empty)
+  const defaultCategories = [
     {
       label: 'Medicine',
-      to: '/category/medicine',
+      to: '/buyer/category/1/medicine',
       items: [
-        { label: 'Derma', to: '/category/medicine/derma' },
-        { label: 'Gastro-Intestinal Tract', to: '/category/medicine/gastro-intestinal-tract' },
-        { label: 'Circulatory System', to: '/category/medicine/circulatory-system' },
-        { label: 'Others', to: '/category/medicine/others' },
-        { label: 'Endocrine System', to: '/category/medicine/endocrine-system' },
-        { label: 'Eyes, Nose & Ear', to: '/category/medicine/eyes-nose-ear' },
-        { label: 'Urinary Tract System', to: '/category/medicine/urinary-tract-system' },
-        { label: 'Central Nervous System', to: '/category/medicine/central-nervous-system' },
-        { label: 'Respiratory Tract System', to: '/category/medicine/respiratory-tract-system' },
-        { label: 'Cardio-Vascular System', to: '/category/medicine/cardio-vascular-system' },
-        { label: 'Oral Care', to: '/category/medicine/oral-care' },
-      ],
-    },
-    {
-      label: 'Baby & Mother Care',
-      to: '/category/baby-mother',
-      items: [
-        { label: 'Baby Diapers & Wipes', to: '/category/baby-mother/diapers-wipes' },
-        { label: 'Baby Bath & Body', to: '/category/baby-mother/bath-body' },
-        { label: 'New Mommy Aids', to: '/category/baby-mother/new-mommy-aids' },
-        { label: 'Baby Food & Milk', to: '/category/baby-mother/food-milk' },
-        { label: 'Baby Appliances', to: '/category/baby-mother/appliances' },
-        { label: 'Baby Essentials', to: '/category/baby-mother/essentials' },
-      ],
-    },
-
-    {
-      label: 'Nutritions & Supplements',
-      to: '/category/nutrition',
-      items: [
-        { label: 'Multivitamins', to: '/category/nutrition/multivitamins' },
-        { label: 'Nutritional Drinks', to: '/category/nutrition/nutritional-drinks' },
-      ],
-    },
-    {
-      label: 'Foods & Beverages',
-      to: '/category/foods',
-      items: [
-        { label: 'Honey & Oils', to: '/category/foods/honey-oils' },
-        { label: 'Beverages', to: '/category/foods/beverages' },
-        { label: 'Chocolate & Confectionary', to: '/category/foods/chocolate-confectionary' },
-        { label: 'Biscuits & Wafers', to: '/category/foods/biscuits-wafers' },
-        { label: 'Package Food', to: '/category/foods/package-food' },
-        { label: 'Tea & Coffee', to: '/category/foods/tea-coffee' },
-        { label: 'Snacks', to: '/category/foods/snacks' },
-        { label: 'Breakfast & Cereals', to: '/category/foods/breakfast-cereals' },
-      ],
-    },
-    {
-      label: 'Devices & Support',
-      to: '/category/devices',
-      items: [
-        { label: 'Cells & Batteries', to: '/category/devices/cells-batteries' },
-        { label: 'Other Appliances', to: '/category/devices/other-appliances' },
-        { label: 'BP Monitors', to: '/category/devices/bp-monitors' },
-        { label: 'Diabetes Apparatus', to: '/category/devices/diabetes-apparatus' },
-        { label: 'Supports & Braces', to: '/category/devices/supports-braces' },
-        { label: 'Mobility Equipments', to: '/category/devices/mobility-equipments' },
-        { label: 'Medicine Accessories', to: '/category/devices/medicine-accessories' },
-        { label: 'Thermometer', to: '/category/devices/thermometer' },
-        { label: 'Steamers, Nebulizers & Vaporizers', to: '/category/devices/steamers-nebulizers-vaporizers' },
-        { label: 'Body Massagers', to: '/category/devices/body-massagers' },
-        { label: 'Weighing Scales', to: '/category/devices/weighing-scales' },
-      ],
-    },
-
-    {
-      label: 'Personal Care',
-      to: '/category/personal-care',
-      items: [
-        { label: 'Men Grooming', to: '/category/personal-care/men-grooming' },
-        { label: 'Skin Care', to: '/category/personal-care/skin-care' },
-        { label: 'Hair Care', to: '/category/personal-care/hair-care' },
-        { label: 'Sexual Wellness', to: '/category/personal-care/sexual-wellness' },
-        { label: 'Corona Essentials', to: '/category/personal-care/corona-essentials' },
-        { label: 'Adult Diapers & Wipes', to: '/category/personal-care/adult-diapers-wipes' },
-        { label: 'Feminine Care', to: '/category/personal-care/feminine-care' },
-        { label: 'Makeup', to: '/category/personal-care/makeup' },
-        { label: 'Hand & Foot Care', to: '/category/personal-care/hand-foot-care' },
-        { label: 'Appliances', to: '/category/personal-care/appliances' },
-        { label: 'Personal Grooming', to: '/category/personal-care/personal-grooming' },
-        { label: 'Body Care', to: '/category/personal-care/body-care' },
-        { label: 'Dental Care', to: '/category/personal-care/dental-care' },
-      ],
-    },
-
-    {
-      label: 'OTC And Health Need',
-      to: '/category/otc',
-      items: [
-        { label: 'First Aid', to: '/category/otc/first-aid' },
-        { label: 'Acidity & Indigestion', to: '/category/otc/acidity-indigestion' },
-        { label: 'Pain & Fever', to: '/category/otc/pain-fever' },
-        { label: 'Cough & Cold', to: '/category/otc/cough-cold' },
-        { label: 'Diarrhea & Vomiting', to: '/category/otc/diarrhea-vomiting' },
+        { label: 'Derma', to: '/buyer/category/1-1/derma' },
+        { label: 'Gastro-Intestinal Tract', to: '/buyer/category/1-2/gastro-intestinal-tract' },
+        { label: 'Circulatory System', to: '/buyer/category/1-3/circulatory-system' },
+        { label: 'Others', to: '/buyer/category/1-4/others' },
+        { label: 'Endocrine System', to: '/buyer/category/1-5/endocrine-system' },
+        { label: 'Eyes, Nose & Ear', to: '/buyer/category/1-6/eyes-nose-ear' },
+        { label: 'Urinary Tract System', to: '/buyer/category/1-7/urinary-tract-system' },
+        { label: 'Central Nervous System', to: '/buyer/category/1-8/central-nervous-system' },
+        { label: 'Respiratory Tract System', to: '/buyer/category/1-9/respiratory-tract-system' },
+        { label: 'Cardio-Vascular System', to: '/buyer/category/1-10/cardio-vascular-system' },
+        { label: 'Oral Care', to: '/buyer/category/1-11/oral-care' },
       ],
     },
   ];
+
+  const displayCategories = categories.length > 0 ? categories : defaultCategories;
 
   useEffect(() => {
     const el = pageRef.current;
@@ -448,12 +410,12 @@ const Buyermainpage = () => {
       .replace(/\b\w/g, (m) => m.toUpperCase())
       .trim();
 
-  const existingNorms = new Set(categories.map((c) => normalize(c.label)));
+  const existingNorms = new Set(displayCategories.map((c) => normalize(c.label)));
   const extraImageCards = imageEntries
     .filter((e) => !existingNorms.has(normalize(e.name)))
     .map((e) => ({
       label: humanize(e.name),
-      to: `/category/${slugify(e.name)}`,
+      to: `/buyer/category/extra/${slugify(e.name)}`,
       image: e.url,
       name: e.name,
     }));
@@ -638,7 +600,8 @@ const Buyermainpage = () => {
             onSubmit={(e) => {
               e.preventDefault();
               if (!searchQuery) return;
-              navigate(`/customer/home?q=${encodeURIComponent(searchQuery)}`);
+              fetchProducts(searchQuery);
+              navigate(`/buyer/dashboard?q=${encodeURIComponent(searchQuery)}`);
             }}
             role="search"
           >
@@ -652,6 +615,17 @@ const Buyermainpage = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 aria-label="Search products"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="header__search-clear"
+                  onClick={clearSearch}
+                  aria-label="Clear search"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#999', padding: '4px', display: 'flex', alignItems: 'center' }}
+                >
+                  <X size={16} />
+                </button>
+              )}
               <button type="submit" className="header__search-btn" aria-label="Search">
                 <Search size={16} />
               </button>
@@ -667,8 +641,15 @@ const Buyermainpage = () => {
             <div className="bm-action-bar" role="toolbar" aria-label="Quick actions">
               <Link to="/buyer/profile" className="bm-action" aria-label="Profile"><User size={20} /></Link>
               <Link to="/buyer/wishlist" className="bm-action" aria-label="Wishlist"><Heart size={20} /></Link>
-              <Link to="/buyer/cart" className="bm-action" aria-label="Cart"><ShoppingCart size={20} /></Link>
-              <Link to="/customer/home" className="bm-action bm-action--info" aria-label="About" title="About Us"><Info size={20} /></Link>
+              <Link to="/buyer/cart" className="bm-action" aria-label="Cart" style={{ position: 'relative' }}>
+                <ShoppingCart size={20} />
+                {cartCount > 0 && <span style={{ position: 'absolute', top: '-5px', right: '-5px', background: 'red', color: 'white', borderRadius: '50%', padding: '2px 6px', fontSize: '10px' }}>{cartCount}</span>}
+              </Link>
+              {isLoggedIn ? (
+                <button onClick={handleLogout} className="bm-action bm-action--info" aria-label="Logout" title="Logout"><i className="bi bi-box-arrow-right" style={{ fontSize: '20px' }}></i></button>
+              ) : (
+                <Link to="/buyer/login" className="bm-action bm-action--info" aria-label="Login" title="Login"><User size={20} /></Link>
+              )}
             </div>
           </div>
 
@@ -691,7 +672,7 @@ const Buyermainpage = () => {
                   <Link to="/buyer/profile" className="bm-action" onClick={() => setIsMobileMenuOpen(false)} aria-label="Profile"><User size={20} /></Link>
                   <Link to="/buyer/wishlist" className="bm-action" onClick={() => setIsMobileMenuOpen(false)} aria-label="Wishlist"><Heart size={20} /></Link>
                   <Link to="/buyer/cart" className="bm-action" onClick={() => setIsMobileMenuOpen(false)} aria-label="Cart"><ShoppingCart size={20} /></Link>
-                  <Link to="/customer/home" className="bm-action bm-action--info" onClick={() => setIsMobileMenuOpen(false)} aria-label="About" title="About Us"><Info size={20} /></Link>
+                  <Link to="/buyer/dashboard" className="bm-action bm-action--info" onClick={() => setIsMobileMenuOpen(false)} aria-label="About" title="About Us"><Info size={20} /></Link>
                 </div>
               </div>
             </nav>
@@ -702,23 +683,16 @@ const Buyermainpage = () => {
       {/* Categories nav under header */}
       <nav className="bm-categories" aria-label="Medicine categories">
         <div className="header__container">
-          {categories.map((c) => (
+          {displayCategories.map((c) => (
             <div key={c.to} className="bm-category-wrap">
               <Link
                 to={c.to}
                 data-cat={c.to}
                 className="bm-category"
                 aria-expanded={openCategory === c.to}
-                onClick={(e) => {
-                  // On mobile/small screens, clicking should toggle dropdown; on desktop let it navigate to the category page (view all)
-                  const isMobile = window.matchMedia('(max-width: 767px)').matches;
-                  if (isMobile && c.items && c.items.length) {
-                    e.preventDefault();
-                    setOpenCategory(openCategory === c.to ? null : c.to);
-                  } else {
-                    // desktop: close any open dropdown and allow navigation
-                    setOpenCategory(null);
-                  }
+                onClick={() => {
+                  // desktop: close any open dropdown
+                  setOpenCategory(null);
                 }}
                 onKeyDown={(e) => {
                   // For keyboard, mirror click behavior: Enter/Space toggles on small screens, otherwise allow native navigation
@@ -833,22 +807,6 @@ const Buyermainpage = () => {
                   </Link>
                 );
               })}
-              {extraImageCards.map((e) => (
-                <Link to={e.to} className="bm-cat-card" key={`img-${e.name}`}>
-                  <div className="bm-cat-img-wrap">
-                    <img
-                      src={e.image}
-                      alt={e.label}
-                      className="bm-cat-img"
-                      onError={(ev) => {
-                        const el = ev.currentTarget;
-                        el.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="320" height="220" viewBox="0 0 320 220"><rect width="100%" height="100%" fill="%23f7f9fb"/><text x="50%" y="50%" fill="%23999" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle" dominant-baseline="central">Image not available</text></svg>';
-                      }}
-                    />
-                  </div>
-                  <div className="bm-cat-label">{e.label}</div>
-                </Link>
-              ))}
             </div>
 
             <div className="bm-cats-controls" role="toolbar" aria-label="Scroll categories">
@@ -870,27 +828,18 @@ const Buyermainpage = () => {
             <h3 className="bm-featured-title">Featured Products</h3>
             <Link to="/products/featured" className="bm-view-all-btn">VIEW ALL</Link>
           </div>
-          <div className="bm-featured-wrap">
-            <div className="bm-featured-list" ref={featuredRef}>
-              {featuredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onToggleWishlist={toggleWishlist}
-                  onAddToCart={addToCart}
-                />
-              ))}
-            </div>
-
-            {/* Navigation Controls */}
-            <div className="bm-featured-controls" role="toolbar" aria-label="Scroll featured products">
-              <button className="bm-featured-btn prev" onClick={() => scrollFeatured(-1)} aria-label="Previous products">
-                <i className="bi bi-chevron-left" aria-hidden="true"></i>
-              </button>
-              <button className="bm-featured-btn next" onClick={() => scrollFeatured(1)} aria-label="Next products">
-                <i className="bi bi-chevron-right" aria-hidden="true"></i>
-              </button>
-            </div>
+          <div className="bm-product-grid">
+            {displayProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={{
+                  ...product,
+                  isWishlisted: wishlistIds.has(product.id)
+                }}
+                onToggleWishlist={toggleWishlist}
+                onAddToCart={addToCart}
+              />
+            ))}
           </div>
         </div>
       </section>

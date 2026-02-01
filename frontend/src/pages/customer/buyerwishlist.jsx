@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Search, UploadCloud, User, ShoppingCart, Info, Menu, X, ArrowRight } from 'lucide-react';
-import ProductCard from '../../components/customer/ProductCard';
+import { Heart, Search, UploadCloud, User, ShoppingCart, Info, Menu, X, ArrowRight, Loader2 } from 'lucide-react';
+import ProductCard from '../../components/ProductCard';
+import api from '../../api/axios';
 import '../../styles/customerhome.css';
 import '../../styles/buyermainpage.css';
 import '../../styles/buyerwishlist.css';
@@ -10,6 +11,7 @@ const BuyerWishlist = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [wishlist, setWishlist] = useState([]);
+    const [loading, setLoading] = useState(true);
     const pageRef = useRef(null);
     const navigate = useNavigate();
 
@@ -43,23 +45,48 @@ const BuyerWishlist = () => {
         };
     }, []);
 
-    // Load wishlist from localStorage on mount
-    useEffect(() => {
-        const savedWishlist = localStorage.getItem('mediEcom_wishlist');
-        if (savedWishlist) {
-            setWishlist(JSON.parse(savedWishlist));
+    // Load wishlist from API on mount
+    const fetchWishlist = async () => {
+        const token = localStorage.getItem('customer_token');
+        if (!token) {
+            setLoading(false);
+            return;
         }
+        setLoading(true);
+        try {
+            const response = await api.get('/wishlist');
+            const items = response.data.data || [];
+
+            // Map the inventory items to the structure expected by ProductCard
+            const mapped = items.map(item => ({
+                id: item.id,
+                name: item.product_name,
+                image: `https://via.placeholder.com/300?text=${encodeURIComponent(item.product_name)}`,
+                price: parseFloat(item.price),
+                originalPrice: item.mrp ? parseFloat(item.mrp) : null,
+                isWishlisted: true
+            }));
+
+            setWishlist(mapped);
+        } catch (err) {
+            console.error('Error fetching wishlist:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchWishlist();
     }, []);
 
-    // Update localStorage whenever wishlist changes
-    useEffect(() => {
-        localStorage.setItem('mediEcom_wishlist', JSON.stringify(wishlist));
-    }, [wishlist]);
-
-    const removeFromWishlist = (productId) => {
-        setWishlist(prev => prev.filter(item => item.id !== productId));
-        // Trigger a custom event to notify other pages if needed
-        window.dispatchEvent(new Event('wishlistUpdated'));
+    const removeFromWishlist = async (productId) => {
+        try {
+            await api.delete(`/wishlist/${productId}`);
+            setWishlist(prev => prev.filter(item => item.id !== productId));
+        } catch (err) {
+            console.error('Error removing from wishlist:', err);
+            alert('Failed to remove item. Please try again.');
+        }
     };
 
     const addToCart = (product) => {
@@ -84,7 +111,7 @@ const BuyerWishlist = () => {
                         onSubmit={(e) => {
                             e.preventDefault();
                             if (!searchQuery) return;
-                            navigate(`/customer/home?q=${encodeURIComponent(searchQuery)}`);
+                            navigate(`/buyer/dashboard?q=${encodeURIComponent(searchQuery)}`);
                         }}
                         role="search"
                     >
@@ -115,7 +142,7 @@ const BuyerWishlist = () => {
                             <Link to="/buyer/profile" className="bm-action" aria-label="Profile"><User size={20} /></Link>
                             <Link to="/buyer/wishlist" className="bm-action active" aria-label="Wishlist"><Heart size={20} /></Link>
                             <Link to="/buyer/cart" className="bm-action" aria-label="Cart"><ShoppingCart size={20} /></Link>
-                            <Link to="/customer/home" className="bm-action bm-action--info" aria-label="About" title="About Us"><Info size={20} /></Link>
+                            <Link to="/buyer/dashboard" className="bm-action bm-action--info" aria-label="About" title="About Us"><Info size={20} /></Link>
                         </div>
                     </div>
 
@@ -138,7 +165,7 @@ const BuyerWishlist = () => {
                                     <Link to="/buyer/profile" className="bm-action" onClick={() => setIsMobileMenuOpen(false)} aria-label="Profile"><User size={20} /></Link>
                                     <Link to="/buyer/wishlist" className="bm-action active" onClick={() => setIsMobileMenuOpen(false)} aria-label="Wishlist"><Heart size={20} /></Link>
                                     <Link to="/buyer/cart" className="bm-action" onClick={() => setIsMobileMenuOpen(false)} aria-label="Cart"><ShoppingCart size={20} /></Link>
-                                    <Link to="/customer/home" className="bm-action bm-action--info" onClick={() => setIsMobileMenuOpen(false)} aria-label="About" title="About Us"><Info size={20} /></Link>
+                                    <Link to="/buyer/dashboard" className="bm-action bm-action--info" onClick={() => setIsMobileMenuOpen(false)} aria-label="About" title="About Us"><Info size={20} /></Link>
                                 </div>
                             </div>
                         </nav>
@@ -148,9 +175,11 @@ const BuyerWishlist = () => {
 
             {/* Wishlist Content */}
             <main className="bw-container">
-                <h1 className="bw-header-title">My Wishlist</h1>
-
-                {wishlist.length > 0 ? (
+                {loading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
+                        <Loader2 className="animate-spin" size={48} color="var(--primary-color)" />
+                    </div>
+                ) : wishlist.length > 0 ? (
                     <div className="bw-grid">
                         {wishlist.map((product) => (
                             <ProductCard

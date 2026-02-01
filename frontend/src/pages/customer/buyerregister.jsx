@@ -1,37 +1,55 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../../api/axios';
 import '../../styles/buyerregister.css';
 
 const BuyerRegister = () => {
   const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
-    full_name: '',
+    name: '',
     gender: '',
-    dob: '',
+    date_of_birth: '',
     email: '',
-    phone: '',
+    phone_number: '',
     address: '',
-    city: ''
+    city: '',
+    username: '',
+    password: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
-    if (type === 'file') {
-      setFormData(prev => ({ ...prev, [name]: files && files[0] }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    // TODO: replace with actual API call
-    console.log('Register data:', formData);
-    // Redirect to login after "register"
-    navigate('/buyer/login');
+    setLoading(true);
+    setError('');
+
+    try {
+      await api.post('/customer/register', {
+        name: formData.name,
+        gender: formData.gender,
+        date_of_birth: formData.date_of_birth,
+        email: formData.email,
+        phone_number: formData.phone_number,
+        address: formData.address,
+        city: formData.city,
+        username: formData.username,
+        password: formData.password
+      });
+
+      // Redirect to login after successful registration
+      navigate('/buyer/login');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Registration failed. Please check your information.');
+      console.error('Buyer Register error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -61,8 +79,10 @@ const BuyerRegister = () => {
         </div>
 
         <main className="glass" role="main" aria-labelledby="register-title">
-        <h1 id="register-title">CREATE YOUR BUYER ACCOUNT</h1>
+          <h1 id="register-title">CREATE YOUR BUYER ACCOUNT</h1>
           
+          {error && <div className="register-error-message" style={{ color: '#ff4d4d', marginBottom: '1rem', textAlign: 'center', fontSize: '14px' }}>{error}</div>}
+
 
           <div className="register-container">
 
@@ -72,26 +92,30 @@ const BuyerRegister = () => {
 
               {/* Personal & Contact Information */}
               <div>
-                <div className="input-field"><label htmlFor="full_name">Full Name</label><input id="full_name" name="full_name" type="text" value={formData.full_name} onChange={handleChange} required /></div>
+                <div className="input-field"><label htmlFor="name">Full Name</label><input id="name" name="name" type="text" value={formData.name} onChange={handleChange} required /></div>
                 <div className="input-field"><label htmlFor="gender">Gender</label>
                   <select id="gender" name="gender" value={formData.gender} onChange={handleChange} required>
                     <option value="" disabled hidden>Select Gender</option>
-                    <option>Male</option>
-                    <option>Female</option>
-                    <option>Other</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
-                <div className="input-field"><label htmlFor="dob">Date of Birth</label><input id="dob" name="dob" type="date" value={formData.dob} onChange={handleChange} required /></div>
+                <div className="input-field"><label htmlFor="date_of_birth">Date of Birth</label><input id="date_of_birth" name="date_of_birth" type="date" value={formData.date_of_birth} onChange={handleChange} required /></div>
 
                 <div className="input-field"><label htmlFor="email">Email Address</label><input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required /></div>
-                <div className="input-field"><label htmlFor="phone">Phone Number</label><input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required /></div>
+                <div className="input-field"><label htmlFor="phone_number">Phone Number</label><input id="phone_number" name="phone_number" type="tel" value={formData.phone_number} onChange={handleChange} required /></div>
                 <div className="input-field"><label htmlFor="address">Residential Address</label><input id="address" name="address" type="text" value={formData.address} onChange={handleChange} /></div>
                 <div className="input-field"><label htmlFor="city">City</label><input id="city" name="city" type="text" value={formData.city} onChange={handleChange} /></div>
+                <div className="input-field"><label htmlFor="username">Username</label><input id="username" name="username" type="text" value={formData.username} onChange={handleChange} required /></div>
+                <div className="input-field"><label htmlFor="password">Password</label><input id="password" name="password" type="password" value={formData.password} onChange={handleChange} required /></div>
 
               </div>
 
-              <div className="btn-container">
-                <button type="submit" className="btn">Submit</button>
+               <div className="btn-container">
+                <button type="submit" className="btn" disabled={loading}>
+                  {loading ? 'Creating Account...' : 'Submit'}
+                </button>
               </div>
 
 

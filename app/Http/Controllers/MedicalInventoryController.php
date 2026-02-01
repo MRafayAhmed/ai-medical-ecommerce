@@ -19,9 +19,30 @@ class MedicalInventoryController extends Controller
     public function index()
     {
         $page = request()->get('page', 1);
-        $inventories = Cache::remember('inventory_page_' . $page, 3600, function () {
-            return MedicalInventory::with(['brand', 'category', 'branch'])->paginate(10);
+        $search = request()->get('q');
+        $categoryId = request()->get('category_id');
+        
+        $query = MedicalInventory::with(['brand', 'category', 'branch']);
+        
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('product_name', 'like', "%{$search}%")
+                  ->orWhere('generic_name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+        
+        // Cache based on page, search query, and category
+        $cacheKey = 'inventory_page_' . $page . '_search_' . md5($search) . '_cat_' . $categoryId;
+        
+        $inventories = Cache::remember($cacheKey, 3600, function () use ($query) {
+            return $query->paginate(10);
         });
+        
         return response()->json($inventories);
     }
 

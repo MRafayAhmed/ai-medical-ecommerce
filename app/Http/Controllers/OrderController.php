@@ -12,7 +12,16 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::with(['items.inventory', 'customer'])->latest()->paginate(10);
+        $userId = auth()->id();
+        if (!$userId) {
+            // Fallback for debugging if auth() is not set up correctly in this environment
+            // but ideally we should be using auth:sanctum
+            return response()->json(['data' => []]);
+        }
+        $orders = Order::with(['items.inventory', 'customer'])
+            ->where('usrer_id', $userId)
+            ->latest()
+            ->paginate(10);
         return response()->json($orders);
     }
 
@@ -54,8 +63,14 @@ class OrderController extends Controller
                     $inventory = \App\Models\MedicalInventory::find($item['inventory_id']);
                     if ($inventory) {
                         $inventory->stock = $inventory->stock - $item['qty'];
-                        $inventory->save();
                     }
+                }
+
+                // Clear Shopping Cart for this user
+                $cart = \App\Models\ShoppingCart::where('user_id', $request->user_id)->get();
+                foreach($cart as $c) {
+                    \App\Models\CartItems::where('cart_id', $c->id)->delete();
+                    $c->delete();
                 }
 
                 return response()->json(['message' => 'Order placed successfully', 'order' => $order], 201);

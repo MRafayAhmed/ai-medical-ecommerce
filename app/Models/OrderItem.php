@@ -11,10 +11,10 @@ class OrderItem extends Model
 
     protected $fillable = [
         'order_id',
-        'inventory_id',
+        'item_id',
         'qty',
-        'price',
-        'total_price'
+        'price_at_order',
+        'sub_total'
     ];
 
     public function order()
@@ -24,6 +24,6 @@ class OrderItem extends Model
 
     public function inventory()
     {
-        return $this->belongsTo(MedicalInventory::class, 'inventory_id');
+        return $this->belongsTo(MedicalInventory::class, 'item_id');
     }
 }

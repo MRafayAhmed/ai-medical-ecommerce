@@ -19,7 +19,7 @@ const CheckoutPage = () => {
         const u = localStorage.getItem('customer_user');
 
         if (!c || !u) {
-            navigate('/customer/dashboard');
+            navigate('/buyer/dashboard');
             return;
         }
 
@@ -49,7 +49,7 @@ const CheckoutPage = () => {
             await api.post('/orders', orderData);
             localStorage.removeItem('temp_cart');
             alert('Order placed successfully!');
-            navigate('/customer/dashboard');
+            navigate('/buyer/dashboard');
         } catch (err) {
             console.error('Checkout failed', err);
             alert('Failed to place order. Please try again.');
@@ -62,7 +62,7 @@ const CheckoutPage = () => {
         <div className="checkout-container">
             <div className="checkout-content">
                 <div className="checkout-header">
-                    <button className="back-btn" onClick={() => navigate('/customer/dashboard')}>
+                    <button className="back-btn" onClick={() => navigate('/buyer/dashboard')}>
                         <i className="bi bi-arrow-left"></i> Back to Shop
                     </button>
                     <h1>Checkout</h1>

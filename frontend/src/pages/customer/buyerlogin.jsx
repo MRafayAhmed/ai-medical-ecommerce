@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
+import api from '../../api/axios';
 import '../../styles/buyerlogin.css';
 
 const BuyerLogin = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     rememberMe: false
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -20,10 +24,28 @@ const BuyerLogin = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Buyer Login attempt:', formData);
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await api.post('/customer/login', {
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (response.data.token) {
+        localStorage.setItem('customer_token', response.data.token);
+        localStorage.setItem('customer_user', JSON.stringify(response.data.user));
+        navigate('/buyer/dashboard');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      console.error('Buyer Login error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -45,6 +67,8 @@ const BuyerLogin = () => {
         <div className="login-form-container">
           <h2 className="login-title">Welcome Back</h2>
           <p className="login-subtitle">Sign in to your account</p>
+
+          {error && <div className="login-error-message" style={{ color: '#ff4d4d', marginBottom: '1rem', textAlign: 'center', fontSize: '14px' }}>{error}</div>}
 
           <form onSubmit={handleSubmit} className="login-form">
             <div className="form-group">
@@ -97,8 +121,8 @@ const BuyerLogin = () => {
               <Link to="/buyer/forgot-password" className="forgot-password">Forgot Password?</Link>
             </div>
 
-            <button type="submit" className="login-btn">
-              Sign In
+            <button type="submit" className="login-btn" disabled={loading}>
+              {loading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 

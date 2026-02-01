@@ -5,6 +5,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Seller;
 use App\Http\Controllers\MedicalInventoryController;
+use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CategoryController;
@@ -51,11 +52,13 @@ Route::post('/seller/signup', function (Request $request) {
 });
 
 // Medical Inventory API Routes
+// Public Medical Inventory Routes
+Route::get('/medical-inventory', [MedicalInventoryController::class, 'index']);
+Route::get('/medical-inventory/{medicalInventory}', [MedicalInventoryController::class, 'show']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/medical-inventory/attributes', [MedicalInventoryController::class, 'attributes']);
-    Route::get('/medical-inventory', [MedicalInventoryController::class, 'index']);
     Route::post('/medical-inventory', [MedicalInventoryController::class, 'store']);
-    Route::get('/medical-inventory/{medicalInventory}', [MedicalInventoryController::class, 'show']);
     Route::put('/medical-inventory/{medicalInventory}', [MedicalInventoryController::class, 'update']);
     Route::delete('/medical-inventory/{medicalInventory}', [MedicalInventoryController::class, 'destroy']);
     Route::apiResource('customers', \App\Http\Controllers\CustomersController::class);
@@ -141,10 +144,13 @@ Route::middleware(['auth:sanctum', 'seller'])->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('branches', BranchController::class)->only(['index', 'show']);
-    Route::apiResource('categories', CategoryController::class)->only(['index', 'show']);
     Route::apiResource('shopping-carts', ShoppingCartController::class);
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('suppliers', SupplierController::class);
     Route::apiResource('sellers', SellerController::class);
     Route::get('/admin/stats', [App\Http\Controllers\Admin\DashboardController::class, 'index']);
+    Route::apiResource('wishlist', WishlistController::class)->only(['index', 'store', 'destroy']);
 });
+
+// Publicly accessible routes
+Route::apiResource('categories', CategoryController::class)->only(['index', 'show']);
