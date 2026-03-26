@@ -5,6 +5,7 @@ import api from '../../api/axios';
 import '../../styles/buyermainpage.css';
 import CheckoutSidebar from '../../components/CheckoutSidebar';
 import BuyerNavbar from '../../components/BuyerNavbar';
+import { useStock } from '../../context/StockContext';
 
 const BuyerCart = () => {
     const [cart, setCart] = useState([]);
@@ -12,6 +13,7 @@ const BuyerCart = () => {
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
+    const { getStock } = useStock();
 
     useEffect(() => {
         const savedCart = localStorage.getItem('mediEcom_cart');
@@ -37,7 +39,9 @@ const BuyerCart = () => {
     const updateQty = (id, delta) => {
         const updated = cart.map(item => {
             if (item.id === id) {
-                const newQty = Math.max(1, (item.qty || 1) + delta);
+                const stock = getStock(item.id) ?? item.stock;
+                const limit = stock !== undefined && stock !== null ? stock : Infinity;
+                const newQty = Math.min(limit, Math.max(1, (item.qty || 1) + delta));
                 return { ...item, qty: newQty };
             }
             return item;
@@ -62,6 +66,18 @@ const BuyerCart = () => {
 
     const handleCheckout = () => {
         if (cart.length === 0) return;
+        
+        // Verify all items have enough stock before checkout
+        const outOfStockItems = cart.filter(item => {
+            const stock = getStock(item.id) ?? item.stock;
+            return stock !== undefined && stock !== null && item.qty > stock;
+        });
+        
+        if (outOfStockItems.length > 0) {
+            alert(`Sorry, some items have insufficient stock: ${outOfStockItems.map(i => i.product_name || i.name).join(', ')}. Please reduce the quantity or remove them.`);
+            return;
+        }
+
         setIsCheckoutOpen(true);
     };
 
@@ -88,36 +104,45 @@ const BuyerCart = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '32px' }}>
                         {/* Cart Items List */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            {cart.map(item => (
-                                <div key={item.id} style={{
-                                    padding: '20px',
-                                    background: 'white',
-                                    borderRadius: '12px',
-                                    border: '1px solid #eee',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '20px'
-                                }}>
-                                    <img
-                                        src={item.image || `https://via.placeholder.com/80?text=${encodeURIComponent(item.product_name || item.name)}`}
-                                        alt={item.product_name || item.name}
-                                        style={{ width: '80px', height: '80px', borderRadius: '8px', objectFit: 'cover', background: '#f8f9fa' }}
-                                    />
-                                    <div style={{ flex: 1 }}>
-                                        <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1rem' }}>{item.product_name || item.name}</h3>
-                                        <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>Rs. {parseFloat(item.price || 0).toFixed(2)} / unit</p>
+                            {cart.map(item => {
+                                const stock = getStock(item.id) ?? item.stock;
+                                const maxStock = stock !== undefined && stock !== null ? stock : Infinity;
+                                const isAtMax = item.qty >= maxStock;
+
+                                return (
+                                    <div key={item.id} style={{
+                                        padding: '20px',
+                                        background: 'white',
+                                        borderRadius: '12px',
+                                        border: '1px solid #eee',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '20px'
+                                    }}>
+                                        <img
+                                            src={item.image || `https://via.placeholder.com/80?text=${encodeURIComponent(item.product_name || item.name)}`}
+                                            alt={item.product_name || item.name}
+                                            style={{ width: '80px', height: '80px', borderRadius: '8px', objectFit: 'cover', background: '#f8f9fa' }}
+                                        />
+                                        <div style={{ flex: 1 }}>
+                                            <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1rem' }}>{item.product_name || item.name}</h3>
+                                            <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>Rs. {parseFloat(item.price || 0).toFixed(2)} / unit</p>
+                                            {isAtMax && maxStock < Infinity && (
+                                                <p style={{ margin: '4px 0 0 0', color: '#ff4d4d', fontSize: '0.8rem' }}>Max available quantity reached</p>
+                                            )}
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f0f2f5', padding: '4px', borderRadius: '8px' }}>
+                                            <button onClick={() => updateQty(item.id, -1)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '4px' }}><Minus size={16} /></button>
+                                            <span style={{ fontWeight: 600, minWidth: '24px', textAlign: 'center' }}>{item.qty}</span>
+                                            <button disabled={isAtMax} onClick={() => updateQty(item.id, 1)} style={{ border: 'none', background: 'none', cursor: isAtMax ? 'not-allowed' : 'pointer', opacity: isAtMax ? 0.3 : 1, padding: '4px' }}><Plus size={16} /></button>
+                                        </div>
+                                        <div style={{ textAlign: 'right', minWidth: '100px' }}>
+                                            <p style={{ fontWeight: 700, margin: 0 }}>Rs. {(parseFloat(item.price || 0) * item.qty).toFixed(2)}</p>
+                                            <button onClick={() => removeItem(item.id)} style={{ border: 'none', background: 'none', color: '#ff4d4d', cursor: 'pointer', padding: '4px', marginTop: '4px' }}><Trash2 size={18} /></button>
+                                        </div>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f0f2f5', padding: '4px', borderRadius: '8px' }}>
-                                        <button onClick={() => updateQty(item.id, -1)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '4px' }}><Minus size={16} /></button>
-                                        <span style={{ fontWeight: 600, minWidth: '24px', textAlign: 'center' }}>{item.qty}</span>
-                                        <button onClick={() => updateQty(item.id, 1)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '4px' }}><Plus size={16} /></button>
-                                    </div>
-                                    <div style={{ textAlign: 'right', minWidth: '100px' }}>
-                                        <p style={{ fontWeight: 700, margin: 0 }}>Rs. {(parseFloat(item.price || 0) * item.qty).toFixed(2)}</p>
-                                        <button onClick={() => removeItem(item.id)} style={{ border: 'none', background: 'none', color: '#ff4d4d', cursor: 'pointer', padding: '4px', marginTop: '4px' }}><Trash2 size={18} /></button>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         {/* Order Summary */}
@@ -144,6 +169,7 @@ const BuyerCart = () => {
                                 >
                                     Proceed to Checkout
                                 </button>
+
                                 <p style={{ textAlign: 'center', marginTop: '16px', color: '#999', fontSize: '0.8rem' }}>Secure Checkout Powered by MediEcom</p>
                             </div>
                         </div>

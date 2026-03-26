@@ -4,6 +4,7 @@ import { Heart, Loader2, ArrowRight } from 'lucide-react';
 import api from '../../api/axios';
 import ProductCard from '../../components/ProductCard';
 import BuyerNavbar from '../../components/BuyerNavbar';
+import BuyerFooter from '../../components/BuyerFooter';
 import '../../styles/customerhome.css';
 import '../../styles/buyermainpage.css';
 import '../../styles/buyerwishlist.css';
@@ -37,6 +38,7 @@ const BuyerWishlist = () => {
                 image: item.image ? `http://127.0.0.1:8000/storage/${item.image}` : `https://via.placeholder.com/300?text=${encodeURIComponent(item.product_name)}`,
                 price: parseFloat(item.price),
                 originalPrice: item.mrp ? parseFloat(item.mrp) : null,
+                stock: item.stock,
                 isWishlisted: true
             }));
 
@@ -53,18 +55,27 @@ const BuyerWishlist = () => {
     }, []);
 
     const removeFromWishlist = async (productId) => {
+        // Optimistic update
+        const originalWishlist = [...wishlist];
+        setWishlist(prev => prev.filter(item => item.id !== productId));
+
         try {
             await api.delete(`/wishlist/${productId}`);
-            setWishlist(prev => prev.filter(item => item.id !== productId));
         } catch (err) {
             console.error('Error removing from wishlist:', err);
+            // Rollback
+            setWishlist(originalWishlist);
             alert('Failed to remove item. Please try again.');
         }
     };
 
     const addToCart = (product) => {
+        if (product.stock <= 0) {
+            alert('Sorry, this item is out of stock! Let\'s continue shopping for other items.');
+            return;
+        }
         console.log('Adding to cart:', product);
-        alert(`${product.name} added to cart!`);
+        // alert(`${product.name} added to cart!`);
     };
 
     return (
@@ -83,9 +94,9 @@ const BuyerWishlist = () => {
                     </div>
                 ) : wishlist.length > 0 ? (
                     <div className="bw-grid">
-                        {wishlist.map((product) => (
+                        {wishlist.map((product, idx) => (
                             <ProductCard
-                                key={product.id}
+                                key={`wish-prod-${product.id || idx}`}
                                 product={{ ...product, isWishlisted: true }}
                                 onToggleWishlist={() => removeFromWishlist(product.id)}
                                 onAddToCart={addToCart}
@@ -115,7 +126,7 @@ const BuyerWishlist = () => {
                 )}
             </main>
 
-            {/* Simple Footer or reused components could go here */}
+            <BuyerFooter />
         </div>
     );
 };

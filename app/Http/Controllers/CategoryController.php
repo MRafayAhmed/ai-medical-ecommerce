@@ -12,8 +12,10 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::paginate(10);
-        return response()->json($categories);
+        $categories = \Illuminate\Support\Facades\Cache::remember('categories_all', 3600, function () {
+            return Category::all();
+        });
+        return response()->json(['data' => $categories]);
     }
 
     /**

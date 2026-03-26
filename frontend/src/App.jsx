@@ -26,55 +26,59 @@ import BuyerOrders from "./pages/customer/buyerorders";
 import BuyerProfile from "./pages/customer/buyerprofile";
 import BuyerCart from "./pages/customer/buyercart";
 
+import RxUpload from "./pages/customer/RxUpload";
+import { StockProvider } from "./context/StockContext";
+
 // Simple placeholders for missing pages
 const BuyerOrdersPlaceholder = () => <div style={{ padding: '100px', textAlign: 'center' }}><h1>My Orders</h1><p>Coming Soon!</p></div>;
 const BuyerSupport = () => <div style={{ padding: '100px', textAlign: 'center' }}><h1>Customer Support</h1><p>Coming Soon!</p></div>;
-const BuyerPrescriptions = () => <div style={{ padding: '100px', textAlign: 'center' }}><h1>Upload Prescription</h1><p>Coming Soon!</p></div>;
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Root Route - Landing Page */}
-        <Route path="/" element={<Home />} />
+      <StockProvider>
+        <Routes>
+          {/* Root Route - Landing Page */}
+          <Route path="/" element={<Home />} />
 
-        {/* Customer/Buyer Routes */}
-        <Route path="/buyer/login" element={<BuyerLogin />} />
-        <Route path="/buyer/register" element={<BuyerRegister />} />
-        <Route path="/buyer/dashboard" element={<Buyermainpage />} />
-        {/* Protected Customer Routes */}
-        <Route element={<ProtectedRoute redirectPath="/buyer/login" tokenKey="customer_token" />}>
-          <Route path="/buyer/checkout" element={<CheckoutPage />} />
-          <Route path="/buyer/wishlist" element={<BuyerWishlist />} />
-          <Route path="/buyer/cart" element={<BuyerCart />} />
-          <Route path="/buyer/profile" element={<BuyerProfile />} />
-          <Route path="/buyer/orders" element={<BuyerOrders />} />
-        </Route>
+          {/* Customer/Buyer Routes */}
+          <Route path="/buyer/login" element={<BuyerLogin />} />
+          <Route path="/buyer/register" element={<BuyerRegister />} />
+          <Route path="/buyer/dashboard" element={<Buyermainpage />} />
+          {/* Protected Customer Routes */}
+          <Route element={<ProtectedRoute redirectPath="/buyer/login" tokenKey="customer_token" />}>
+            <Route path="/buyer/checkout" element={<CheckoutPage />} />
+            <Route path="/buyer/wishlist" element={<BuyerWishlist />} />
+            <Route path="/buyer/cart" element={<BuyerCart />} />
+            <Route path="/buyer/profile" element={<BuyerProfile />} />
+            <Route path="/buyer/orders" element={<BuyerOrders />} />
+          </Route>
 
-        <Route path="/buyer/category/:categoryId/:categoryName?" element={<CategoryPage />} />
-        <Route path="/buyer/support" element={<BuyerSupport />} />
-        <Route path="/buyer/prescriptions" element={<BuyerPrescriptions />} />
+          <Route path="/buyer/category/:categoryId/:categoryName?" element={<CategoryPage />} />
+          <Route path="/buyer/support" element={<BuyerSupport />} />
+          <Route path="/buyer/prescriptions" element={<RxUpload />} />
 
-        {/* Public Admin Routes */}
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin/setup/register" element={<AdminRegister />} />
-        <Route path="/admin/forgot-password" element={<AdminForgotPass />} />
+          {/* Public Admin Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/setup/register" element={<AdminRegister />} />
+          <Route path="/admin/forgot-password" element={<AdminForgotPass />} />
 
-        {/* Protected Admin Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/notifications" element={<AdminNotification />} />
-          <Route path="/admin/profile" element={<AdminProfile />} />
-          <Route path="/admin/buyers" element={<AdminBuyer />} />
-          <Route path="/admin/sellers" element={<AdminSeller />} />
-          <Route path="/admin/products" element={<AdminProduct />} />
-          <Route path="/admin/orders" element={<AdminOrder />} />
-          <Route path="/admin/reports" element={<AdminReport />} />
-          <Route path="/admin/settings" element={<AdminSetting />} />
-          <Route path="/admin/suppliers" element={<AdminSupplier />} />
-          <Route path="/admin/categories" element={<AdminCategory />} />
-        </Route>
-      </Routes>
+          {/* Protected Admin Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/notifications" element={<AdminNotification />} />
+            <Route path="/admin/profile" element={<AdminProfile />} />
+            <Route path="/admin/buyers" element={<AdminBuyer />} />
+            <Route path="/admin/sellers" element={<AdminSeller />} />
+            <Route path="/admin/products" element={<AdminProduct />} />
+            <Route path="/admin/orders" element={<AdminOrder />} />
+            <Route path="/admin/reports" element={<AdminReport />} />
+            <Route path="/admin/settings" element={<AdminSetting />} />
+            <Route path="/admin/suppliers" element={<AdminSupplier />} />
+            <Route path="/admin/categories" element={<AdminCategory />} />
+          </Route>
+        </Routes>
+      </StockProvider>
     </BrowserRouter>
   );
 }

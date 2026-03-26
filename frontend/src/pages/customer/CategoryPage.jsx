@@ -4,6 +4,7 @@ import { Heart, Search, ShoppingCart, User, ArrowLeft, Loader2, X } from 'lucide
 import api from '../../api/axios';
 import ProductCard from '../../components/ProductCard';
 import BuyerNavbar from '../../components/BuyerNavbar';
+import BuyerFooter from '../../components/BuyerFooter';
 import '../../styles/buyermainpage.css';
 
 const CategoryPage = () => {
@@ -14,8 +15,6 @@ const CategoryPage = () => {
     const [loading, setLoading] = useState(true);
     const [wishlistIds, setWishlistIds] = useState(new Set());
     const isLoggedIn = !!localStorage.getItem('customer_token');
-
-    // Cart count now handled by BuyerNavbar
 
     const fetchWishlist = async () => {
         const token = localStorage.getItem('customer_token');
@@ -69,6 +68,11 @@ const CategoryPage = () => {
     };
 
     const addToCart = async (product) => {
+        // Frontend stock guard (uses stock field from product if available)
+        if (product.stock <= 0) {
+            alert("Sorry, this item is out of stock! Let's continue shopping for other items.");
+            return;
+        }
         if (!isLoggedIn) {
             alert('Please login to add items to your cart.');
             navigate('/buyer/login');
@@ -76,14 +80,9 @@ const CategoryPage = () => {
         }
 
         const userData = localStorage.getItem('customer_user');
-
-        const savedCart = localStorage.getItem('mediEcom_cart');
-        const cart = savedCart ? JSON.parse(savedCart) : [];
-        cart.push(product);
-        localStorage.setItem('mediEcom_cart', JSON.stringify(cart));
-
         try {
             const user = JSON.parse(userData);
+            // Hit the backend FIRST — validateStock runs here
             await api.post('/shopping-carts', {
                 user_id: user.id,
                 branch_id: 1,
@@ -95,10 +94,18 @@ const CategoryPage = () => {
                     total_price: product.price
                 }]
             });
-            alert(`${product.product_name || product.name} added to cart!`);
+            // Only save to local cart AFTER backend confirms stock is available
+            const savedCart = localStorage.getItem('mediEcom_cart');
+            const cart = savedCart ? JSON.parse(savedCart) : [];
+            cart.push(product);
+            localStorage.setItem('mediEcom_cart', JSON.stringify(cart));
         } catch (err) {
-            console.error('Error syncing cart:', err);
-            alert(`${product.product_name || product.name} added to cart (local only).`);
+            console.error('Error adding to cart:', err);
+            if (err.response && err.response.data && err.response.data.message) {
+                alert(err.response.data.message);
+            } else {
+                alert('Failed to add item to cart. Please try again.');
+            }
         }
     };
 
@@ -111,20 +118,29 @@ const CategoryPage = () => {
 
         const isCurrentlyWishlisted = wishlistIds.has(productId);
 
+        // Optimistic update
+        setWishlistIds(prev => {
+            const next = new Set(prev);
+            if (isCurrentlyWishlisted) next.delete(productId);
+            else next.add(productId);
+            return next;
+        });
+
         try {
             if (isCurrentlyWishlisted) {
                 await api.delete(`/wishlist/${productId}`);
-                setWishlistIds(prev => {
-                    const next = new Set(prev);
-                    next.delete(productId);
-                    return next;
-                });
             } else {
                 await api.post('/wishlist', { inventory_id: productId });
-                setWishlistIds(prev => new Set(prev).add(productId));
             }
         } catch (err) {
             console.error('Error toggling wishlist:', err);
+            // Rollback on failure
+            setWishlistIds(prev => {
+                const next = new Set(prev);
+                if (isCurrentlyWishlisted) next.add(productId);
+                else next.delete(productId);
+                return next;
+            });
             alert('Failed to update wishlist. Please try again.');
         }
     };
@@ -167,12 +183,12 @@ const CategoryPage = () => {
                     </div>
                 ) : products.length > 0 ? (
                     <div className="bm-product-grid" style={{ paddingBottom: '40px' }}>
-                        {products.map(product => {
+                        {products.map((product, idx) => {
                             const price = parseFloat(product.price || 0);
                             const mrp = product.mrp ? parseFloat(product.mrp) : null;
                             return (
                                 <ProductCard
-                                    key={product.id}
+                                    key={`cat-prod-${product.id || idx}`}
                                     product={{
                                         ...product,
                                         name: product.product_name || product.name,
@@ -194,6 +210,7 @@ const CategoryPage = () => {
                     </div>
                 )}
             </main>
+            <BuyerFooter />
         </div>
     );
 };

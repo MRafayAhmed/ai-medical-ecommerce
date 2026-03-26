@@ -12,7 +12,12 @@ const api = axios.create({
 // Add a request interceptor to inject the token if it exists
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token') || localStorage.getItem('customer_token');
+        // Prioritize customer_token for buyer/customer routes
+        const isBuyerRoute = config.url && (config.url.includes('/buyer/') || config.url.includes('/customer/'));
+        const token = isBuyerRoute 
+            ? (localStorage.getItem('customer_token') || localStorage.getItem('token'))
+            : (localStorage.getItem('token') || localStorage.getItem('customer_token'));
+
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }

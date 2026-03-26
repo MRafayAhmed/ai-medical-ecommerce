@@ -73,6 +73,7 @@
     border-radius: 8px;
     resize: vertical;
     font-family: inherit;
+    color: #000;
 }
 
 .payment-options {

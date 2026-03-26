@@ -18,6 +18,7 @@ class MedicalInventoryController extends Controller
      */
     public function index()
     {
+        if (session_id()) session_write_close(); // Unblock other requests if using sessions
         $page = request()->get('page', 1);
         $search = request()->get('q');
         $categoryId = request()->get('category_id');
@@ -39,11 +40,140 @@ class MedicalInventoryController extends Controller
         // Cache based on page, search query, and category
         $cacheKey = 'inventory_page_' . $page . '_search_' . md5($search) . '_cat_' . $categoryId;
         
-        $inventories = Cache::remember($cacheKey, 3600, function () use ($query) {
-            return $query->paginate(10);
+        $inventories = Cache::remember($cacheKey, 86400, function () use ($query) {
+            return $query->paginate(20); // Increased page size for fewer round-trips if navigating
         });
         
         return response()->json($inventories);
+    }
+
+    public function dashboardData(Request $request)
+    {
+        if (session_id()) session_write_close();
+        
+        $search = $request->get('q');
+        
+        // 1. Fetch Categories (Cached)
+        $categories = Cache::remember('categories_all_dashboard', 3600, function () {
+            return Category::all();
+        });
+
+        // 2. Fetch Inventory (First page, selective columns for speed)
+        $inventories = $this->index()->original;
+
+        // 3. Fetch Wishlist and Recent Orders if logged in
+        $wishlist = [];
+        $recentOrders = [];
+        if (Auth::guard('sanctum')->check()) {
+            $user = Auth::guard('sanctum')->user();
+            $wishlist = \App\Models\Wishlist::where('customer_id', $user->id)
+                                           ->pluck('inventory_id')
+                                           ->toArray();
+            
+            // Fetch orders for any authenticated user (as usrer_id)
+            $recentOrders = \App\Models\Order::where('usrer_id', $user->id)
+                                            ->latest()
+                                            ->take(4)
+                                            ->get();
+        }
+
+        return response()->json([
+            'categories' => $categories,
+            'inventory' => $inventories,
+            'wishlist' => $wishlist,
+            'recentOrders' => $recentOrders
+        ]);
+    }
+
+    public function recentOrders(Request $request)
+    {
+        $userId = auth('sanctum')->id();
+        
+        if (!$userId) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $orders = \App\Models\Order::where('usrer_id', $userId)
+            ->orderBy('id', 'desc')
+            ->take(4)
+            ->get();
+
+        return response()->json($orders);
+    }
+
+    public function analyzeRx(Request $request)
+    {
+        $request->validate([
+            'rx_image' => 'required|image|max:10240', // Max 10MB
+        ]);
+
+        try {
+            // 1. Get the uploaded file
+            $image = $request->file('rx_image');
+            
+            // 2. Call Python API
+            // Using the provided ngrok URL
+            $pythonApiUrl = 'http://100.31.156.109/ocr_api'; // Assuming /extract_medicines, or root? User gave root.
+            // Let's assume root or specific endpoint. User said "this is the python scipt ... url".
+            // Usually APIs have an endpoint. If it's a script, maybe it's just POST /
+            // I'll try POST / first or look at user prompt again. "upload a image to a python endpoint".
+            
+            // I will use the root URL if no endpoint specified, but safest to append /predict or /extract if standard. 
+            // However, user just gave the base URL. I'll use the base URL.
+            // Correction: I'll use the base URL for now.
+            
+            $response = \Illuminate\Support\Facades\Http::withoutVerifying()->attach(
+                'file', file_get_contents($image->path()), $image->getClientOriginalName()
+            )->post($pythonApiUrl);
+
+            if ($response->failed()) {
+                \Illuminate\Support\Facades\Log::error('Python API Error: ' . $response->body());
+                return response()->json(['message' => 'Failed to analyze prescription with AI service'], 502);
+            }
+
+            $data = $response->json();
+            
+            // Transform Python API response to match Frontend expectations
+            // Python returns: { "verified_medicines": [ { "medicine_name": "...", "generic": "...", ... } ] }
+            // Frontend expects: [ { "name": "...", "generic": "...", ... } ]
+            
+            $medicines = [];
+            if (isset($data['verified_medicines']) && is_array($data['verified_medicines'])) {
+                foreach ($data['verified_medicines'] as $med) {
+                    $medicines[] = [
+                        'name' => $med['medicine_name'] ?? 'Unknown',
+                        'generic' => $med['generic'] ?? null,
+                        'dosage' => $med['dosage'] ?? null,
+                    ];
+                }
+            } else {
+                 // Fallback if structure is different
+                 \Illuminate\Support\Facades\Log::warning('Unexpected Python API response structure', ['data' => $data]);
+                 return response()->json(['message' => 'Invalid response from AI service'], 502);
+            }
+
+            return response()->json($medicines);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('AnalyzeRx Exception: ' . $e->getMessage());
+            return response()->json(['message' => 'Failed to analyze prescription', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function alternatives(Request $request)
+    {
+        \Illuminate\Support\Facades\Log::info('Alternatives Request:', $request->all());
+        $genericName = $request->query('generic_name');
+
+        if (!$genericName) {
+            return response()->json(['message' => 'Generic name is required'], 400);
+        }
+
+        $alternatives = MedicalInventory::where('generic_name', $genericName)
+                                        ->with(['brand', 'category', 'branch'])
+                                        ->get();
+
+        return response()->json($alternatives);
     }
 
     public function attributes()
@@ -55,6 +185,12 @@ class MedicalInventoryController extends Controller
                 'branches' => Branch::all()
             ];
         });
+    }
+
+    public function getStocks()
+    {
+        $stocks = \App\Services\MaintainStockService::get_all_items();
+        return response()->json($stocks);
     }
 
     /**

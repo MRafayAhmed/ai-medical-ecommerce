@@ -53,9 +53,13 @@ Route::post('/seller/signup', function (Request $request) {
 
 // Medical Inventory API Routes
 // Public Medical Inventory Routes
+Route::get('/medical-inventory/stocks', [MedicalInventoryController::class, 'getStocks']);
 Route::get('/medical-inventory/attributes', [MedicalInventoryController::class, 'attributes']);
+Route::get('/medical-inventory/alternatives', [MedicalInventoryController::class, 'alternatives']);
+Route::post('/medical-inventory/analyze-rx', [MedicalInventoryController::class, 'analyzeRx']);
 Route::get('/medical-inventory', [MedicalInventoryController::class, 'index']);
 Route::get('/medical-inventory/{medicalInventory}', [MedicalInventoryController::class, 'show']);
+Route::get('/buyer/dashboard', [MedicalInventoryController::class, 'dashboardData']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/medical-inventory', [MedicalInventoryController::class, 'store']);
@@ -149,6 +153,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('suppliers', SupplierController::class);
     Route::apiResource('sellers', SellerController::class);
     Route::get('/admin/stats', [App\Http\Controllers\Admin\DashboardController::class, 'index']);
+    Route::get('/buyer/recent-orders', [MedicalInventoryController::class, 'recentOrders']);
     Route::apiResource('wishlist', WishlistController::class)->only(['index', 'store', 'destroy']);
 });
 

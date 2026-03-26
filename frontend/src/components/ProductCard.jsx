@@ -1,5 +1,6 @@
 import React from 'react';
 import { Heart, ShoppingCart } from 'lucide-react';
+import { useStock } from '../context/StockContext';
 
 /**
  * ProductCard Component
@@ -12,6 +13,15 @@ import { Heart, ShoppingCart } from 'lucide-react';
  * @param {Function} onAddToCart - Handler for add to cart button click
  */
 const ProductCard = ({ product, onToggleWishlist, onAddToCart }) => {
+    const { getStock } = useStock();
+    
+    let currentStock = getStock(product.id);
+    if (currentStock === null || currentStock === undefined) {
+        currentStock = product.stock;
+    }
+    
+    const isOutOfStock = currentStock <= 0;
+
     return (
         <div className="bm-product-card">
             {/* Wishlist Button */}
@@ -47,12 +57,16 @@ const ProductCard = ({ product, onToggleWishlist, onAddToCart }) => {
 
                 {/* Add To Cart Button - Always Bottom Aligned via CSS flex-grow on info container */}
                 <button
-                    className="bm-add-to-cart-btn"
-                    onClick={() => onAddToCart(product)}
-                    aria-label={`Add ${product.name} to cart`}
+                    className={`bm-add-to-cart-btn ${isOutOfStock ? 'out-of-stock' : ''}`}
+                    onClick={() => {
+                        if (!isOutOfStock) onAddToCart(product);
+                    }}
+                    disabled={isOutOfStock}
+                    aria-label={isOutOfStock ? `Out of stock` : `Add ${product.name} to cart`}
+                    style={isOutOfStock ? { backgroundColor: '#ccc', cursor: 'not-allowed' } : {}}
                 >
                     <ShoppingCart size={18} />
-                    <span>Add to Cart</span>
+                    <span>{isOutOfStock ? 'Out of Stock' : 'Add to Cart'}</span>
                 </button>
             </div>
         </div>

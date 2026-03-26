@@ -54,7 +54,11 @@ const CheckoutSidebar = ({ isOpen, onClose, cart, user, onOrderSuccess }) => {
             }, 2500); // Slightly longer for the success animation
         } catch (err) {
             console.error('Checkout failed', err);
-            alert('Failed to place order. Please try again.');
+            if (err.response && err.response.data && err.response.data.message) {
+                alert(err.response.data.message);
+            } else {
+                alert('Failed to place order. Please try again.');
+            }
         } finally {
             setLoading(false);
         }
@@ -202,6 +206,7 @@ const CheckoutSidebar = ({ isOpen, onClose, cart, user, onOrderSuccess }) => {
                                         outline: 'none',
                                         transition: 'all 0.2s',
                                         resize: 'none',
+                                        color: 'black',
                                         background: '#fcfdfd'
                                     }}
                                     onFocus={(e) => e.target.style.borderColor = '#2e7d32'}

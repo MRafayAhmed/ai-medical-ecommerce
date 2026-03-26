@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 import '../../styles/checkout.css';
+import BuyerFooter from '../../components/BuyerFooter';
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
@@ -78,6 +80,7 @@ const CheckoutPage = () => {
                                     required
                                     placeholder="Enter your full address"
                                     value={form.address}
+                                    style={{ color: 'black' }}
                                     onChange={(e) => setForm({ ...form, address: e.target.value })}
                                 ></textarea>
                             </div>
@@ -116,8 +119,8 @@ const CheckoutPage = () => {
                         <div className="summary-card">
                             <h3>Order Summary</h3>
                             <div className="summary-items">
-                                {cart.map(item => (
-                                    <div key={item.id} className="summary-item">
+                                {cart.map((item, idx) => (
+                                    <div key={`${item.id}-${idx}`} className="summary-item">
                                         <div className="item-name-qty">
                                             <span>{item.product_name}</span>
                                             <small>x{item.qty}</small>
@@ -136,6 +139,7 @@ const CheckoutPage = () => {
                     </div>
                 </div>
             </div>
+            <BuyerFooter />
         </div>
     );
 };

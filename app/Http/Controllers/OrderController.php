@@ -42,6 +42,9 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         try {
+            // Validate stock before placing order
+            \App\Services\MaintainStockService::validateStock($request->items);
+
             return \DB::transaction(function() use ($request) {
                 $order = new Order();
                 $order->usrer_id = $request->user_id; // Mapping frontend user_id to usrer_id
@@ -63,12 +66,19 @@ class OrderController extends Controller
                     $orderItem->save();
 
                     // Decrease Stock
-                    $inventory = \App\Models\MedicalInventory::find($item['inventory_id']);
-                    if ($inventory) {
-                        $inventory->stock = $inventory->stock - $item['qty'];
-                    }
+                    // $inventory = \App\Models\MedicalInventory::find($item['inventory_id']);
+                    // if ($inventory) {
+                    //     $inventory->stock = $inventory->stock - $item['qty'];
+                    // }
                 }
+                
+                // Add ref_document_identity to items since it's expected by the ledger
+                $itemsWithIdentity = array_map(function($item) {
+                    $item['ref_document_identity'] = 'order';
+                    return $item;
+                }, $request->items);
 
+                \App\Services\MaintainStockService::maintainStock($itemsWithIdentity, $order->id, 'order', "decrease");
                 // Clear Shopping Cart for this user
                 $cart = \App\Models\ShoppingCart::where('user_id', $request->user_id)->get();
                 foreach($cart as $c) {
@@ -78,6 +88,8 @@ class OrderController extends Controller
 
                 return response()->json(['message' => 'Order placed successfully', 'order' => $order], 201);
             });
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
         } catch (\Throwable $th) {
             \Illuminate\Support\Facades\Log::error('Order Placement Error: ' . $th->getMessage());
             return response()->json(['message' => 'Failed to place order', 'error' => $th->getMessage()], 500);

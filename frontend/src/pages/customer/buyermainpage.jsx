@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, Menu, X, Search, UploadCloud } from 'lucide-react';
 import { User, ShoppingCart, Info } from 'lucide-react';
@@ -6,7 +6,29 @@ import '../../styles/customerhome.css';
 import '../../styles/buyermainpage.css';
 import ProductCard from '../../components/ProductCard';
 import BuyerNavbar from '../../components/BuyerNavbar';
+import BuyerFooter from '../../components/BuyerFooter';
+import { CategorySkeleton, ProductCardSkeleton } from '../../components/Skeletons';
 import api from '../../api/axios';
+
+const defaultCategories = [
+  {
+    label: 'Medicine',
+    to: '/buyer/category/1/medicine',
+    items: [
+      { label: 'Derma', to: '/buyer/category/1-1/derma' },
+      { label: 'Gastro-Intestinal Tract', to: '/buyer/category/1-2/gastro-intestinal-tract' },
+      { label: 'Circulatory System', to: '/buyer/category/1-3/circulatory-system' },
+      { label: 'Others', to: '/buyer/category/1-4/others' },
+      { label: 'Endocrine System', to: '/buyer/category/1-5/endocrine-system' },
+      { label: 'Eyes, Nose & Ear', to: '/buyer/category/1-6/eyes-nose-ear' },
+      { label: 'Urinary Tract System', to: '/buyer/category/1-7/urinary-tract-system' },
+      { label: 'Central Nervous System', to: '/buyer/category/1-8/central-nervous-system' },
+      { label: 'Respiratory Tract System', to: '/buyer/category/1-9/respiratory-tract-system' },
+      { label: 'Cardio-Vascular System', to: '/buyer/category/1-10/cardio-vascular-system' },
+      { label: 'Oral Care', to: '/buyer/category/1-11/oral-care' },
+    ],
+  },
+];
 
 const Buyermainpage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,80 +41,65 @@ const Buyermainpage = () => {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('customer_token'));
   const [wishlistIds, setWishlistIds] = useState(new Set());
+  const [recentOrders, setRecentOrders] = useState([]);
 
   // Wishlist logic remains for product cards
 
-  // Fetch wishlist from API
-  const fetchWishlist = async () => {
-    const token = localStorage.getItem('customer_token');
-    if (!token) return;
-    try {
-      const response = await api.get('/wishlist');
-      const items = response.data.data || [];
-      setWishlistIds(new Set(items.map(i => i.id)));
-    } catch (err) {
-      console.error('Error fetching wishlist:', err);
-    }
-  };
+  // Parallel fetch logic for better speed (unifies category, product, and wishlist)
 
-  useEffect(() => {
-    if (isLoggedIn) fetchWishlist();
-  }, [isLoggedIn]);
 
-  // Fetch categories from API
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await api.get('/categories');
-        const cats = response.data.data ? response.data.data : (Array.isArray(response.data) ? response.data : []);
+  const fetchRef = useRef(false);
 
-        const mappedCats = cats.map(cat => ({
-          id: cat.id,
-          label: cat.name,
-          to: `/buyer/category/${cat.id}/${slugify(cat.name)}`,
-          image: cat.image ? `/storage/${cat.image}` : (findImageForLabel(cat.name) || `https://via.placeholder.com/150?text=${encodeURIComponent(cat.name)}`),
-          items: []
-        }));
+  // Parallel fetch logic for better speed
+  const fetchAllData = async (query = '') => {
+    // If we're already fetching and it's not a filtered query, skip
+    if (fetchRef.current && !query) return;
+    if (!query) fetchRef.current = true;
 
-        setCategories(mappedCats);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-      } finally {
-        setLoadingCategories(false);
-      }
-    };
-
-    fetchCategories();
-  }, []);
-
-  // Fetch products from API
-  const fetchProducts = async (query = '', categoryId = '') => {
+    setLoadingCategories(true);
     setLoadingProducts(true);
+
     try {
-      let url = '/medical-inventory';
-      const params = new URLSearchParams();
-      if (query) params.append('q', query);
-      if (categoryId) params.append('category_id', categoryId);
-
-      const queryString = params.toString();
-      if (queryString) url += `?${queryString}`;
-
+      const url = `/buyer/dashboard${query ? `?q=${encodeURIComponent(query)}` : ''}`;
       const response = await api.get(url);
-      const items = response.data.data ? response.data.data : (Array.isArray(response.data) ? response.data : []);
+      const { categories, inventory, wishlist, recentOrders } = response.data;
 
-      const mappedProducts = items.map(item => ({
+      // 1. Process Categories
+      const cats = Array.isArray(categories.data) ? categories.data : (Array.isArray(categories) ? categories : []);
+      const mappedCats = cats.map(cat => ({
+        id: cat.id,
+        label: cat.name,
+        to: `/buyer/category/${cat.id}/${slugify(cat.name)}`,
+        image: cat.image ? `/storage/${cat.image}` : (findImageForLabel(cat.name) || `https://via.placeholder.com/150?text=${encodeURIComponent(cat.name)}`),
+        items: []
+      }));
+      setCategories(mappedCats);
+      setLoadingCategories(false);
+
+      // 2. Process Wishlist
+      const wishSet = new Set(wishlist || []);
+      setWishlistIds(wishSet);
+
+      // 3. Process Products
+      const prodItems = inventory.data ? inventory.data : (Array.isArray(inventory) ? inventory : []);
+      const mappedProducts = prodItems.map(item => ({
         id: item.id,
         name: item.product_name,
         image: item.image ? `http://127.0.0.1:8000/storage/${item.image}` : ('https://via.placeholder.com/200x200/f8f9fa/333?text=' + encodeURIComponent(item.product_name)),
         price: parseFloat(item.price),
         originalPrice: item.mrp ? parseFloat(item.mrp) : null,
-        isWishlisted: wishlistIds.has(item.id),
+        stock: item.stock,
+        isWishlisted: wishSet.has(item.id),
       }));
-
       setProducts(mappedProducts);
+      setLoadingProducts(false);
+
+      // 4. Process Recent Orders
+      setRecentOrders(recentOrders || []);
+
     } catch (err) {
-      console.error('Error fetching products:', err);
-    } finally {
+      console.error('Error fetching dashboard data:', err);
+      setLoadingCategories(false);
       setLoadingProducts(false);
     }
   };
@@ -101,14 +108,96 @@ const Buyermainpage = () => {
     const params = new URLSearchParams(window.location.search);
     const q = params.get('q') || '';
     setSearchQuery(q);
-    fetchProducts(q);
+    fetchAllData(q);
   }, []);
+
+  // Separate effect for authenticated data
+  useEffect(() => {
+    if (isLoggedIn) {
+      const fetchRecentOrders = async () => {
+        try {
+          const response = await api.get('/buyer/recent-orders');
+          setRecentOrders(response.data || []);
+        } catch (err) {
+          console.error('Error fetching recent orders:', err);
+        }
+      };
+      fetchRecentOrders();
+    }
+  }, [isLoggedIn]);
+
+  // 1. Memoize category image glob entries once
+  const categoryImagesGlob = import.meta.glob('/src/assets/images/category/*.{png,jpg,jpeg,webp}', { eager: true, as: 'url' });
+  const imageEntries = useMemo(() => Object.keys(categoryImagesGlob).map((p) => ({
+    path: p,
+    name: p.split('/').pop().replace(/\.[^.]+$/, ''),
+    url: categoryImagesGlob[p],
+  })), []);
+
+  const normalize = (s) =>
+    s
+      .toLowerCase()
+      .trim()
+      .replace(/&amp;|&/g, 'and')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
+  const findImageForLabel = (label) => {
+    if (!label) return null;
+    const labelNorm = normalize(label);
+
+    // first try simple equality / substring on normalized names
+    for (const entry of imageEntries) {
+      const nameNorm = normalize(entry.name);
+      if (nameNorm === labelNorm || nameNorm.includes(labelNorm) || labelNorm.includes(nameNorm)) return entry.url;
+    }
+
+    // token-based matching: require partial overlap of meaningful tokens
+    const labelTokens = labelNorm.split('-').filter(Boolean);
+    for (const entry of imageEntries) {
+      const nameNorm = normalize(entry.name);
+      const nameTokens = nameNorm.split('-').filter(Boolean);
+      const common = labelTokens.filter((t) => nameTokens.includes(t)).length;
+      const needed = Math.max(1, Math.ceil(labelTokens.length / 2));
+      if (common >= needed) return entry.url;
+    }
+
+    return null;
+  };
+
+  const slugify = (label) =>
+    label
+      .toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/[^\w]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
+  // 2. Memoize fully resolved categories with images
+  const displayCategories = useMemo(() => {
+    const baseCats = categories.length > 0 ? categories : defaultCategories;
+    return baseCats.map(cat => {
+      const slug = slugify(cat.label);
+      const resolved = findImageForLabel(cat.label);
+
+      // Return a pre-processed category object
+      return {
+        ...cat,
+        slug,
+        resolvedImage: resolved || `/assets/categories/${slug}.webp` // Default path if not found
+      };
+    });
+  }, [categories, imageEntries]);
+
+  // Redundant logout removed, handled by BuyerNavbar
+
 
   // Redundant logout removed, handled by BuyerNavbar
 
   const displayProducts = products.length > 0 ? products : [];
 
-  // Toggle wishlist handler
+  // Toggle wishlist handler with Optimistic UI updates
   const toggleWishlist = async (productId) => {
     if (!isLoggedIn) {
       alert('Please login to add items to your wishlist.');
@@ -118,26 +207,40 @@ const Buyermainpage = () => {
 
     const isCurrentlyWishlisted = wishlistIds.has(productId);
 
+    // 1. Optimistically update state
+    setWishlistIds(prev => {
+      const next = new Set(prev);
+      if (isCurrentlyWishlisted) next.delete(productId);
+      else next.add(productId);
+      return next;
+    });
+
+    setProducts(prevProducts =>
+      prevProducts.map(p =>
+        p.id === productId ? { ...p, isWishlisted: !isCurrentlyWishlisted } : p
+      )
+    );
+
     try {
       if (isCurrentlyWishlisted) {
         await api.delete(`/wishlist/${productId}`);
-        setWishlistIds(prev => {
-          const next = new Set(prev);
-          next.delete(productId);
-          return next;
-        });
       } else {
         await api.post('/wishlist', { inventory_id: productId });
-        setWishlistIds(prev => new Set(prev).add(productId));
       }
-
-      setProducts((prevProducts) =>
-        prevProducts.map((p) =>
-          p.id === productId ? { ...p, isWishlisted: !isCurrentlyWishlisted } : p
-        )
-      );
     } catch (err) {
       console.error('Error toggling wishlist:', err);
+      // 2. Rollback on failure
+      setWishlistIds(prev => {
+        const next = new Set(prev);
+        if (isCurrentlyWishlisted) next.add(productId);
+        else next.delete(productId);
+        return next;
+      });
+      setProducts(prevProducts =>
+        prevProducts.map(p =>
+          p.id === productId ? { ...p, isWishlisted: isCurrentlyWishlisted } : p
+        )
+      );
       alert('Failed to update wishlist. Please try again.');
     }
   };
@@ -149,6 +252,12 @@ const Buyermainpage = () => {
       navigate('/buyer/login');
       return;
     }
+    
+    if (product.stock <= 0) {
+      alert('Sorry, this item is out of stock! Let\'s continue shopping for other items.');
+      return;
+    }
+
     // eslint-disable-next-line no-console
     console.log('Adding to cart:', product);
     // TODO: Integrate with cart context/state management
@@ -156,40 +265,19 @@ const Buyermainpage = () => {
     const cart = savedCart ? JSON.parse(savedCart) : [];
     cart.push(product);
     localStorage.setItem('mediEcom_cart', JSON.stringify(cart));
-    setCartCount(cart.length);
 
-    alert(`${product.name} added to cart!`);
+    // alert(`${product.name} added to cart!`);
   };
 
   const clearSearch = () => {
     setSearchQuery('');
-    fetchProducts('');
+    fetchAllData('');
     navigate('/buyer/dashboard');
   };
 
 
-  // Categories fallback (if API fails or is empty)
-  const defaultCategories = [
-    {
-      label: 'Medicine',
-      to: '/buyer/category/1/medicine',
-      items: [
-        { label: 'Derma', to: '/buyer/category/1-1/derma' },
-        { label: 'Gastro-Intestinal Tract', to: '/buyer/category/1-2/gastro-intestinal-tract' },
-        { label: 'Circulatory System', to: '/buyer/category/1-3/circulatory-system' },
-        { label: 'Others', to: '/buyer/category/1-4/others' },
-        { label: 'Endocrine System', to: '/buyer/category/1-5/endocrine-system' },
-        { label: 'Eyes, Nose & Ear', to: '/buyer/category/1-6/eyes-nose-ear' },
-        { label: 'Urinary Tract System', to: '/buyer/category/1-7/urinary-tract-system' },
-        { label: 'Central Nervous System', to: '/buyer/category/1-8/central-nervous-system' },
-        { label: 'Respiratory Tract System', to: '/buyer/category/1-9/respiratory-tract-system' },
-        { label: 'Cardio-Vascular System', to: '/buyer/category/1-10/cardio-vascular-system' },
-        { label: 'Oral Care', to: '/buyer/category/1-11/oral-care' },
-      ],
-    },
-  ];
+  // Categories fallback logic moved to useMemo
 
-  const displayCategories = categories.length > 0 ? categories : defaultCategories;
 
   useEffect(() => {
     const el = pageRef.current;
@@ -334,60 +422,6 @@ const Buyermainpage = () => {
     el.scrollBy({ left: dir * amount, behavior: 'smooth' });
   };
 
-
-  // Load all category images using Vite's glob so we can reliably find files regardless of filename quirks
-  const categoryImages = import.meta.glob('/src/assets/images/category/*.{png,jpg,jpeg,webp}', { eager: true, as: 'url' });
-  const imageEntries = Object.keys(categoryImages).map((p) => ({
-    path: p,
-    name: p.split('/').pop().replace(/\.[^.]+$/, ''),
-    url: categoryImages[p],
-  }));
-
-  const normalize = (s) =>
-    s
-      .toLowerCase()
-      .trim()
-      .replace(/&amp;|&/g, 'and')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/(^-|-$)/g, '');
-
-  const findImageForLabel = (label) => {
-    const labelNorm = normalize(label);
-
-    // first try simple equality / substring on normalized names
-    for (const entry of imageEntries) {
-      const nameNorm = normalize(entry.name);
-      if (nameNorm === labelNorm || nameNorm.includes(labelNorm) || labelNorm.includes(nameNorm)) return entry.url;
-    }
-
-    // token-based matching: require partial overlap of meaningful tokens
-    const labelTokens = labelNorm.split('-').filter(Boolean);
-    for (const entry of imageEntries) {
-      const nameNorm = normalize(entry.name);
-      const nameTokens = nameNorm.split('-').filter(Boolean);
-      const common = labelTokens.filter((t) => nameTokens.includes(t)).length;
-      // if label is small, one token match is enough; otherwise require half the tokens to match
-      const needed = Math.max(1, Math.ceil(labelTokens.length / 2));
-      if (common >= needed) return entry.url;
-    }
-
-    // fallback: any long token of the label appearing in filename
-    for (const entry of imageEntries) {
-      const nameNorm = normalize(entry.name);
-      if (labelTokens.some((t) => t.length > 2 && nameNorm.includes(t))) return entry.url;
-    }
-
-    return null;
-  };
-
-  const slugify = (label) =>
-    label
-      .toLowerCase()
-      .replace(/&/g, 'and')
-      .replace(/[^\w]+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/(^-|-$)/g, '');
 
   // Build extra cards from any images in the folder that don't match the
   // existing `categories` list (so we use all remaining images as cards).
@@ -575,15 +609,15 @@ const Buyermainpage = () => {
     <div className="bm-page" ref={pageRef}>
       <BuyerNavbar onSearch={(q) => {
         setSearchQuery(q);
-        fetchProducts(q);
+        fetchAllData(q);
         navigate(`/buyer/dashboard?q=${encodeURIComponent(q)}`);
       }} />
 
       {/* Categories nav under header */}
       <nav className="bm-categories" aria-label="Medicine categories">
         <div className="header__container">
-          {displayCategories.map((c) => (
-            <div key={c.to} className="bm-category-wrap">
+          {displayCategories.map((c, idx) => (
+            <div key={`cat-nav-${c.id || idx}`} className="bm-category-wrap">
               <Link
                 to={c.to}
                 data-cat={c.to}
@@ -609,8 +643,8 @@ const Buyermainpage = () => {
 
               {c.items && c.items.length > 0 && (
                 <div data-drop={c.to} className={`bm-category-dropdown ${openCategory === c.to ? 'bm-open' : ''}`} role="menu" aria-label={`Subcategories for ${c.label}`}>
-                  {c.items.map((it) => (
-                    <Link key={it.to} to={it.to} className="bm-category-dropdown-item" onClick={() => setOpenCategory(null)} role="menuitem">
+                  {c.items.map((it, sIdx) => (
+                    <Link key={`subcat-${it.to}-${sIdx}`} to={it.to} className="bm-category-dropdown-item" onClick={() => setOpenCategory(null)} role="menuitem">
                       {it.label}
                     </Link>
                   ))}
@@ -621,9 +655,9 @@ const Buyermainpage = () => {
         </div>
       </nav>
 
-      {/* Banner under categories (uses main.webp from assets/images) */}
+      {/* Banner under categories (uses premium_banner.png from assets/images) */}
       <div className="bm-banner">
-        <img src="/src/assets/images/main.webp" alt="Main banner" className="bm-banner-img" />
+        <img src="/src/assets/images/premium_banner.png" alt="Main banner" className="bm-banner-img" />
 
         {/* Glassmorphic content card (left side) */}
         <div className="bm-banner-card" role="region" aria-label="Promotional">
@@ -662,50 +696,25 @@ const Buyermainpage = () => {
           <h3 className="bm-cats-title">Categories</h3>
           <div className="bm-cats-wrap">
             <div className="bm-cats-list" ref={catsRef}>
-              {categories.map((c) => {
-                const slug = slugify(c.label);
-                // Try public assets first (support multiple common folders)
-                const publicWebp = `/assets/categories/${slug}.webp`;
-                const publicPng = `/assets/categories/${slug}.png`;
-                const publicWebpAlt = `/assets/images/category/${slug}.webp`;
-                const publicPngAlt = `/assets/images/category/${slug}.png`;
-
-                // Also try src folder locations (if images are inside src)
-                const srcWebp = `/src/assets/images/categories/${slug}.webp`;
-                const srcPng = `/src/assets/images/categories/${slug}.png`;
-                const srcWebpAlt = `/src/assets/images/category/${slug}.webp`;
-                const srcPngAlt = `/src/assets/images/category/${slug}.png`;
-
-                const sources = [publicWebp, publicPng, publicWebpAlt, publicPngAlt, srcWebp, srcPng, srcWebpAlt, srcPngAlt];
-
-                const resolved = findImageForLabel(c.label);
-                const initialSrc = resolved || sources[0];
-                return (
-                  <Link to={c.to} className="bm-cat-card" key={c.to}>
+              {loadingCategories ? (
+                Array(8).fill(0).map((_, i) => <CategorySkeleton key={`cat-skeleton-${i}`} />)
+              ) : (
+                displayCategories.map((c, idx) => (
+                  <Link to={c.to} className="bm-cat-card" key={`cat-card-${c.id || idx}`}>
                     <div className="bm-cat-img-wrap">
                       <img
-                        src={initialSrc}
+                        src={c.resolvedImage}
                         alt={c.label}
                         className="bm-cat-img"
-                        data-err-idx={resolved ? 0 : 0}
                         onError={(e) => {
-                          const el = e.currentTarget;
-                          const idx = Number(el.dataset.errIdx || '0');
-                          const next = idx + 1;
-                          if (next < sources.length) {
-                            el.dataset.errIdx = next.toString();
-                            el.src = sources[next];
-                            return;
-                          }
-                          // final fallback: simple inline SVG placeholder
-                          el.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="320" height="220" viewBox="0 0 320 220"><rect width="100%" height="100%" fill="%23f7f9fb"/><text x="50%" y="50%" fill="%23999" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle" dominant-baseline="central">Image not available</text></svg>';
+                          e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="320" height="220" viewBox="0 0 320 220"><rect width="100%" height="100%" fill="%23f7f9fb"/><text x="50%" y="50%" fill="%23999" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle" dominant-baseline="central">Image not available</text></svg>';
                         }}
                       />
                     </div>
                     <div className="bm-cat-label">{c.label}</div>
                   </Link>
-                );
-              })}
+                ))
+              )}
             </div>
 
             <div className="bm-cats-controls" role="toolbar" aria-label="Scroll categories">
@@ -720,6 +729,38 @@ const Buyermainpage = () => {
         </div>
       </section>
 
+      {/* Recent Orders Section */}
+      {isLoggedIn && recentOrders.length > 0 && (
+        <section className="bm-recent-orders" aria-label="Recent Orders">
+          <div className="header__container">
+            <div className="bm-orders-header">
+              <h3 className="bm-orders-title">Recent Orders</h3>
+              <Link to="/buyer/orders" className="bm-view-all-btn">VIEW ALL</Link>
+            </div>
+            <div className="bm-orders-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+              {recentOrders
+                .sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
+                .slice(0, 4)
+                .map((order, idx) => (
+                <Link key={`order-card-${order.id}-${idx}`} to="/buyer/orders" className="bm-order-card">
+                  <div>
+                    <div className="bm-order-number">Order #{order.id}</div>
+                    <div className="bm-order-date">{new Date(order.order_date).toLocaleDateString()}</div>
+                    <div className={`bm-order-status ${order.status.toLowerCase()}`}>
+                      {order.status}
+                    </div>
+                  </div>
+                  <div className="bm-order-footer">
+                    <span className="bm-order-total-label">Total</span>
+                    <span className="bm-order-total-value">Rs. {Number(order.total_amount).toFixed(2)}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Featured Products Section */}
       <section className="bm-featured-products" aria-label="Featured Products">
         <div className="header__container">
@@ -727,23 +768,28 @@ const Buyermainpage = () => {
             <h3 className="bm-featured-title">Featured Products</h3>
             <Link to="/products/featured" className="bm-view-all-btn">VIEW ALL</Link>
           </div>
-          <div className="bm-product-grid">
-            {displayProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={{
-                  ...product,
-                  isWishlisted: wishlistIds.has(product.id)
-                }}
-                onToggleWishlist={toggleWishlist}
-                onAddToCart={addToCart}
-              />
-            ))}
+         <div className="bm-product-grid">
+            {loadingProducts ? (
+              Array(4).fill(0).map((_, i) => <ProductCardSkeleton key={`prod-skeleton-${i}`} />)
+            ) : (
+              displayProducts.map((product) => (
+                <ProductCard
+                  key={`featured-prod-${product.id}`}
+                  product={{
+                    ...product,
+                    isWishlisted: wishlistIds.has(product.id)
+                  }}
+                  onToggleWishlist={toggleWishlist}
+                  onAddToCart={addToCart}
+                />
+              ))
+            )}
           </div>
         </div>
       </section>
 
       <main className="bm-main"></main>
+      <BuyerFooter />
     </div>
   );
 };
