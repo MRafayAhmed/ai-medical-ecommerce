@@ -145,6 +145,7 @@ const AdminNavbar = () => {
           <NavLink to="/admin/products" className={({ isActive }) => isActive ? 'active' : ''}><i className="bi bi-box-seam" /> <span>Products</span></NavLink>
           <NavLink to="/admin/categories" className={({ isActive }) => isActive ? 'active' : ''}><i className="bi bi-tags" /> <span>Categories</span></NavLink>
           <NavLink to="/admin/orders" className={({ isActive }) => isActive ? 'active' : ''}><i className="bi bi-cart-check" /> <span>Orders</span></NavLink>
+          <NavLink to="/admin/purchase-invoices" className={({ isActive }) => isActive ? 'active' : ''}><i className="bi bi-receipt" /> <span>Purchase Invoices</span></NavLink>
           <NavLink to="/admin/suppliers" className={({ isActive }) => isActive ? 'active' : ''}><i className="bi bi-truck" /> <span>Suppliers</span></NavLink>
           <NavLink to="/admin/reports" className={({ isActive }) => isActive ? 'active' : ''}><i className="bi bi-bar-chart-line" /> <span>Reports</span></NavLink>
         </nav>

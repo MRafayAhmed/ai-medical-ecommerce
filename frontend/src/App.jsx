@@ -15,6 +15,7 @@ import AdminReport from "./pages/admin/adminreport";
 import AdminSetting from "./pages/admin/adminsetting";
 import AdminSupplier from "./pages/admin/AdminSupplier";
 import AdminCategory from "./pages/admin/admincategory";
+import AdminPurchaseInvoice from "./pages/admin/AdminPurchaseInvoice";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BuyerLogin from "./pages/customer/buyerlogin";
 import BuyerRegister from "./pages/customer/buyerregister";
@@ -76,6 +77,7 @@ function App() {
             <Route path="/admin/settings" element={<AdminSetting />} />
             <Route path="/admin/suppliers" element={<AdminSupplier />} />
             <Route path="/admin/categories" element={<AdminCategory />} />
+            <Route path="/admin/purchase-invoices" element={<AdminPurchaseInvoice />} />
           </Route>
         </Routes>
       </StockProvider>

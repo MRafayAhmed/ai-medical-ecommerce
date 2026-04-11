@@ -1,0 +1,264 @@
+/* AdminPurchaseInvoice.css */
+.admin-purchase-invoice {
+    padding: 24px;
+    background: #f8fafc;
+    min-height: calc(100vh - 80px);
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.page-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0b5fb8;
+    margin: 0;
+}
+
+.btn-primary {
+    background: #0b5fb8;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background: #094d96;
+    transform: translateY(-1px);
+}
+
+.invoice-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.invoice-table th {
+    background: #f1f5f9;
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.invoice-table td {
+    padding: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 15px;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-draft {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-posted {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.action-btns {
+    display: flex;
+    gap: 8px;
+}
+
+.icon-btn-edit {
+    color: #0b5fb8;
+    background: #e0f2fe;
+    border: none;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.icon-btn-delete {
+    color: #ef4444;
+    background: #fee2e2;
+    border: none;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-post {
+    color: #10b981;
+    background: #d1fae5;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 1000px;
+    max-height: 90vh;
+    border-radius: 16px;
+    padding: 32px;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 8px;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.details-section {
+    margin-bottom: 24px;
+}
+
+.details-table {
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.details-table th {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 2px solid #e2e8f0;
+    color: #64748b;
+}
+
+.details-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.remove-btn {
+    color: #ef4444;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.add-row-btn {
+    background: #f1f5f9;
+    color: #0b5fb8;
+    border: 1px dashed #0b5fb8;
+    padding: 8px 16px;
+    border-radius: 8px;
+    width: 100%;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-row-btn:hover {
+    background: #e0f2fe;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.total-summary {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 24px;
+}
+
+.total-box {
+    background: #0b5fb8;
+    color: white;
+    padding: 16px 32px;
+    border-radius: 12px;
+    text-align: right;
+}
+
+.total-box span {
+    display: block;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.total-box strong {
+    font-size: 24px;
+}

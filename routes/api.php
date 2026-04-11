@@ -11,7 +11,6 @@ use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ShoppingCartController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SellerController;
 use Illuminate\Support\Facades\Validator;
 
@@ -152,9 +151,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('suppliers', SupplierController::class);
     Route::apiResource('sellers', SellerController::class);
-    Route::get('/admin/stats', [App\Http\Controllers\Admin\DashboardController::class, 'index']);
+    Route::get('/admin/stats', 'App\Http\Controllers\Admin\DashboardController@index');
     Route::get('/buyer/recent-orders', [MedicalInventoryController::class, 'recentOrders']);
     Route::apiResource('wishlist', WishlistController::class)->only(['index', 'store', 'destroy']);
+    Route::apiResource('purchase-invoices', 'App\Http\Controllers\Admin\PurchaseInvoiceController');
+    Route::post('purchase-invoices/{id}/mark-as-post', 'App\Http\Controllers\Admin\PurchaseInvoiceController@markispost');
 });
 
 // Publicly accessible routes
