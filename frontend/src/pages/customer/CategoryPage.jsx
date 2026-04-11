@@ -152,30 +152,21 @@ const CategoryPage = () => {
                 fetchData(q);
             }} />
 
-            <main className="header__container" style={{ paddingTop: '100px', minHeight: '80vh' }}>
-                <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="bm-back-btn"
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '8px 0',
-                            color: '#000',
-                            fontWeight: 600
-                        }}
-                    >
-                        <ArrowLeft size={24} color="#000" />
+            <main className="bm-main-container" style={{ paddingTop: '120px', minHeight: '80vh' }}>
+                <header className="bm-category-header">
+                    <button onClick={() => navigate(-1)} className="bm-category-back">
+                        <ArrowLeft size={18} />
                         <span>Back</span>
                     </button>
-                    <h1 style={{ margin: 0, fontSize: '2rem', color: 'var(--text-primary)' }}>
-                        {category ? category.name : categoryName || 'Category'}
-                    </h1>
-                </div>
+                    <div className="bm-category-title-row">
+                        <h1 className="bm-category-name">
+                            {category ? (category.name || category.product_name) : (categoryName || 'Category')}
+                        </h1>
+                        {!loading && products.length > 0 && (
+                            <span className="bm-category-count">({products.length} Products Found)</span>
+                        )}
+                    </div>
+                </header>
 
                 {loading ? (
                     <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
