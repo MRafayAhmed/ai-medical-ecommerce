@@ -14,6 +14,11 @@ const CategoryPage = () => {
     const [category, setCategory] = useState(null);
     const [loading, setLoading] = useState(true);
     const [wishlistIds, setWishlistIds] = useState(new Set());
+    const [pagination, setPagination] = useState({
+        current_page: 1,
+        last_page: 1,
+        total: 0
+    });
     const isLoggedIn = !!localStorage.getItem('customer_token');
 
     const fetchWishlist = async () => {
@@ -34,13 +39,26 @@ const CategoryPage = () => {
 
     const [searchQuery, setSearchQuery] = useState('');
 
-    const fetchData = async (query = '') => {
+    const fetchData = async (query = '', page = 1) => {
         setLoading(true);
         try {
-            let url = `/medical-inventory?category_id=${categoryId}`;
+            let url = `/medical-inventory?category_id=${categoryId}&page=${page}`;
             if (query) url += `&q=${encodeURIComponent(query)}`;
             const productRes = await api.get(url);
-            setProducts(productRes.data.data || productRes.data || []);
+            
+            // Laravel pagination returns data in .data.data
+            const responseData = productRes.data;
+            if (responseData.data) {
+                setProducts(responseData.data);
+                setPagination({
+                    current_page: responseData.current_page,
+                    last_page: responseData.last_page,
+                    total: responseData.total
+                });
+            } else {
+                setProducts(responseData || []);
+                setPagination({ current_page: 1, last_page: 1, total: (responseData || []).length });
+            }
 
             if (!category) {
                 const catRes = await api.get(`/categories/${categoryId}`);
@@ -163,7 +181,7 @@ const CategoryPage = () => {
                             {category ? (category.name || category.product_name) : (categoryName || 'Category')}
                         </h1>
                         {!loading && products.length > 0 && (
-                            <span className="bm-category-count">({products.length} Products Found)</span>
+                            <span className="bm-category-count">({pagination.total} Products Found)</span>
                         )}
                     </div>
                 </header>
@@ -173,27 +191,88 @@ const CategoryPage = () => {
                         <Loader2 className="animate-spin" size={48} color="var(--primary-color)" />
                     </div>
                 ) : products.length > 0 ? (
-                    <div className="bm-product-grid" style={{ paddingBottom: '40px' }}>
-                        {products.map((product, idx) => {
-                            const price = parseFloat(product.price || 0);
-                            const mrp = product.mrp ? parseFloat(product.mrp) : null;
-                            return (
-                                <ProductCard
-                                    key={`cat-prod-${product.id || idx}`}
-                                    product={{
-                                        ...product,
-                                        name: product.product_name || product.name,
-                                        image: product.image?.startsWith('http') ? product.image : (product.image ? `http://127.0.0.1:8000/storage/${product.image}` : `https://via.placeholder.com/300?text=${encodeURIComponent(product.product_name || product.name || 'Product')}`),
-                                        price: price,
-                                        originalPrice: mrp,
-                                        isWishlisted: wishlistIds.has(product.id)
+                    <>
+                        <div className="bm-product-grid" style={{ paddingBottom: '40px' }}>
+                            {products.map((product, idx) => {
+                                const price = parseFloat(product.price || 0);
+                                const mrp = product.mrp ? parseFloat(product.mrp) : null;
+                                
+                                // Fix broken image path if it's 'N/A' or missing
+                                const hasValidImage = product.image && product.image !== 'N/A' && product.image !== 'null';
+                                const imageUrl = product.image?.startsWith('http') 
+                                    ? product.image 
+                                    : (hasValidImage 
+                                        ? `http://127.0.0.1:8000/storage/${product.image}` 
+                                        : `https://via.placeholder.com/300?text=${encodeURIComponent(product.product_name || product.name || 'Product')}`);
+
+                                return (
+                                    <ProductCard
+                                        key={`cat-prod-${product.id || idx}`}
+                                        product={{
+                                            ...product,
+                                            name: product.product_name || product.name,
+                                            image: imageUrl,
+                                            price: price,
+                                            originalPrice: mrp,
+                                            isWishlisted: wishlistIds.has(product.id)
+                                        }}
+                                        onAddToCart={() => addToCart(product)}
+                                        onToggleWishlist={() => toggleWishlist(product.id)}
+                                    />
+                                );
+                            })}
+                        </div>
+                        
+                        {/* Pagination Controls */}
+                        {pagination.last_page > 1 && (
+                            <div className="bm-pagination" style={{ 
+                                display: 'flex', 
+                                justifyContent: 'center', 
+                                alignItems: 'center', 
+                                gap: '20px', 
+                                padding: '40px 0',
+                                borderTop: '1px solid #eee'
+                            }}>
+                                <button 
+                                    onClick={() => fetchData(searchQuery, pagination.current_page - 1)}
+                                    disabled={pagination.current_page === 1}
+                                    className="bm-pagination-btn"
+                                    style={{
+                                        padding: '10px 20px',
+                                        borderRadius: '8px',
+                                        border: '1px solid #ddd',
+                                        background: pagination.current_page === 1 ? '#f5f5f5' : 'white',
+                                        cursor: pagination.current_page === 1 ? 'not-allowed' : 'pointer',
+                                        color: 'var(--primary-color)',
+                                        fontWeight: '600'
                                     }}
-                                    onAddToCart={() => addToCart(product)}
-                                    onToggleWishlist={() => toggleWishlist(product.id)}
-                                />
-                            );
-                        })}
-                    </div>
+                                >
+                                    Previous
+                                </button>
+                                
+                                <span style={{ fontWeight: '600' }}>
+                                    Page {pagination.current_page} of {pagination.last_page}
+                                </span>
+                                
+                                <button 
+                                    onClick={() => fetchData(searchQuery, pagination.current_page + 1)}
+                                    disabled={pagination.current_page === pagination.last_page}
+                                    className="bm-pagination-btn"
+                                    style={{
+                                        padding: '10px 20px',
+                                        borderRadius: '8px',
+                                        border: '1px solid #ddd',
+                                        background: pagination.current_page === pagination.last_page ? '#f5f5f5' : 'white',
+                                        cursor: pagination.current_page === pagination.last_page ? 'not-allowed' : 'pointer',
+                                        color: 'var(--primary-color)',
+                                        fontWeight: '600'
+                                    }}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
+                    </>
                 ) : (
                     <div style={{ textAlign: 'center', padding: '100px', background: '#f8f9fa', borderRadius: '16px' }}>
                         <p style={{ fontSize: '1.2rem', color: '#666' }}>No products found in this category.</p>

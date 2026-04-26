@@ -9,19 +9,37 @@ const BuyerOrders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [pagination, setPagination] = useState({
+        current_page: 1,
+        last_page: 1,
+        total: 0
+    });
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                const response = await api.get('/orders');
-                setOrders(response.data.data || response.data || []);
-            } catch (err) {
-                console.error('Error fetching orders:', err);
-            } finally {
-                setLoading(false);
+    const fetchOrders = async (page = 1) => {
+        setLoading(true);
+        try {
+            const response = await api.get(`/orders?page=${page}`);
+            const responseData = response.data;
+            if (responseData.data) {
+                setOrders(responseData.data);
+                setPagination({
+                    current_page: responseData.current_page,
+                    last_page: responseData.last_page,
+                    total: responseData.total
+                });
+            } else {
+                setOrders(responseData || []);
+                setPagination({ current_page: 1, last_page: 1, total: (responseData || []).length });
             }
-        };
+        } catch (err) {
+            console.error('Error fetching orders:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchOrders();
     }, []);
 
@@ -50,73 +68,126 @@ const BuyerOrders = () => {
                         <Loader2 className="animate-spin" size={48} color="var(--primary-color)" />
                     </div>
                 ) : orders.length > 0 ? (
-                    <div className="bm-orders-grid-3" style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(3, 1fr)',
-                        gap: '24px'
-                    }}>
-                        {orders.map(order => (
-                            <div key={order.id} style={{
-                                padding: '24px',
-                                background: 'white',
-                                borderRadius: '16px',
-                                border: '1px solid rgba(2, 6, 23, 0.04)',
-                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'space-between',
-                                transition: 'all 0.2s ease',
-                                cursor: 'default'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-4px)';
-                                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.08)';
-                                e.currentTarget.style.borderColor = 'var(--color-primary)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'none';
-                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.03)';
-                                e.currentTarget.style.borderColor = 'rgba(2, 6, 23, 0.04)';
-                            }}>
-                                <div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                        <h3 style={{ margin: 0, fontWeight: 800, fontSize: '1.2rem', color: 'var(--text-primary)' }}>Order #{order.id}</h3>
-                                        <span style={{
-                                            padding: '4px 10px',
-                                            borderRadius: '999px',
-                                            fontSize: '0.75rem',
-                                            fontWeight: 700,
-                                            textTransform: 'uppercase',
-                                            background: order.status === 'completed' ? '#f0fdf4' : (order.status === 'pending' ? '#fff7ed' : '#fef2f2'),
-                                            color: order.status === 'completed' ? '#16a34a' : (order.status === 'pending' ? '#ea580c' : '#dc2626')
-                                        }}>{order.status}</span>
-                                    </div>
-                                    <p style={{ margin: '0 0 16px 0', color: '#64748b', fontSize: '0.9rem' }}>
-                                        Ordered: {new Date(order.order_date).toLocaleDateString()}
-                                    </p>
-                                    <button 
-                                        className="bm-view-all-btn" 
-                                        style={{ fontSize: '0.8rem', padding: '6px 16px', background: '#f1f5f9', color: '#334155', boxShadow: 'none' }}
-                                        onClick={(e) => { e.preventDefault(); setSelectedOrder(order); }}
-                                    >
-                                        View Details
-                                    </button>
-                                </div>
-                                <div style={{
-                                    borderTop: '1px solid #f1f5f9',
-                                    paddingTop: '16px',
+                    <>
+                        <div className="bm-orders-grid-3" style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '24px'
+                        }}>
+                            {orders.map(order => (
+                                <div key={order.id} style={{
+                                    padding: '24px',
+                                    background: 'white',
+                                    borderRadius: '16px',
+                                    border: '1px solid rgba(2, 6, 23, 0.04)',
+                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
                                     display: 'flex',
+                                    flexDirection: 'column',
                                     justifyContent: 'space-between',
-                                    alignItems: 'center'
+                                    transition: 'all 0.2s ease',
+                                    cursor: 'default'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-4px)';
+                                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.08)';
+                                    e.currentTarget.style.borderColor = 'var(--color-primary)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'none';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.03)';
+                                    e.currentTarget.style.borderColor = 'rgba(2, 6, 23, 0.04)';
                                 }}>
-                                    <span style={{ fontSize: '0.9rem', color: '#64748b' }}>Total Amount</span>
-                                    <span style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--color-primary)' }}>
-                                        Rs. {Number(order.total_amount).toFixed(2)}
-                                    </span>
+                                    <div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                            <h3 style={{ margin: 0, fontWeight: 800, fontSize: '1.2rem', color: 'var(--text-primary)' }}>Order #{order.id}</h3>
+                                            <span style={{
+                                                padding: '4px 10px',
+                                                borderRadius: '999px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 700,
+                                                textTransform: 'uppercase',
+                                                background: order.status === 'completed' ? '#f0fdf4' : (order.status === 'pending' ? '#fff7ed' : '#fef2f2'),
+                                                color: order.status === 'completed' ? '#16a34a' : (order.status === 'pending' ? '#ea580c' : '#dc2626')
+                                            }}>{order.status}</span>
+                                        </div>
+                                        <p style={{ margin: '0 0 16px 0', color: '#64748b', fontSize: '0.9rem' }}>
+                                            Ordered: {new Date(order.order_date).toLocaleDateString()}
+                                        </p>
+                                        <button 
+                                            className="bm-view-all-btn" 
+                                            style={{ fontSize: '0.8rem', padding: '6px 16px', background: '#f1f5f9', color: '#334155', boxShadow: 'none' }}
+                                            onClick={(e) => { e.preventDefault(); setSelectedOrder(order); }}
+                                        >
+                                            View Details
+                                        </button>
+                                    </div>
+                                    <div style={{
+                                        borderTop: '1px solid #f1f5f9',
+                                        paddingTop: '16px',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center'
+                                    }}>
+                                        <span style={{ fontSize: '0.9rem', color: '#64748b' }}>Total Amount</span>
+                                        <span style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--color-primary)' }}>
+                                            Rs. {Number(order.total_amount).toFixed(2)}
+                                        </span>
+                                    </div>
                                 </div>
+                            ))}
+                        </div>
+                        
+                        {/* Pagination Controls */}
+                        {pagination.last_page > 1 && (
+                            <div className="bm-pagination" style={{ 
+                                display: 'flex', 
+                                justifyContent: 'center', 
+                                alignItems: 'center', 
+                                gap: '20px', 
+                                padding: '40px 0',
+                                marginTop: '20px',
+                                borderTop: '1px solid #eee'
+                            }}>
+                                <button 
+                                    onClick={() => fetchOrders(pagination.current_page - 1)}
+                                    disabled={pagination.current_page === 1}
+                                    className="bm-pagination-btn"
+                                    style={{
+                                        padding: '10px 20px',
+                                        borderRadius: '8px',
+                                        border: '1px solid #ddd',
+                                        background: pagination.current_page === 1 ? '#f5f5f5' : 'white',
+                                        cursor: pagination.current_page === 1 ? 'not-allowed' : 'pointer',
+                                        color: 'var(--primary-color)',
+                                        fontWeight: '600'
+                                    }}
+                                >
+                                    Previous
+                                </button>
+                                
+                                <span style={{ fontWeight: '600' }}>
+                                    Page {pagination.current_page} of {pagination.last_page} ({pagination.total} Orders)
+                                </span>
+                                
+                                <button 
+                                    onClick={() => fetchOrders(pagination.current_page + 1)}
+                                    disabled={pagination.current_page === pagination.last_page}
+                                    className="bm-pagination-btn"
+                                    style={{
+                                        padding: '10px 20px',
+                                        borderRadius: '8px',
+                                        border: '1px solid #ddd',
+                                        background: pagination.current_page === pagination.last_page ? '#f5f5f5' : 'white',
+                                        cursor: pagination.current_page === pagination.last_page ? 'not-allowed' : 'pointer',
+                                        color: 'var(--primary-color)',
+                                        fontWeight: '600'
+                                    }}
+                                >
+                                    Next
+                                </button>
                             </div>
-                        ))}
-                    </div>
+                        )}
+                    </>
                 ) : (
                     <div style={{ textAlign: 'center', padding: '100px', background: '#f8f9fa', borderRadius: '16px' }}>
                         <Package size={64} color="#ccc" style={{ marginBottom: '16px' }} />

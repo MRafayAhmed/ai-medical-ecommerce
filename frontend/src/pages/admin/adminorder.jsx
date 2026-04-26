@@ -9,13 +9,23 @@ export default function AdminOrder() {
   const [filter, setFilter] = useState('all');
   const [showView, setShowView] = useState(false);
   const [selected, setSelected] = useState(null);
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+    total: 0
+  });
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (page = 1) => {
     setLoading(true);
     try {
-      const res = await api.get('/orders');
+      const res = await api.get(`/orders?page=${page}`);
       // Laravel pagination: data is in res.data.data
       setOrders(res.data.data || []);
+      setPagination({
+        current_page: res.data.current_page,
+        last_page: res.data.last_page,
+        total: res.data.total
+      });
     } catch (err) {
       console.error('Failed to fetch orders', err);
     } finally {
@@ -124,6 +134,47 @@ export default function AdminOrder() {
               </div>
             )}
           </div>
+
+          {/* Pagination Controls */}
+          {!loading && pagination.last_page > 1 && (
+            <div className="bm-pagination" style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              gap: '20px', 
+              padding: '24px 0',
+              marginTop: '20px',
+              borderTop: '1px solid #eee'
+            }}>
+              <button 
+                onClick={() => fetchOrders(pagination.current_page - 1)}
+                disabled={pagination.current_page === 1}
+                className="control-btn"
+                style={{
+                  background: pagination.current_page === 1 ? '#f5f5f5' : 'white',
+                  cursor: pagination.current_page === 1 ? 'not-allowed' : 'pointer'
+                }}
+              >
+                Previous
+              </button>
+              
+              <span style={{ fontWeight: '600' }}>
+                Page {pagination.current_page} of {pagination.last_page} ({pagination.total} Total Orders)
+              </span>
+              
+              <button 
+                onClick={() => fetchOrders(pagination.current_page + 1)}
+                disabled={pagination.current_page === pagination.last_page}
+                className="control-btn"
+                style={{
+                  background: pagination.current_page === pagination.last_page ? '#f5f5f5' : 'white',
+                  cursor: pagination.current_page === pagination.last_page ? 'not-allowed' : 'pointer'
+                }}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
