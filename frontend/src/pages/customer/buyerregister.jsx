@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
+import loginArt from '../../assets/images/cus_login.PNG';
 import '../../styles/buyerregister.css';
 
 const BuyerRegister = () => {
@@ -70,7 +71,7 @@ const BuyerRegister = () => {
           </Link>
 
           <div className="art" aria-hidden="true">
-            <img src="/src/assets/images/cus_login.PNG" alt="Artwork" className="login-art tuned" />
+            <img src={loginArt} alt="Artwork" className="login-art tuned" />
           </div>
 
           <Link to="/buyer/login" className="back-home-mobile" aria-label="Back to login">

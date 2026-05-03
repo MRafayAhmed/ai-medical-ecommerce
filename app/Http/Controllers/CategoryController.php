@@ -38,6 +38,8 @@ class CategoryController extends Controller
                 $category->image = $request->file('image')->store('categories', 'public');
             }
             $category->save();
+            \Illuminate\Support\Facades\Cache::forget('categories_all');
+            \Illuminate\Support\Facades\Cache::forget('categories_all_dashboard');
             return $this->index();
         } catch (\Throwable $th) {
             return response()->json($th);
@@ -73,6 +75,8 @@ class CategoryController extends Controller
                 $category->image = $request->file('image')->store('categories', 'public');
             }
             $category->save();
+            \Illuminate\Support\Facades\Cache::forget('categories_all');
+            \Illuminate\Support\Facades\Cache::forget('categories_all_dashboard');
             return $this->index();
         } catch (\Throwable $th) {
             return response()->json($th);
@@ -87,6 +91,8 @@ class CategoryController extends Controller
         try {
             $category = Category::find($id);
             $category->delete();
+            \Illuminate\Support\Facades\Cache::forget('categories_all');
+            \Illuminate\Support\Facades\Cache::forget('categories_all_dashboard');
             return $this->index();
         } catch (\Throwable $th) {
             return response()->json($th);

@@ -38,7 +38,7 @@ class ShoppingCartController extends Controller
 
             $shoppingCart = new ShoppingCart();
             $shoppingCart->user_id = $request->user_id;
-            $shoppingCart->branch_id = $request->branch_id;
+            // $shoppingCart->branch_id = $request->branch_id;
             $shoppingCart->total_amount = $request->total_amount;
             $shoppingCart->save();
             $this->cartitems($shoppingCart->id , $request->cart_items);
@@ -83,7 +83,7 @@ class ShoppingCartController extends Controller
 
             $shoppingCart = ShoppingCart::find($id);
             $shoppingCart->user_id = $request->user_id;
-            $shoppingCart->branch_id = $request->branch_id;
+            // $shoppingCart->branch_id = $request->branch_id;
             $shoppingCart->total_amount = $request->total_amount;
             $shoppingCart->save();
             CartItems::where('cart_id', $id)->delete();

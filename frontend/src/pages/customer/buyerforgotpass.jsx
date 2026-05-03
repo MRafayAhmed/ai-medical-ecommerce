@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import loginBg from '../../assets/images/cus_login.PNG';
 import '../../styles/buyerforgotpass.css';
 
 const BuyerForgotPass = () => {
@@ -19,7 +20,7 @@ const BuyerForgotPass = () => {
   return (
     <div className="buyer-forgot-container">
       <div className="background-image">
-        <img src="/src/assets/images/cus_login.PNG" alt="Background" />
+        <img src={loginBg} alt="Background" />
       </div>
 
       <header className="buyer-header">

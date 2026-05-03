@@ -1,0 +1,16 @@
+.git
+public/storage
+node_modules
+frontend/node_modules
+frontend/dist
+storage/*.key
+vendor
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+docker-compose.yml
+backend.Dockerfile
+frontend/Dockerfile
+README.md
+tests

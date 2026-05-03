@@ -371,7 +371,7 @@ export default function AdminProduct() {
             <div className="product-detail">
               {selectedProduct.image && (
                 <img
-                  src={selectedProduct.image.startsWith('http') ? selectedProduct.image : `/storage/${selectedProduct.image}`}
+                  src={selectedProduct.image.startsWith('http') ? selectedProduct.image : `http://localhost:8000/storage/${selectedProduct.image}`}
                   alt="Product"
                   onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=No+Image'; }}
                   style={{ maxWidth: '200px', display: 'block', margin: '0 auto 15px' }}

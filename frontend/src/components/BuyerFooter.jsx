@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 import '../styles/buyermainpage.css';
+import faramaLogo from '../assets/images/farama_logo.png';
 
 const BuyerFooter = () => {
     return (
@@ -24,7 +25,7 @@ const BuyerFooter = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <Link to="/buyer/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
                         <img 
-                            src="/src/assets/images/farama_logo.png" 
+                            src={faramaLogo} 
                             alt="FaRaMa Health Logo" 
                             style={{ height: '40px', width: 'auto' }}
                         />

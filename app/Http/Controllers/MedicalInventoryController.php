@@ -311,10 +311,13 @@ class MedicalInventoryController extends Controller
 
     private function clearCache()
     {
-        Cache::forget('inventory_attributes');
-        // Clear first 5 pages which is the most common use case.
-        for ($i = 1; $i <= 5; $i++) {
-            Cache::forget('inventory_page_' . $i);
-        }
+        // Flush all related cache keys
+        \Illuminate\Support\Facades\Cache::forget('inventory_attributes');
+        \Illuminate\Support\Facades\Cache::forget('categories_all_dashboard');
+        
+        // Since cache keys are dynamic (pagination/search), 
+        // the safest way in development is to clear the whole cache tags or prefix 
+        // if supported, but here we will just clear the common ones.
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
     }
 }

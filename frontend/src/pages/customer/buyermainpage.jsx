@@ -9,6 +9,7 @@ import BuyerNavbar from '../../components/BuyerNavbar';
 import BuyerFooter from '../../components/BuyerFooter';
 import { CategorySkeleton, ProductCardSkeleton } from '../../components/Skeletons';
 import api from '../../api/axios';
+import premiumBanner from '../../assets/images/premium_banner.png';
 
 const defaultCategories = [
   {
@@ -70,7 +71,7 @@ const Buyermainpage = () => {
         id: cat.id,
         label: cat.name,
         to: `/buyer/category/${cat.id}/${slugify(cat.name)}`,
-        image: cat.image ? `/storage/${cat.image}` : (findImageForLabel(cat.name) || `https://via.placeholder.com/150?text=${encodeURIComponent(cat.name)}`),
+        image: cat.image ? `http://localhost:8000/storage/${cat.image}` : (findImageForLabel(cat.name) || `https://via.placeholder.com/150?text=${encodeURIComponent(cat.name)}`),
         items: []
       }));
       setCategories(mappedCats);
@@ -85,7 +86,7 @@ const Buyermainpage = () => {
       const mappedProducts = prodItems.map(item => ({
         id: item.id,
         name: item.product_name,
-        image: item.image ? `http://127.0.0.1:8000/storage/${item.image}` : ('https://via.placeholder.com/200x200/f8f9fa/333?text=' + encodeURIComponent(item.product_name)),
+        image: item.image ? `http://localhost:8000/storage/${item.image}` : ('https://via.placeholder.com/200x200/f8f9fa/333?text=' + encodeURIComponent(item.product_name)),
         price: parseFloat(item.price),
         originalPrice: item.mrp ? parseFloat(item.mrp) : null,
         stock: item.stock,
@@ -657,7 +658,7 @@ const Buyermainpage = () => {
 
       {/* Banner under categories (uses premium_banner.png from assets/images) */}
       <div className="bm-banner">
-        <img src="/src/assets/images/premium_banner.png" alt="Main banner" className="bm-banner-img" />
+        <img src={premiumBanner} alt="Main banner" className="bm-banner-img" />
 
         {/* Glassmorphic content card (left side) */}
         <div className="bm-banner-card" role="region" aria-label="Promotional">

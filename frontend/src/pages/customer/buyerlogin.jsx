@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import api from '../../api/axios';
+import loginBg from '../../assets/images/cus_login.PNG';
 import '../../styles/buyerlogin.css';
 
 const BuyerLogin = () => {
@@ -52,7 +53,7 @@ const BuyerLogin = () => {
     <div className="buyer-login-container">
       {/* Background Image */}
       <div className="background-image">
-        <img src="/src/assets/images/cus_login.PNG" alt="Customer Login Background" />
+        <img src={loginBg} alt="Customer Login Background" />
       </div>
 
       {/* Header */}

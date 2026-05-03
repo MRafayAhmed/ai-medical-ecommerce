@@ -202,7 +202,7 @@ const CategoryPage = () => {
                                 const imageUrl = product.image?.startsWith('http') 
                                     ? product.image 
                                     : (hasValidImage 
-                                        ? `http://127.0.0.1:8000/storage/${product.image}` 
+                                        ? `http://localhost:8000/storage/${product.image}` 
                                         : `https://via.placeholder.com/300?text=${encodeURIComponent(product.product_name || product.name || 'Product')}`);
 
                                 return (
