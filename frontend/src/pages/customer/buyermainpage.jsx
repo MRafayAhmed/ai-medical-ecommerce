@@ -31,6 +31,34 @@ const defaultCategories = [
   },
 ];
 
+/** Top horizontal category nav: fixed count, one row, no horizontal scroll */
+const CATEGORY_NAV_LIMIT = 11;
+
+/** Category image cards row ("Categories" section) — show at most this many (10–12) */
+const CATEGORY_CARDS_LIMIT = 12;
+
+/** Same host as `api/axios.js` baseURL — used for `/storage/...` category images from Laravel */
+const API_ORIGIN = 'http://127.0.0.1:8000';
+
+function categoryStorageUrl(imagePath) {
+  if (imagePath == null || !String(imagePath).trim()) return null;
+  const p = String(imagePath).trim();
+  if (p.startsWith('http://') || p.startsWith('https://')) return p;
+  return `${API_ORIGIN}/storage/${p.replace(/^\/?storage\/?/, '')}`;
+}
+
+/** Display name from asset filename (Option B): `anti_viral` → `Anti Viral` */
+function humanizeFilename(name) {
+  const base = String(name)
+    .replace(/\.[^.]+$/, '')
+    .replace(/[-_]+/g, ' ')
+    .trim();
+  return base
+    .replace(/\band\b/gi, '&')
+    .replace(/\b\w/g, (m) => m.toUpperCase())
+    .trim();
+}
+
 const Buyermainpage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
@@ -67,12 +95,15 @@ const Buyermainpage = () => {
 
       // 1. Process Categories
       const cats = Array.isArray(categories.data) ? categories.data : (Array.isArray(categories) ? categories : []);
-      const mappedCats = cats.map(cat => ({
+      const mappedCats = cats.map((cat) => ({
         id: cat.id,
         label: cat.name,
         to: `/buyer/category/${cat.id}/${slugify(cat.name)}`,
-        image: cat.image ? `http://localhost:8000/storage/${cat.image}` : (findImageForLabel(cat.name) || `https://via.placeholder.com/150?text=${encodeURIComponent(cat.name)}`),
-        items: []
+        image:
+          categoryStorageUrl(cat.image) ||
+          findImageForLabel(cat.name) ||
+          null,
+        items: [],
       }));
       setCategories(mappedCats);
       setLoadingCategories(false);
@@ -178,18 +209,75 @@ const Buyermainpage = () => {
   // 2. Memoize fully resolved categories with images
   const displayCategories = useMemo(() => {
     const baseCats = categories.length > 0 ? categories : defaultCategories;
-    return baseCats.map(cat => {
+    return baseCats.map((cat) => {
       const slug = slugify(cat.label);
-      const resolved = findImageForLabel(cat.label);
+      const fromAssets = findImageForLabel(cat.label);
+      const resolvedImage =
+        cat.image ||
+        fromAssets ||
+        `https://via.placeholder.com/320x220/f1f5f9/64748b?text=${encodeURIComponent(cat.label)}`;
 
-      // Return a pre-processed category object
       return {
         ...cat,
         slug,
-        resolvedImage: resolved || `/assets/categories/${slug}.webp` // Default path if not found
+        resolvedImage,
       };
     });
   }, [categories, imageEntries]);
+
+  const navDisplayCategories = useMemo(
+    () => displayCategories.slice(0, CATEGORY_NAV_LIMIT),
+    [displayCategories],
+  );
+
+  /**
+   * Category image cards (Option B): drive the row from files in
+   * `src/assets/images/category/*.{png,jpg,jpeg,webp}` — label = humanized filename,
+   * link = matched API category when name matches, else `/buyer/category/extra/:slug`.
+   * If the folder is empty, fall back to API categories + storage/local match.
+   */
+  const cardDisplayCategories = useMemo(() => {
+    if (!imageEntries.length) {
+      return displayCategories.slice(0, CATEGORY_CARDS_LIMIT);
+    }
+
+    const apiCats = categories.length > 0 ? categories : [];
+    const lookup = new Map();
+    for (const c of apiCats) {
+      lookup.set(normalize(c.label), { id: c.id, label: c.label, slug: slugify(c.label) });
+    }
+
+    const matchApi = (fileNorm) => {
+      if (lookup.has(fileNorm)) return lookup.get(fileNorm);
+      for (const [key, val] of lookup) {
+        if (fileNorm === key || fileNorm.includes(key) || key.includes(fileNorm)) return val;
+      }
+      return null;
+    };
+
+    const sorted = [...imageEntries].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
+    return sorted.slice(0, CATEGORY_CARDS_LIMIT).map((entry) => {
+      const fileNorm = normalize(entry.name);
+      const match = matchApi(fileNorm);
+      const labelFromFile = humanizeFilename(entry.name);
+      const slug = match ? match.slug : slugify(entry.name);
+      const to =
+        match != null
+          ? `/buyer/category/${match.id}/${match.slug}`
+          : `/buyer/category/extra/${slugify(entry.name)}`;
+
+      return {
+        id: match?.id ?? `asset-${entry.name}`,
+        label: labelFromFile,
+        to,
+        slug,
+        resolvedImage: entry.url,
+        image: entry.url,
+        items: [],
+      };
+    });
+  }, [imageEntries, categories, displayCategories]);
 
   // Redundant logout removed, handled by BuyerNavbar
 
@@ -253,7 +341,7 @@ const Buyermainpage = () => {
       navigate('/buyer/login');
       return;
     }
-    
+
     if (product.stock <= 0) {
       alert('Sorry, this item is out of stock! Let\'s continue shopping for other items.');
       return;
@@ -406,13 +494,71 @@ const Buyermainpage = () => {
 
   }, [openCategory]);
 
-  const catsRef = useRef(null);
-  const scrollCats = (dir = 1) => {
-    const el = catsRef.current;
-    if (!el) return;
-    const amount = Math.round(el.clientWidth * 0.6);
-    el.scrollBy({ left: dir * amount, behavior: 'smooth' });
+  /** Category card row: gentle horizontal auto-scroll while pointer is over the row */
+  const catsListRef = useRef(null);
+  const catHoverActiveRef = useRef(false);
+  const catHoverRafRef = useRef(null);
+  const catHoverLastTsRef = useRef(0);
+  const catHoverDirRef = useRef(1);
+
+  const catHoverScrollLoop = (ts) => {
+    if (!catHoverActiveRef.current) {
+      catHoverRafRef.current = null;
+      catHoverLastTsRef.current = 0;
+      return;
+    }
+    const el = catsListRef.current;
+    if (!el) {
+      catHoverActiveRef.current = false;
+      catHoverRafRef.current = null;
+      catHoverLastTsRef.current = 0;
+      return;
+    }
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll <= 1) {
+      catHoverActiveRef.current = false;
+      catHoverRafRef.current = null;
+      catHoverLastTsRef.current = 0;
+      return;
+    }
+    if (!catHoverLastTsRef.current) catHoverLastTsRef.current = ts;
+    const dt = Math.min(40, ts - catHoverLastTsRef.current) / 1000;
+    catHoverLastTsRef.current = ts;
+    const pxPerSec = 52;
+    el.scrollLeft += catHoverDirRef.current * pxPerSec * dt;
+    if (el.scrollLeft >= maxScroll - 1) {
+      catHoverDirRef.current = -1;
+      el.scrollLeft = maxScroll;
+    } else if (el.scrollLeft <= 1) {
+      catHoverDirRef.current = 1;
+      el.scrollLeft = 0;
+    }
+    catHoverRafRef.current = requestAnimationFrame(catHoverScrollLoop);
   };
+
+  const startCatHoverScroll = () => {
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+    const el = catsListRef.current;
+    if (!el || el.scrollWidth <= el.clientWidth + 1) return;
+    catHoverActiveRef.current = true;
+    catHoverLastTsRef.current = 0;
+    if (!catHoverRafRef.current) {
+      catHoverRafRef.current = requestAnimationFrame(catHoverScrollLoop);
+    }
+  };
+
+  const stopCatHoverScroll = () => {
+    catHoverActiveRef.current = false;
+    if (catHoverRafRef.current != null) {
+      cancelAnimationFrame(catHoverRafRef.current);
+      catHoverRafRef.current = null;
+    }
+    catHoverLastTsRef.current = 0;
+  };
+
+  useEffect(() => () => stopCatHoverScroll(), []);
 
   // Featured products scroll ref and handler
   const featuredRef = useRef(null);
@@ -426,18 +572,11 @@ const Buyermainpage = () => {
 
   // Build extra cards from any images in the folder that don't match the
   // existing `categories` list (so we use all remaining images as cards).
-  const humanize = (name) =>
-    name
-      .replace(/[-_]+/g, ' ')
-      .replace(/\band\b/g, '&')
-      .replace(/\b\w/g, (m) => m.toUpperCase())
-      .trim();
-
   const existingNorms = new Set(displayCategories.map((c) => normalize(c.label)));
   const extraImageCards = imageEntries
     .filter((e) => !existingNorms.has(normalize(e.name)))
     .map((e) => ({
-      label: humanize(e.name),
+      label: humanizeFilename(e.name),
       to: `/buyer/category/extra/${slugify(e.name)}`,
       image: e.url,
       name: e.name,
@@ -454,104 +593,12 @@ const Buyermainpage = () => {
     }
   }
 
-  // Keep category control buttons fixed to viewport but aligned to the visible card list edges
-  useEffect(() => {
-    const root = pageRef.current;
-    if (!root) return;
-    const section = root.querySelector('.bm-category-cards');
-    const list = root.querySelector('.bm-cats-list');
-    if (!section || !list) return;
-
-    const update = () => {
-      const sRect = section.getBoundingClientRect();
-      const lRect = list.getBoundingClientRect();
-
-      // vertical center of the section
-      const top = Math.round(sRect.top + sRect.height / 2);
-      root.style.setProperty('--bm-cats-top', `${top}px`);
-
-      // Prefer the banner image edges so the card row lines up with the banner exactly
-      const bannerImg = root.querySelector('.bm-banner-img');
-      // increased inset so the left button sits closer to the first card
-      const inset = 28;
-      // ensure controls never sit flush to the viewport edge
-      const minEdge = 24; // px
-      if (bannerImg) {
-        const bRect = bannerImg.getBoundingClientRect();
-        // position buttons with proper inset from banner edges
-        const leftRaw = Math.round(bRect.left);
-        const rightRaw = Math.round(window.innerWidth - bRect.right);
-        const left = Math.max(minEdge, leftRaw - inset);
-        const right = Math.max(minEdge, rightRaw - inset);
-
-        // set control positions (button left/right)
-        root.style.setProperty('--bm-cats-controls-left', `${left}px`);
-        root.style.setProperty('--bm-cats-controls-right', `${right}px`);
-
-        // compute list paddings so cards sit directly adjacent to buttons
-        const btnWidth = 44;
-        const overlap = 0; // increase to tuck cards under the button
-        const wrap = root.querySelector('.bm-cats-wrap');
-        if (wrap) {
-          // expose button width & overlap so CSS can calculate paddings directly
-          root.style.setProperty('--bm-cats-btn-width', `${btnWidth}px`);
-          root.style.setProperty('--bm-cats-overlap', `${overlap}px`);
-          // clear explicit list shifts to let CSS calc from control positions (fallbacks remain)
-          root.style.setProperty('--bm-cats-list-left', `0px`);
-          root.style.setProperty('--bm-cats-list-right', `0px`);
-          // small translate for edge cases (0 by default)
-          root.style.setProperty('--bm-cats-translate-right', `0px`);
-        }
-      } else {
-        // fallback to visible list bounds
-        const leftRaw = Math.round(lRect.left);
-        const rightRaw = Math.round(window.innerWidth - lRect.right);
-        const left = Math.max(minEdge, leftRaw - inset);
-        const right = Math.max(minEdge, rightRaw - inset);
-
-        // set control positions using the same variables
-        root.style.setProperty('--bm-cats-controls-left', `${left}px`);
-        root.style.setProperty('--bm-cats-controls-right', `${right}px`);
-
-        const btnWidth = 44;
-        const overlap = 0;
-        const wrap = root.querySelector('.bm-cats-wrap');
-        if (wrap) {
-          // expose button width & overlap so CSS can calculate paddings directly
-          root.style.setProperty('--bm-cats-btn-width', `${btnWidth}px`);
-          root.style.setProperty('--bm-cats-overlap', `${overlap}px`);
-          // clear explicit list shifts to let CSS calc from control positions (fallbacks remain)
-          root.style.setProperty('--bm-cats-list-left', `0px`);
-          root.style.setProperty('--bm-cats-list-right', `0px`);
-          root.style.setProperty('--bm-cats-translate-right', `0px`);
-        }
-      }
-    };
-
-    update();
-    let raf = 0;
-    const onResize = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
-    const onWindowScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); };
-
-    window.addEventListener('resize', onResize);
-    window.addEventListener('scroll', onWindowScroll, true);
-    // listen to horizontal scroll inside the category list as well
-    list.addEventListener('scroll', onWindowScroll, { passive: true });
-
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('scroll', onWindowScroll, true);
-      list.removeEventListener('scroll', onWindowScroll);
-    };
-  }, []);
-
   // Position featured products control buttons similar to category buttons
   useEffect(() => {
     const root = pageRef.current;
     if (!root) return;
     const section = root.querySelector('.bm-featured-products');
-    const list = root.querySelector('.bm-featured-list');
+    const list = root.querySelector('.bm-fp-list');
     if (!section || !list) return;
 
     const update = () => {
@@ -617,7 +664,7 @@ const Buyermainpage = () => {
       {/* Categories nav under header */}
       <nav className="bm-categories" aria-label="Medicine categories">
         <div className="header__container">
-          {displayCategories.map((c, idx) => (
+          {navDisplayCategories.map((c, idx) => (
             <div key={`cat-nav-${c.id || idx}`} className="bm-category-wrap">
               <Link
                 to={c.to}
@@ -695,12 +742,16 @@ const Buyermainpage = () => {
       <section className="bm-category-cards" aria-label="Popular categories">
         <div className="header__container">
           <h3 className="bm-cats-title">Categories</h3>
-          <div className="bm-cats-wrap">
-            <div className="bm-cats-list" ref={catsRef}>
+          <div
+            className="bm-cats-wrap"
+            onMouseEnter={startCatHoverScroll}
+            onMouseLeave={stopCatHoverScroll}
+          >
+            <div className="bm-cats-list" ref={catsListRef}>
               {loadingCategories ? (
-                Array(8).fill(0).map((_, i) => <CategorySkeleton key={`cat-skeleton-${i}`} />)
+                Array(CATEGORY_CARDS_LIMIT).fill(0).map((_, i) => <CategorySkeleton key={`cat-skeleton-${i}`} />)
               ) : (
-                displayCategories.map((c, idx) => (
+                cardDisplayCategories.map((c, idx) => (
                   <Link to={c.to} className="bm-cat-card" key={`cat-card-${c.id || idx}`}>
                     <div className="bm-cat-img-wrap">
                       <img
@@ -717,46 +768,38 @@ const Buyermainpage = () => {
                 ))
               )}
             </div>
-
-            <div className="bm-cats-controls" role="toolbar" aria-label="Scroll categories">
-              <button className="bm-cats-btn prev" onClick={() => scrollCats(-1)} aria-label="Previous categories">
-                <i className="bi bi-chevron-left" aria-hidden="true"></i>
-              </button>
-              <button className="bm-cats-btn next" onClick={() => scrollCats(1)} aria-label="Next categories">
-                <i className="bi bi-chevron-right" aria-hidden="true"></i>
-              </button>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Recent Orders Section */}
+      {/* Recent Orders — same row + scroll pattern as Categories */}
       {isLoggedIn && recentOrders.length > 0 && (
         <section className="bm-recent-orders" aria-label="Recent Orders">
           <div className="header__container">
-            <div className="bm-orders-header">
-              <h3 className="bm-orders-title">Recent Orders</h3>
-              <Link to="/buyer/orders" className="bm-view-all-btn">VIEW ALL</Link>
+            <div className="bm-ro-header">
+              <h3 className="bm-ro-title">Recent Orders</h3>
+              <Link to="/buyer/orders" className="bm-view-all-btn bm-ro-view-all">VIEW ALL</Link>
             </div>
-            <div className="bm-orders-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
-              {recentOrders
-                .sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
-                .slice(0, 4)
-                .map((order, idx) => (
-                <Link key={`order-card-${order.id}-${idx}`} to="/buyer/orders" className="bm-order-card">
-                  <div>
-                    <div className="bm-order-number">Order #{order.id}</div>
-                    <div className="bm-order-date">{new Date(order.order_date).toLocaleDateString()}</div>
-                    <div className={`bm-order-status ${order.status.toLowerCase()}`}>
-                      {order.status}
-                    </div>
-                  </div>
-                  <div className="bm-order-footer">
-                    <span className="bm-order-total-label">Total</span>
-                    <span className="bm-order-total-value">Rs. {Number(order.total_amount).toFixed(2)}</span>
-                  </div>
-                </Link>
-              ))}
+            <div className="bm-ro-wrap">
+              <div className="bm-ro-list">
+                {[...recentOrders]
+                  .sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
+                  .map((order, idx) => (
+                    <Link key={`order-card-${order.id}-${idx}`} to="/buyer/orders" className="bm-order-card">
+                      <div className="bm-order-card__body">
+                        <div className="bm-order-number">Order #{order.id}</div>
+                        <div className="bm-order-date">{new Date(order.order_date).toLocaleDateString()}</div>
+                        <div className={`bm-order-status ${String(order.status).toLowerCase()}`}>
+                          {order.status}
+                        </div>
+                      </div>
+                      <div className="bm-order-footer">
+                        <span className="bm-order-total-label">Total</span>
+                        <span className="bm-order-total-value">Rs. {Number(order.total_amount).toFixed(2)}</span>
+                      </div>
+                    </Link>
+                  ))}
+              </div>
             </div>
           </div>
         </section>
@@ -765,26 +808,32 @@ const Buyermainpage = () => {
       {/* Featured Products Section */}
       <section className="bm-featured-products" aria-label="Featured Products">
         <div className="header__container">
-          <div className="bm-featured-header">
+          <div className="bm-ro-header">
             <h3 className="bm-featured-title">Featured Products</h3>
-            <Link to="/products/featured" className="bm-view-all-btn">VIEW ALL</Link>
+            <Link to="/products/featured" className="bm-view-all-btn bm-ro-view-all">VIEW ALL</Link>
           </div>
-         <div className="bm-product-grid">
-            {loadingProducts ? (
-              Array(4).fill(0).map((_, i) => <ProductCardSkeleton key={`prod-skeleton-${i}`} />)
-            ) : (
-              displayProducts.map((product) => (
-                <ProductCard
-                  key={`featured-prod-${product.id}`}
-                  product={{
-                    ...product,
-                    isWishlisted: wishlistIds.has(product.id)
-                  }}
-                  onToggleWishlist={toggleWishlist}
-                  onAddToCart={addToCart}
-                />
-              ))
-            )}
+          <div className="bm-fp-wrap">
+            <div className="bm-fp-list">
+              {loadingProducts ? (
+                Array(6).fill(0).map((_, i) => (
+                  <div className="bm-fp-card-slot" key={`prod-skeleton-${i}`}>
+                    <ProductCardSkeleton />
+                  </div>
+                ))
+              ) : (
+                displayProducts.map((product) => (
+                  <ProductCard
+                    key={`featured-prod-${product.id}`}
+                    product={{
+                      ...product,
+                      isWishlisted: wishlistIds.has(product.id)
+                    }}
+                    onToggleWishlist={toggleWishlist}
+                    onAddToCart={addToCart}
+                  />
+                ))
+              )}
+            </div>
           </div>
         </div>
       </section>

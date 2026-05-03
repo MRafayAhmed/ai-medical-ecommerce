@@ -1,44 +1,196 @@
-/* Styles for Buyer Forgot Password (match login theme) */
-*{box-sizing:border-box}
-
-.buyer-forgot-container{
-  position:fixed;
-  inset:0;
-  width:100vw;
-  height:100vh;
-  display:flex;
-  flex-direction:row;
-  align-items:stretch;
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* Buyer forgot password — matches login / buyer-theme tokens */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-.background-image{flex:1;position:relative;z-index:1}
-.background-image img{width:100%;height:100%;object-fit:cover}
+.buyer-forgot-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: light;
+  color: var(--color-text-primary);
+}
 
-.buyer-header{position:fixed;top:20px;left:40px;z-index:20}
-.back-home-btn{background:linear-gradient(135deg,#0EA5E9 0%,#14B8A6 100%);color:white;padding:12px 20px;border-radius:25px;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 15px rgba(14,165,233,0.3)}
+.background-image {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
 
-.forgot-form-wrapper{flex:0.65;position:relative;z-index:10;display:flex;justify-content:center;align-items:center;padding:1px;background:rgba(255,255,255,0.92)}
+.background-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
-.forgot-form-container{background:transparent;border-radius:20px;padding:50px 24px;width:100%;max-width:520px;box-shadow:none}
-.forgot-title{color:#213547;font-size:2rem;font-weight:700;text-align:center;margin-bottom:8px}
-.forgot-subtitle{color:#666;text-align:center;margin-bottom:20px}
+.buyer-header {
+  position: fixed;
+  top: 20px;
+  left: 40px;
+  z-index: 20;
+}
 
-.forgot-form{display:flex;flex-direction:column;gap:16px}
-.form-group label{color:#213547;font-weight:600;margin-bottom:8px;display:block}
-.form-group input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(0,0,0,0.08);background:#fff;color:#213547}
+.back-home-btn {
+  background: var(--buyer-gradient-primary);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--buyer-shadow-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), background var(--transition-normal);
+}
 
-.forgot-btn{background:linear-gradient(135deg,#0EA5E9 0%,#14B8A6 100%);color:white;border:none;padding:14px;border-radius:12px;font-weight:700;cursor:pointer;margin-top:4px;box-shadow:0 6px 18px rgba(14,165,233,0.12)}
-.forgot-btn:hover{transform:translateY(-2px)}
+.back-home-btn:hover {
+  background: var(--buyer-gradient-primary-hover);
+  box-shadow: var(--buyer-shadow-primary-hover);
+  transform: translateY(-2px);
+  color: #fff;
+}
 
-.register-link{margin-top:22px;text-align:center;color:#666}
-.register-link a{color:#0EA5E9;font-weight:700}
+.forgot-form-wrapper {
+  flex: 0.65;
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1px;
+  background: rgba(255, 255, 255, 0.94);
+  border-left: 1px solid var(--color-border);
+}
 
-.sent-note{padding:18px;background:#f0fff7;border-radius:10px;color:#0b6b55;text-align:center}
+.forgot-form-container {
+  background: transparent;
+  border-radius: var(--radius-xl);
+  padding: 50px 24px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: none;
+}
 
-@media (max-width:768px){
-  .buyer-forgot-container{flex-direction:column}
-  .background-image{height:36vh;order:-1}
-  .buyer-header{left:16px;top:14px}
-  .forgot-form-container{padding:28px}
+.forgot-title {
+  color: var(--color-text-primary);
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.forgot-subtitle {
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.forgot-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.forgot-form .form-group label {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.forgot-form .form-group input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-white);
+  color: var(--color-text-primary);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.forgot-form .form-group input:focus {
+  outline: none;
+  border-color: var(--color-secondary);
+  box-shadow: var(--buyer-focus-ring);
+}
+
+.forgot-btn {
+  box-sizing: border-box;
+  width: 100%;
+  background: var(--buyer-gradient-primary);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 4px;
+  box-shadow: var(--buyer-shadow-primary);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), background var(--transition-normal);
+}
+
+.forgot-btn:hover {
+  transform: translateY(-2px);
+  background: var(--buyer-gradient-primary-hover);
+  box-shadow: var(--buyer-shadow-primary-hover);
+}
+
+.register-link {
+  margin-top: 22px;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.register-link a {
+  color: var(--color-primary-dark);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  color: var(--color-secondary-dark);
+  text-decoration: underline;
+}
+
+.sent-note {
+  padding: 18px;
+  background: var(--color-primary-light);
+  border: 1px solid rgba(13, 148, 136, 0.2);
+  border-radius: var(--radius-lg);
+  color: var(--color-primary-dark);
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .buyer-forgot-container {
+    flex-direction: column;
+  }
+
+  .background-image {
+    height: 36vh;
+    order: -1;
+  }
+
+  .buyer-header {
+    left: 16px;
+    top: 14px;
+  }
+
+  .forgot-form-wrapper {
+    border-left: none;
+  }
+
+  .forgot-form-container {
+    padding: 28px;
+  }
 }

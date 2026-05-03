@@ -73,7 +73,7 @@ class MedicalInventoryController extends Controller
             // Fetch orders for any authenticated user (as usrer_id)
             $recentOrders = \App\Models\Order::where('usrer_id', $user->id)
                                             ->latest()
-                                            ->take(4)
+                                            ->take(12)
                                             ->get();
         }
 
@@ -95,7 +95,7 @@ class MedicalInventoryController extends Controller
 
         $orders = \App\Models\Order::where('usrer_id', $userId)
             ->orderBy('id', 'desc')
-            ->take(4)
+            ->take(12)
             ->get();
 
         return response()->json($orders);
