@@ -119,15 +119,8 @@ export default function AdminProduct() {
   const resetForm = () => {
     setForm({
       product_name: '', generic_name: '', category_id: '', brand_id: '', branch_id: '',
-      price: '', mrp: '', discount: '', stock: '', dosage: '', pack_size: '', description: '',
+      price: '', mrp: '', discount: '0', stock: '0', dosage: '', pack_size: '', description: '',
       image: null,
-      price: '',
-      mrp: '',
-      discount: '0',
-      stock: '0',
-      dosage: '',
-      pack_size: '',
-      description: ''
     });
     setEditId(null);
     setShowAddModal(false);

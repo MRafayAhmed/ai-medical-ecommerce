@@ -12,6 +12,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ShoppingCartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SellerController;
+use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Validator;
 
 Route::post('/login', function (Request $request) {
@@ -75,17 +76,24 @@ Route::match(['get', 'post'], '/customer/login', function (Request $request) {
 
     // 2. Validate
     $validator = Illuminate\Support\Facades\Validator::make($request->all(), [
-        'email' => 'required|email',
+        'email' => 'required|string',
         'password' => 'required',
     ]);
 
     if ($validator->fails()) {
-        return response()->json($validator->errors(), 422);
+        return response()->json([
+            'message' => 'Email/username and password are required',
+            'errors' => $validator->errors(),
+        ], 422);
     }
 
     try {
         // 3. DB Check
-        $user = \App\Models\customers::where('email', $request->email)->first();
+        $identifier = trim((string) $request->email);
+
+        $user = \App\Models\customers::where('email', $identifier)
+            ->orWhere('username', $identifier)
+            ->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);

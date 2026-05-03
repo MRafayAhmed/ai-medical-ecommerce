@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Heart, Search, ShoppingCart, User, UploadCloud, Menu, X } from 'lucide-react';
-import api from '../api/axios';
+import '../styles/buyernavbar.css';
 
 const BuyerNavbar = ({ onSearch }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -12,6 +12,12 @@ const BuyerNavbar = ({ onSearch }) => {
     const location = useLocation();
 
     const isActive = (path) => location.pathname === path ? 'active' : '';
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const q = params.get('q') ?? '';
+        setSearchQuery(q);
+    }, [location.search]);
 
     useEffect(() => {
         const updateState = () => {
@@ -55,7 +61,7 @@ const BuyerNavbar = ({ onSearch }) => {
     };
 
     return (
-        <header className="header" style={{ position: 'sticky', top: 0, zIndex: 1000, backgroundColor: '#fff', borderBottom: '1px solid #eee' }}>
+        <header className="header header--buyer">
             <div className="header__container">
                 <Link to="/buyer/dashboard" className="header__logo">
                     <div className="header__logo-icon">
@@ -108,13 +114,29 @@ const BuyerNavbar = ({ onSearch }) => {
                     </div>
                 </div>
 
-                <button className="header__mobile-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                <button
+                    type="button"
+                    className="header__mobile-toggle"
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    aria-expanded={isMobileMenuOpen}
+                    aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+                >
                     {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
             </div>
 
             {isMobileMenuOpen && (
                 <div className="header__mobile-menu">
+                    <div className="header__mobile-menu--extras">
+                        <Link
+                            to="/buyer/prescriptions"
+                            className="header__mobile-upload"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                            <UploadCloud size={18} />
+                            <span>Upload prescription</span>
+                        </Link>
+                    </div>
                     <div className="header__mobile-actions">
                         <div className="bm-action-bar bm-action-bar--mobile">
                             <Link to="/buyer/wishlist" className={`bm-action ${isActive('/buyer/wishlist')}`} onClick={() => setIsMobileMenuOpen(false)}><Heart size={20} /></Link>
@@ -129,34 +151,6 @@ const BuyerNavbar = ({ onSearch }) => {
                     </div>
                 </div>
             )}
-
-            <style>{`
-        .cart-badge {
-          position: absolute;
-          top: -5px;
-          right: -5px;
-          background: #ef4444;
-          color: white;
-          border-radius: 50%;
-          padding: 2px 6px;
-          font-size: 10px;
-          font-weight: bold;
-          min-width: 18px;
-          text-align: center;
-        }
-        .header__search-clear {
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: #999;
-          padding: 4px;
-          display: flex;
-          align-items: center;
-        }
-        .header__search-clear:hover {
-          color: #666;
-        }
-      `}</style>
         </header>
     );
 };

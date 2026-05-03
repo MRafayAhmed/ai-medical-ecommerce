@@ -12,10 +12,12 @@
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   display: flex;
   flex-direction: row;
   z-index: 0;
+  color-scheme: light;
+  color: var(--color-text-primary);
 }
 
 .buyer-login-container .background-image {
@@ -40,26 +42,28 @@
 }
 
 .back-home-btn {
-  background: linear-gradient(135deg, #0EA5E9 0%, #14B8A6 100%);
-  color: white;
+  background: var(--buyer-gradient-primary);
+  color: #fff;
   text-decoration: none;
   padding: 12px 20px;
-  border-radius: 25px;
+  border-radius: var(--radius-full);
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  box-shadow: var(--buyer-shadow-primary);
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .back-home-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4);
+  box-shadow: var(--buyer-shadow-primary-hover);
+  background: var(--buyer-gradient-primary-hover);
   text-decoration: none;
-  color: white;
+  color: #fff;
 }
 
 .back-home-btn:active {
@@ -75,7 +79,8 @@
   justify-content: center;
   align-items: center;
   padding: 1px;
-  background: rgba(255, 255, 255, 0.893);
+  background: rgba(255, 255, 255, 0.94);
+  border-left: 1px solid var(--color-border);
 }
 
 .buyer-login-container .login-form-container {
@@ -102,15 +107,16 @@
 }
 
 .buyer-login-container .login-title {
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 2.2rem;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   text-align: center;
   margin-bottom: 10px;
 }
 
 .buyer-login-container .login-subtitle {
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 1rem;
   text-align: center;
   margin-bottom: 40px;
@@ -129,32 +135,34 @@
 }
 
 .buyer-login-container .form-group label {
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 0.95rem;
   font-weight: 600;
   margin-bottom: 5px;
 }
 
 .buyer-login-container .form-group input {
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  background: var(--color-bg-light);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   padding: 16px 18px;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 1rem;
-  transition: all 0.3s ease;
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal), background var(--transition-normal);
   font-weight: 500;
 }
 
 .buyer-login-container .form-group input::placeholder {
-  color: #adb5bd;
+  color: var(--color-text-muted);
 }
 
 .buyer-login-container .form-group input:focus {
   outline: none;
-  border-color: #0EA5E9;
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-  background: #ffffff;
+  border-color: var(--color-secondary);
+  box-shadow: var(--buyer-focus-ring);
+  background: var(--color-bg-white);
 }
 
 .buyer-login-container .password-input-container {
@@ -173,23 +181,23 @@
   right: 12px;
   background: none;
   border: none;
-  color: #666;
+  color: var(--color-text-secondary);
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .buyer-login-container .password-toggle:hover {
-  color: #0EA5E9;
-  background: rgba(14, 165, 233, 0.1);
+  color: var(--color-primary-dark);
+  background: var(--color-primary-light);
 }
 
 .buyer-login-container .password-toggle:focus {
-  outline: 2px solid #0EA5E9;
+  outline: 2px solid var(--color-secondary);
   outline-offset: 2px;
 }
 
@@ -209,47 +217,51 @@
 .buyer-login-container .remember-me input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: #0EA5E9;
+  accent-color: var(--color-primary);
 }
 
 .buyer-login-container .remember-me label {
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 0.95rem;
   cursor: pointer;
   font-weight: 500;
 }
 
 .buyer-login-container .forgot-password {
-  color: #0EA5E9;
+  color: var(--color-primary-dark);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 600;
-  transition: color 0.3s ease;
+  transition: color var(--transition-normal);
 }
 
 .buyer-login-container .forgot-password:hover {
-  color: #0284C7;
+  color: var(--color-secondary-dark);
   text-decoration: underline;
 }
 
 .buyer-login-container .login-btn {
-  background: linear-gradient(135deg, #0EA5E9 0%, #14B8A6 100%);
-  color: white;
-  border: none;
+  box-sizing: border-box;
+  width: 100%;
+  background: var(--buyer-gradient-primary);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   padding: 16px;
-  border-radius: 12px;
-  font-size: 1.1rem;
+  border-radius: var(--radius-lg);
+  font-size: 1.05rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), background var(--transition-normal);
   margin-top: 20px;
-  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
-  text-transform: capitalize;
+  box-shadow: var(--buyer-shadow-primary);
+  text-transform: none;
+  letter-spacing: 0.01em;
 }
 
 .buyer-login-container .login-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4);
+  box-shadow: var(--buyer-shadow-primary-hover);
+  background: var(--buyer-gradient-primary-hover);
 }
 
 .buyer-login-container .login-btn:active {
@@ -259,19 +271,19 @@
 .buyer-login-container .register-link {
   text-align: center;
   margin-top: 30px;
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 0.95rem;
 }
 
 .buyer-login-container .register-link a {
-  color: #0EA5E9;
+  color: var(--color-primary-dark);
   text-decoration: none;
   font-weight: 600;
-  transition: color 0.3s ease;
+  transition: color var(--transition-normal);
 }
 
 .buyer-login-container .register-link a:hover {
-  color: #0284C7;
+  color: var(--color-secondary-dark);
   text-decoration: underline;
 }
 
