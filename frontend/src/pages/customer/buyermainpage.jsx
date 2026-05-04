@@ -6,6 +6,7 @@ import '../../styles/customerhome.css';
 import '../../styles/buyermainpage.css';
 import ProductCard from '../../components/ProductCard';
 import BuyerNavbar from '../../components/BuyerNavbar';
+import BuyerTopCategoryNav from '../../components/BuyerTopCategoryNav';
 import BuyerFooter from '../../components/BuyerFooter';
 import { CategorySkeleton, ProductCardSkeleton } from '../../components/Skeletons';
 import api from '../../api/axios';
@@ -29,9 +30,6 @@ const defaultCategories = [
     ],
   },
 ];
-
-/** Top horizontal category nav: fixed count, one row, no horizontal scroll */
-const CATEGORY_NAV_LIMIT = 11;
 
 /** Category image cards row ("Categories" section) — show at most this many (10–12) */
 const CATEGORY_CARDS_LIMIT = 12;
@@ -62,7 +60,6 @@ const Buyermainpage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const pageRef = useRef(null);
-  const [openCategory, setOpenCategory] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [products, setProducts] = useState([]);
@@ -206,8 +203,15 @@ const Buyermainpage = () => {
       .replace(/(^-|-$)/g, '');
 
   // 2. Memoize fully resolved categories with images
+  // While the first fetch runs, avoid `defaultCategories` in the top nav — it caused a visible
+  // swap from placeholder labels to API labels. Use `defaultCategories` only after load when API returned none.
   const displayCategories = useMemo(() => {
-    const baseCats = categories.length > 0 ? categories : defaultCategories;
+    const baseCats =
+      categories.length > 0
+        ? categories
+        : loadingCategories
+          ? []
+          : defaultCategories;
     return baseCats.map((cat) => {
       const slug = slugify(cat.label);
       const fromAssets = findImageForLabel(cat.label);
@@ -222,12 +226,7 @@ const Buyermainpage = () => {
         resolvedImage,
       };
     });
-  }, [categories, imageEntries]);
-
-  const navDisplayCategories = useMemo(
-    () => displayCategories.slice(0, CATEGORY_NAV_LIMIT),
-    [displayCategories],
-  );
+  }, [categories, imageEntries, loadingCategories]);
 
   /**
    * Category image cards (Option B): drive the row from files in
@@ -410,89 +409,6 @@ const Buyermainpage = () => {
     };
   }, []);
 
-  // Close dropdowns when clicking outside any category
-  useEffect(() => {
-    const onDocClick = (e) => {
-      // if clicked inside a category element or inside an open dropdown, keep open state
-      if (e.target.closest('.bm-category') || e.target.closest('.bm-category-dropdown')) return;
-      setOpenCategory(null);
-    };
-    document.addEventListener('click', onDocClick);
-    return () => document.removeEventListener('click', onDocClick);
-  }, []);
-
-  // On desktop enable hover open (mouse enter/leave) so dropdown appears on hover
-  useEffect(() => {
-    const root = pageRef.current;
-    if (!root) return;
-
-    const supportsHover = window.matchMedia('(hover: hover) and (min-width: 768px)').matches;
-    if (!supportsHover) return;
-
-    const items = Array.from(root.querySelectorAll('.bm-category'));
-    function onEnter(e) {
-      const key = e.currentTarget.getAttribute('data-cat');
-      setOpenCategory(key);
-
-      // position dropdown for this category immediately
-      const drop = root.querySelector(`[data-drop="${key}"]`);
-      if (drop) {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const left = Math.max(8, rect.left);
-        const top = rect.bottom + 8;
-        drop.style.left = `${left}px`;
-        drop.style.top = `${top}px`;
-        drop.style.minWidth = `${Math.max(rect.width, 180)}px`;
-      }
-    }
-    function onLeave(e) {
-      // if leaving to a dropdown keep open
-      const related = e.relatedTarget;
-      if (related && (related.closest && related.closest('.bm-category-dropdown'))) return;
-      setOpenCategory(null);
-    }
-
-    items.forEach((el) => {
-      el.addEventListener('mouseenter', onEnter);
-      el.addEventListener('mouseleave', onLeave);
-    });
-
-    // cleanup
-    return () => {
-      items.forEach((el) => {
-        el.removeEventListener('mouseenter', onEnter);
-        el.removeEventListener('mouseleave', onLeave);
-      });
-    };
-  }, []);
-
-  // When openCategory changes (click or keyboard), position the dropdown so it doesn't get clipped
-  useEffect(() => {
-    const root = pageRef.current;
-    if (!root || !openCategory) return;
-
-    const cat = root.querySelector(`[data-cat="${openCategory}"]`);
-    const drop = root.querySelector(`[data-drop="${openCategory}"]`);
-    if (!cat || !drop) return;
-
-    const rect = cat.getBoundingClientRect();
-    const left = Math.max(8, rect.left);
-    let top = rect.bottom + 8;
-
-    // ensure dropdown doesn't go past viewport right edge
-    drop.style.minWidth = `${Math.max(rect.width, 180)}px`;
-    drop.style.left = `${left}px`;
-    drop.style.top = `${top}px`;
-
-    const dr = drop.getBoundingClientRect();
-    const viewportRight = window.innerWidth - 12;
-    if (dr.right > viewportRight) {
-      const shift = dr.right - viewportRight;
-      drop.style.left = `${Math.max(8, left - shift)}px`;
-    }
-
-  }, [openCategory]);
-
   /** Category card row: gentle horizontal auto-scroll while pointer is over the row */
   const catsListRef = useRef(null);
   const catHoverActiveRef = useRef(false);
@@ -660,47 +576,7 @@ const Buyermainpage = () => {
         navigate(`/buyer/dashboard?q=${encodeURIComponent(q)}`);
       }} />
 
-      {/* Categories nav under header */}
-      <nav className="bm-categories" aria-label="Medicine categories">
-        <div className="header__container">
-          {navDisplayCategories.map((c, idx) => (
-            <div key={`cat-nav-${c.id || idx}`} className="bm-category-wrap">
-              <Link
-                to={c.to}
-                data-cat={c.to}
-                className="bm-category"
-                aria-expanded={openCategory === c.to}
-                onClick={() => {
-                  // desktop: close any open dropdown
-                  setOpenCategory(null);
-                }}
-                onKeyDown={(e) => {
-                  // For keyboard, mirror click behavior: Enter/Space toggles on small screens, otherwise allow native navigation
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    const isMobile = window.matchMedia('(max-width: 767px)').matches;
-                    if (isMobile && c.items && c.items.length) {
-                      e.preventDefault();
-                      setOpenCategory(openCategory === c.to ? null : c.to);
-                    }
-                  }
-                }}
-              >
-                <span className="bm-category-label">{c.label}</span>
-              </Link>
-
-              {c.items && c.items.length > 0 && (
-                <div data-drop={c.to} className={`bm-category-dropdown ${openCategory === c.to ? 'bm-open' : ''}`} role="menu" aria-label={`Subcategories for ${c.label}`}>
-                  {c.items.map((it, sIdx) => (
-                    <Link key={`subcat-${it.to}-${sIdx}`} to={it.to} className="bm-category-dropdown-item" onClick={() => setOpenCategory(null)} role="menuitem">
-                      {it.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </nav>
+      <BuyerTopCategoryNav pageRef={pageRef} categories={categories} loadingCategories={loadingCategories} />
 
       {/* Banner under categories (uses premium_banner.png from assets/images) */}
       <div className="bm-banner">

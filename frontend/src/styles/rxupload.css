@@ -320,6 +320,75 @@
   box-sizing: border-box;
 }
 
+.rx-dropzone__label--fill {
+  min-height: 200px;
+}
+
+.rx-dropzone__label--desktop-only {
+  display: flex;
+}
+
+.rx-dropzone__label--mobile-only {
+  display: none;
+}
+
+/* Mobile-only: two equal tap targets (camera vs gallery). Hidden on ≥640px via media query below. */
+.rx-dropzone__split-mobile {
+  display: none;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  min-height: inherit;
+  box-sizing: border-box;
+}
+
+.rx-dropzone__half {
+  flex: 1 1 50%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.85rem 0.5rem;
+  cursor: pointer;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background var(--transition-fast, 0.15s ease);
+}
+
+.rx-dropzone__half:active {
+  background: rgba(14, 165, 233, 0.1);
+}
+
+.rx-dropzone__half-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--color-primary, #0ea5e9);
+}
+
+.rx-dropzone__half-title {
+  font-weight: 800;
+  font-size: 0.9375rem;
+  color: var(--color-text-primary, #1e293b);
+}
+
+.rx-dropzone__half-meta {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #94a3b8);
+  line-height: 1.3;
+}
+
+.rx-dropzone__split-rule {
+  flex: 0 0 1px;
+  width: 1px;
+  align-self: stretch;
+  background: rgba(148, 163, 184, 0.45);
+  margin: 0.75rem 0;
+}
+
 .rx-dropzone__placeholder {
   display: flex;
   flex-direction: column;
@@ -738,6 +807,77 @@
   flex-shrink: 0;
   color: var(--color-secondary, #14b8a6);
   margin-top: 0.05rem;
+}
+
+/* ——— Mobile / narrow screens (edit here for phone layouts) ——— */
+@media (max-width: 639px) {
+  .rx-container {
+    padding-left: max(var(--container-padding, 0.75rem), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--container-padding, 0.75rem), env(safe-area-inset-right, 0px));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .rx-main {
+    padding-bottom: max(2rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .rx-hero {
+    padding: 1rem 1.1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .rx-dropzone {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rx-dropzone:not(.rx-dropzone--filled) .rx-dropzone__label--desktop-only {
+    display: none !important;
+  }
+
+  .rx-dropzone:not(.rx-dropzone--filled) .rx-dropzone__split-mobile {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 200px;
+  }
+
+  .rx-dropzone--filled .rx-dropzone__label--desktop-only {
+    display: none !important;
+  }
+
+  .rx-dropzone--filled .rx-dropzone__label--mobile-only {
+    display: flex !important;
+    flex: 1 1 auto;
+    min-height: 200px;
+  }
+
+  .rx-upload-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rx-upload-actions .rx-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .rx-card__head--row .rx-btn.rx-btn--outline {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .rx-alt-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .rx-alt-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

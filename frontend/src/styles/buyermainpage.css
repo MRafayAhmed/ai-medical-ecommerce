@@ -433,6 +433,19 @@ body {
   overflow: hidden;
 }
 
+/* Placeholder row while categories fetch (avoids flash of defaultCategories labels) */
+.bm-categories .bm-category.bm-category--skeleton {
+  flex: 0 0 auto;
+  width: 72px;
+  height: 1.05rem;
+  max-width: 100%;
+  padding: 0;
+  border-radius: 999px;
+  background: #eef2f5;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
 .bm-categories .bm-category .bm-category-label {
   position: relative;
   display: block;
@@ -889,6 +902,17 @@ body {
   max-width: var(--container-max);
   margin: 0 auto;
   padding: 0 var(--container-padding);
+}
+
+/* Category listing page: main sits below in-flow header + top category strip (desktop) */
+.bm-category-page-main {
+  padding-top: 1rem;
+}
+
+@media (max-width: 767px) {
+  .bm-category-page-main {
+    padding-top: 0.75rem;
+  }
 }
 
 /* ===== Featured Products Section ===== */
