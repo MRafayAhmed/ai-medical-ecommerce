@@ -28,16 +28,15 @@ import BuyerProfile from "./pages/customer/buyerprofile";
 import BuyerCart from "./pages/customer/buyercart";
 
 import RxUpload from "./pages/customer/RxUpload";
+import BuyerSupport from "./pages/customer/BuyerSupport";
+import ScrollToTop from "./components/ScrollToTop";
 import { StockProvider } from "./context/StockContext";
-
-// Simple placeholders for missing pages
-const BuyerOrdersPlaceholder = () => <div style={{ padding: '100px', textAlign: 'center' }}><h1>My Orders</h1><p>Coming Soon!</p></div>;
-const BuyerSupport = () => <div style={{ padding: '100px', textAlign: 'center' }}><h1>Customer Support</h1><p>Coming Soon!</p></div>;
 
 function App() {
   return (
     <BrowserRouter>
       <StockProvider>
+        <ScrollToTop />
         <Routes>
           {/* Root Route - Landing Page */}
           <Route path="/" element={<Home />} />

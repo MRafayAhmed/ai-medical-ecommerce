@@ -1,156 +1,250 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, User, LogOut, Package, Shield, MapPin, ArrowLeft } from 'lucide-react';
+import {
+  User,
+  LogOut,
+  Package,
+  MapPin,
+  ArrowLeft,
+  ChevronRight,
+  Shield,
+  Heart,
+  ShoppingCart,
+  UploadCloud,
+  Headphones,
+  Loader2,
+} from 'lucide-react';
 import api from '../../api/axios';
+import '../../styles/customerhome.css';
 import '../../styles/buyermainpage.css';
+import '../../styles/buyerprofile.css';
+import BuyerNavbar from '../../components/BuyerNavbar';
+import BuyerFooter from '../../components/BuyerFooter';
+
+const initialsFromName = (name) => {
+  if (!name || !String(name).trim()) return 'U';
+  const parts = String(name).trim().split(/\s+/);
+  const a = parts[0]?.[0] || '';
+  const b = parts.length > 1 ? parts[parts.length - 1][0] : parts[0]?.[1] || '';
+  return (a + b).toUpperCase() || 'U';
+};
 
 const BuyerProfile = () => {
-    const [user, setUser] = useState(null);
-    const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        const userData = localStorage.getItem('customer_user');
-        if (userData) {
-            setUser(JSON.parse(userData));
-        } else {
-            navigate('/buyer/login');
+  useEffect(() => {
+    const token = localStorage.getItem('customer_token');
+    const raw = localStorage.getItem('customer_user');
+    if (!token || !raw) {
+      navigate('/buyer/login', { replace: true });
+      setAuthChecked(true);
+      return;
+    }
+    try {
+      const parsed = JSON.parse(raw);
+      setUser(parsed);
+    } catch {
+      navigate('/buyer/login', { replace: true });
+    } finally {
+      setAuthChecked(true);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!user?.id) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await api.get('/profile');
+        if (cancelled || !data || typeof data !== 'object') return;
+        if (data.id && (data.email || data.name)) {
+          setUser(data);
+          localStorage.setItem('customer_user', JSON.stringify(data));
         }
-    }, [navigate]);
-
-    const handleLogout = () => {
-        localStorage.removeItem('customer_token');
-        localStorage.removeItem('customer_user');
-        navigate('/buyer/login');
+      } catch {
+        /* keep cached local user */
+      }
+    })();
+    return () => {
+      cancelled = true;
     };
+  }, [user?.id]);
 
-    if (!user) return null;
+  const handleLogout = () => {
+    localStorage.removeItem('customer_token');
+    localStorage.removeItem('customer_user');
+    navigate('/buyer/login', { replace: true });
+  };
 
+  const avatarLetter = useMemo(() => initialsFromName(user?.name), [user?.name]);
+
+  if (!authChecked) {
     return (
-        <div className="bm-page">
-            <header className="header">
-                <div className="header__container">
-                    <Link to="/buyer/dashboard" className="header__logo">
-                        <Heart className="header__heart-icon" />
-                        <span className="header__logo-text">MediEcom</span>
-                    </Link>
-                </div>
-            </header>
-
-            <main className="header__container" style={{ paddingTop: '100px', minHeight: '80vh' }}>
-                <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <button onClick={() => navigate(-1)} className="bm-action" style={{ background: '#f0f2f5' }}>
-                        <ArrowLeft size={20} />
-                    </button>
-                    <h1 style={{ margin: 0, fontSize: '2rem' }}>My Profile</h1>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '32px' }}>
-                    {/* Left: Sidebar */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <div style={{
-                            padding: '24px',
-                            background: 'white',
-                            borderRadius: '12px',
-                            border: '1px solid #eee',
-                            textAlign: 'center',
-                            marginBottom: '16px'
-                        }}>
-                            <div style={{
-                                width: '80px',
-                                height: '80px',
-                                background: 'var(--primary-color)',
-                                borderRadius: '50%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                margin: '0 auto 16px auto',
-                                color: 'white'
-                            }}>
-                                <User size={40} />
-                            </div>
-                            <h2 style={{ margin: '0 0 4px 0' }}>{user.name || 'User'}</h2>
-                            <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>{user.email}</p>
-                        </div>
-
-                        <button onClick={() => navigate('/buyer/orders')} style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            padding: '12px 16px',
-                            background: 'white',
-                            border: '1px solid #eee',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            textAlign: 'left'
-                        }}>
-                            <Package size={20} /> My Orders
-                        </button>
-                        <button style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            padding: '12px 16px',
-                            background: 'white',
-                            border: '1px solid #eee',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            textAlign: 'left'
-                        }}>
-                            <MapPin size={20} /> Addresses
-                        </button>
-                        <button onClick={handleLogout} style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            padding: '12px 16px',
-                            background: '#fff5f5',
-                            border: '1px solid #fed7d7',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            color: '#c53030',
-                            textAlign: 'left',
-                            fontWeight: 600
-                        }}>
-                            <LogOut size={20} /> Logout
-                        </button>
-                    </div>
-
-                    {/* Right: Details */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        <div style={{ padding: '32px', background: 'white', borderRadius: '12px', border: '1px solid #eee' }}>
-                            <h3 style={{ margin: '0 0 24px 0', borderBottom: '1px solid #eee', paddingBottom: '12px' }}>Personal Information</h3>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                                <div>
-                                    <label style={{ fontSize: '0.8rem', color: '#666', fontWeight: 600 }}>Full Name</label>
-                                    <p style={{ fontSize: '1.1rem', margin: '4px 0 0 0' }}>{user.name}</p>
-                                </div>
-                                <div>
-                                    <label style={{ fontSize: '0.8rem', color: '#666', fontWeight: 600 }}>Email Address</label>
-                                    <p style={{ fontSize: '1.1rem', margin: '4px 0 0 0' }}>{user.email}</p>
-                                </div>
-                                <div>
-                                    <label style={{ fontSize: '0.8rem', color: '#666', fontWeight: 600 }}>Customer Type</label>
-                                    <p style={{ fontSize: '1.1rem', margin: '4px 0 0 0' }}>Individual</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style={{ padding: '32px', background: 'white', borderRadius: '12px', border: '1px solid #eee' }}>
-                            <h3 style={{ margin: '0 0 24px 0', borderBottom: '1px solid #eee', paddingBottom: '12px' }}>Security</h3>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                <Shield size={24} color="var(--primary-color)" />
-                                <div>
-                                    <p style={{ margin: 0, fontWeight: 600 }}>Account Security</p>
-                                    <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>Your account is protected with standard encryption.</p>
-                                </div>
-                                <button className="bm-view-all-btn" style={{ marginLeft: 'auto', fontSize: '0.8rem' }}>Change Password</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
+      <div className="bm-page bp-page">
+        <BuyerNavbar
+          onSearch={(q) => {
+            navigate(`/buyer/dashboard?q=${encodeURIComponent(q)}`);
+          }}
+        />
+        <main className="bp-main bp-main--loading" aria-busy="true">
+          <div className="bp-loading">
+            <Loader2 className="bp-spin" size={36} aria-hidden />
+            <span>Loading your profile…</span>
+          </div>
+        </main>
+      </div>
     );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="bm-page bp-page">
+      <BuyerNavbar
+        onSearch={(q) => {
+          navigate(`/buyer/dashboard?q=${encodeURIComponent(q)}`);
+        }}
+      />
+
+      <main className="bp-main" id="bp-main">
+        <div className="bp-container">
+          <nav className="bp-breadcrumb" aria-label="Breadcrumb">
+            <Link to="/buyer/dashboard" className="bp-breadcrumb__link">
+              Buyer home
+            </Link>
+            <ChevronRight className="bp-breadcrumb__sep" aria-hidden size={14} />
+            <span className="bp-breadcrumb__current">Profile</span>
+          </nav>
+
+          <div className="bp-toolbar">
+            <button type="button" className="bp-back" onClick={() => navigate(-1)} aria-label="Go back">
+              <ArrowLeft size={20} aria-hidden />
+            </button>
+            <div className="bp-title-block">
+              <h1 className="bp-title">My profile</h1>
+              <p className="bp-subtitle">Account details and shortcuts across your MediEcom storefront.</p>
+            </div>
+          </div>
+
+          <div className="bp-layout">
+            <aside className="bp-sidebar" aria-label="Account menu">
+              <div className="bp-identity">
+                <div className="bp-avatar" aria-hidden>
+                  {user.name ? (
+                    <span>{avatarLetter}</span>
+                  ) : (
+                    <User size={36} strokeWidth={1.75} />
+                  )}
+                </div>
+                <h2 className="bp-identity__name">{user.name || 'Customer'}</h2>
+                <p className="bp-identity__email">{user.email || '—'}</p>
+              </div>
+
+              <nav className="bp-nav" aria-label="Profile actions">
+                <Link to="/buyer/orders" className="bp-nav__btn">
+                  <Package size={20} aria-hidden />
+                  My orders
+                </Link>
+                <Link to="/buyer/support" className="bp-nav__btn">
+                  <MapPin size={20} aria-hidden />
+                  Support &amp; addresses
+                </Link>
+                <button type="button" className="bp-nav__btn bp-nav__btn--danger" onClick={handleLogout}>
+                  <LogOut size={20} aria-hidden />
+                  Log out
+                </button>
+              </nav>
+            </aside>
+
+            <div className="bp-panels">
+              <section className="bp-card" aria-labelledby="bp-personal-heading">
+                <h2 id="bp-personal-heading" className="bp-card__title">
+                  Personal information
+                </h2>
+                <div className="bp-fields">
+                  <div>
+                    <span className="bp-field__label">Full name</span>
+                    <p className="bp-field__value">{user.name || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="bp-field__label">Email</span>
+                    <p className="bp-field__value">{user.email || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="bp-field__label">Account type</span>
+                    <p className="bp-field__value">Individual customer</p>
+                  </div>
+                  {user.phone != null && String(user.phone).trim() !== '' && (
+                    <div>
+                      <span className="bp-field__label">Phone</span>
+                      <p className="bp-field__value">{user.phone}</p>
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              <section className="bp-card" aria-labelledby="bp-security-heading">
+                <h2 id="bp-security-heading" className="bp-card__title">
+                  Security
+                </h2>
+                <div className="bp-security">
+                  <div className="bp-security__icon" aria-hidden>
+                    <Shield size={22} />
+                  </div>
+                  <div className="bp-security__body">
+                    <p className="bp-security__headline">Account protection</p>
+                    <p className="bp-security__text">
+                      Keep your login private. For password resets or suspicious activity, reach out through support—we
+                      will verify your identity before making changes.
+                    </p>
+                  </div>
+                  <div className="bp-security__actions">
+                    <Link to="/buyer/support" className="bp-btn bp-btn--primary">
+                      Security help
+                    </Link>
+                  </div>
+                </div>
+              </section>
+
+              <section className="bp-card" aria-labelledby="bp-shortcuts-heading">
+                <h2 id="bp-shortcuts-heading" className="bp-card__title">
+                  Shortcuts
+                </h2>
+                <div className="bp-quick">
+                  <Link to="/buyer/wishlist" className="bp-quick__link">
+                    <Heart size={22} aria-hidden />
+                    Wishlist
+                    <span className="bp-quick__hint">Saved items</span>
+                  </Link>
+                  <Link to="/buyer/cart" className="bp-quick__link">
+                    <ShoppingCart size={22} aria-hidden />
+                    Cart
+                    <span className="bp-quick__hint">Review checkout</span>
+                  </Link>
+                  <Link to="/buyer/prescriptions" className="bp-quick__link">
+                    <UploadCloud size={22} aria-hidden />
+                    Prescriptions
+                    <span className="bp-quick__hint">Upload Rx</span>
+                  </Link>
+                  <Link to="/buyer/support" className="bp-quick__link">
+                    <Headphones size={22} aria-hidden />
+                    Support
+                    <span className="bp-quick__hint">Get help</span>
+                  </Link>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <BuyerFooter />
+    </div>
+  );
 };
 
 export default BuyerProfile;
