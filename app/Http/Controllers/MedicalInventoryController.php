@@ -13,6 +13,19 @@ use Illuminate\Support\Facades\Cache;
 
 class MedicalInventoryController extends Controller
 {
+    public function featuredProducts(Request $request)
+    {
+        $letter = $request->query('letter');
+        $query = MedicalInventory::with(['brand', 'category', 'branch']);
+
+        if ($letter) {
+            $query->where('product_name', 'LIKE', "{$letter}%");
+        }
+
+        // Return paginated results
+        return response()->json($query->paginate(24));
+    }
+
     /**
      * Display a listing of the resource.
      */

@@ -60,6 +60,8 @@ Route::post('/medical-inventory/analyze-rx', [MedicalInventoryController::class,
 Route::get('/medical-inventory', [MedicalInventoryController::class, 'index']);
 Route::get('/medical-inventory/{medicalInventory}', [MedicalInventoryController::class, 'show']);
 Route::get('/buyer/dashboard', [MedicalInventoryController::class, 'dashboardData']);
+Route::get('/products/featured', [MedicalInventoryController::class, 'featuredProducts']);
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/medical-inventory', [MedicalInventoryController::class, 'store']);
@@ -164,6 +166,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('wishlist', WishlistController::class)->only(['index', 'store', 'destroy']);
     Route::apiResource('purchase-invoices', 'App\Http\Controllers\Admin\PurchaseInvoiceController');
     Route::post('purchase-invoices/{id}/mark-as-post', 'App\Http\Controllers\Admin\PurchaseInvoiceController@markispost');
+    Route::get('/reports/sales', [\App\Http\Controllers\Reports\SalesreportController::class, 'filter_salesreport']);
 });
 
 // Publicly accessible routes

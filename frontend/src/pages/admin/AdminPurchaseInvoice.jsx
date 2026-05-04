@@ -10,6 +10,9 @@ const AdminPurchaseInvoice = () => {
     const [showModal, setShowModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [currentInvoiceId, setCurrentInvoiceId] = useState(null);
+    const [showViewModal, setShowViewModal] = useState(false);
+    const [selectedInvoice, setSelectedInvoice] = useState(null);
+    const [viewLoading, setViewLoading] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -160,6 +163,22 @@ const AdminPurchaseInvoice = () => {
         }
     };
 
+    const handleView = async (invoice) => {
+        setSelectedInvoice(invoice);
+        setShowViewModal(true);
+        setViewLoading(true);
+        try {
+            const res = await api.get(`/purchase-invoices/${invoice.id}`);
+            if (res.data) {
+                setSelectedInvoice(res.data);
+            }
+        } catch (error) {
+            console.error("Error fetching invoice details:", error);
+        } finally {
+            setViewLoading(false);
+        }
+    };
+
     return (
         <div className="admin-purchase-invoice">
             <AdminNavbar />
@@ -198,8 +217,11 @@ const AdminPurchaseInvoice = () => {
                                                 {invoice.is_post ? 'Posted' : 'Draft'}
                                             </span>
                                         </td>
-                                        <td>
+                                         <td>
                                             <div className="action-btns">
+                                                <button className="icon-btn-view" onClick={() => handleView(invoice)} title="View" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer' }}>
+                                                    <i className="bi bi-eye"></i>
+                                                </button>
                                                 {!invoice.is_post && (
                                                     <>
                                                         <button className="icon-btn-edit" onClick={() => handleOpenModal(invoice)} title="Edit">
@@ -212,9 +234,6 @@ const AdminPurchaseInvoice = () => {
                                                             <i className="bi bi-check-all"></i> Post
                                                         </button>
                                                     </>
-                                                )}
-                                                {invoice.is_post && (
-                                                    <span style={{ fontSize: '12px', color: '#64748b' }}>No actions available</span>
                                                 )}
                                             </div>
                                         </td>
@@ -333,6 +352,95 @@ const AdminPurchaseInvoice = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {showViewModal && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowViewModal(false)}>
+                    <div style={{ background: 'white', borderRadius: '16px', maxWidth: '800px', width: '100%', maxHeight: '90vh', overflow: 'auto', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', borderBottom: '1px solid #eee' }}>
+                            <h3 style={{ margin: 0 }}>Purchase Invoice Details</h3>
+                            <button className="close-btn" onClick={() => setShowViewModal(false)} style={{ border: 'none', background: 'none', fontSize: '24px', cursor: 'pointer' }}>&times;</button>
+                        </div>
+                        
+                        <div style={{ padding: '20px' }}>
+                            {!selectedInvoice ? (
+                                <div style={{ textAlign: 'center', padding: '40px' }}>Loading...</div>
+                            ) : (
+                                <>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '30px', background: '#f8fafc', padding: '20px', borderRadius: '12px' }}>
+                                        <div>
+                                            <p style={{ margin: '0 0 5px 0', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', fontWeight: '600' }}>Document Identity</p>
+                                            <p style={{ margin: 0, fontWeight: '700', fontSize: '16px' }}>{selectedInvoice.document_identity}</p>
+                                        </div>
+                                        <div>
+                                            <p style={{ margin: '0 0 5px 0', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', fontWeight: '600' }}>Invoice Date</p>
+                                            <p style={{ margin: 0, fontWeight: '700', fontSize: '16px' }}>{selectedInvoice.document_date}</p>
+                                        </div>
+                                        <div>
+                                            <p style={{ margin: '0 0 5px 0', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', fontWeight: '600' }}>Status</p>
+                                            <span className={`status-badge ${selectedInvoice.is_post ? 'status-posted' : 'status-draft'}`}>
+                                                {selectedInvoice.is_post ? 'Posted' : 'Draft'}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <p style={{ margin: '0 0 5px 0', color: '#64748b', fontSize: '12px', textTransform: 'uppercase', fontWeight: '600' }}>Total Amount</p>
+                                            <p style={{ margin: 0, fontWeight: '700', fontSize: '16px', color: '#0b5fb8' }}>Rs {parseFloat(selectedInvoice.total_amount).toLocaleString()}</p>
+                                        </div>
+                                    </div>
+
+                                    <h4 style={{ marginBottom: '15px' }}>Line Items</h4>
+                                    {viewLoading && !selectedInvoice.details ? (
+                                        <div style={{ textAlign: 'center', padding: '20px' }}>Loading items...</div>
+                                    ) : (
+                                        <div style={{ overflowX: 'auto' }}>
+                                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                                <thead>
+                                                    <tr style={{ background: '#f1f5f9' }}>
+                                                        <th style={{ padding: '12px', textAlign: 'left' }}>Item</th>
+                                                        <th style={{ padding: '12px', textAlign: 'center' }}>Qty</th>
+                                                        <th style={{ padding: '12px', textAlign: 'right' }}>Rate</th>
+                                                        <th style={{ padding: '12px', textAlign: 'right' }}>Amount</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {selectedInvoice.details?.map(detail => {
+                                                        const itemInfo = items.find(i => i.id == detail.item_id);
+                                                        return (
+                                                            <tr key={detail.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                                                <td style={{ padding: '12px' }}>
+                                                                    <strong>{itemInfo?.product_name || 'Item Removed'}</strong>
+                                                                    <div style={{ fontSize: '11px', color: '#64748b' }}>{itemInfo?.generic_name}</div>
+                                                                </td>
+                                                                <td style={{ padding: '12px', textAlign: 'center' }}>{detail.qty}</td>
+                                                                <td style={{ padding: '12px', textAlign: 'right' }}>Rs {parseFloat(detail.rate).toLocaleString()}</td>
+                                                                <td style={{ padding: '12px', textAlign: 'right', fontWeight: '600' }}>Rs {parseFloat(detail.amount).toLocaleString()}</td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr style={{ background: '#f8fafc', fontWeight: '700' }}>
+                                                        <td colSpan="3" style={{ padding: '12px', textAlign: 'right' }}>Grand Total</td>
+                                                        <td style={{ padding: '12px', textAlign: 'right', color: '#0b5fb8' }}>Rs {parseFloat(selectedInvoice.total_amount).toLocaleString()}</td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                        
+                        <div style={{ padding: '20px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button 
+                                onClick={() => setShowViewModal(false)}
+                                style={{ padding: '10px 20px', background: '#64748b', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

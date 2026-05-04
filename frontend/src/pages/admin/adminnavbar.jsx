@@ -148,6 +148,7 @@ const AdminNavbar = () => {
           <NavLink to="/admin/purchase-invoices" className={({ isActive }) => isActive ? 'active' : ''}><i className="bi bi-receipt" /> <span>Purchase Invoices</span></NavLink>
           <NavLink to="/admin/suppliers" className={({ isActive }) => isActive ? 'active' : ''}><i className="bi bi-truck" /> <span>Suppliers</span></NavLink>
           <NavLink to="/admin/reports" className={({ isActive }) => isActive ? 'active' : ''}><i className="bi bi-bar-chart-line" /> <span>Reports</span></NavLink>
+          <NavLink to="/admin/sales-report" className={({ isActive }) => isActive ? 'active' : ''}><i className="bi bi-file-earmark-spreadsheet" /> <span>Sales Report</span></NavLink>
         </nav>
 
         <div className="sidebar-bottom">
