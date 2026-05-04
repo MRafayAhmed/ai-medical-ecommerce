@@ -61,6 +61,10 @@ const BuyerRegister = () => {
         </filter>
       </svg>
 
+      <Link to="/buyer/login" className="back-home-mobile" aria-label="Back to login">
+        ← Login
+      </Link>
+
       <div className="outer-card">
         <div className="left-visual" aria-hidden="true">
           <Link to="/buyer/login" className="back-home" aria-label="Back to login">
@@ -73,10 +77,6 @@ const BuyerRegister = () => {
           <div className="art" aria-hidden="true">
             <img src={loginArt} alt="Artwork" className="login-art tuned" />
           </div>
-
-          <Link to="/buyer/login" className="back-home-mobile" aria-label="Back to login">
-            &larr; Login
-          </Link>
         </div>
 
         <main className="glass" role="main" aria-labelledby="register-title">
@@ -120,7 +120,7 @@ const BuyerRegister = () => {
               </div>
 
 
-              <div style={{ textAlign: 'center', marginTop: 12, fontSize: 14, color: '#6b7780' }}>Already have an account? <Link to="/buyer/login" style={{ color: 'var(--accent-b)', fontWeight: 700 }}>Login</Link></div>
+              <div className="register-footer-login">Already have an account? <Link to="/buyer/login">Login</Link></div>
 
             </form>
           </div>

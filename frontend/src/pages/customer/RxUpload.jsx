@@ -12,6 +12,8 @@ import {
   ImagePlus,
   X,
   ChevronRight,
+  Camera,
+  Images,
 } from 'lucide-react';
 import api from '../../api/axios';
 import '../../styles/customerhome.css';
@@ -77,6 +79,7 @@ const RxUpload = () => {
       setAlternatives({});
       showBanner(null);
     }
+    e.target.value = '';
   };
 
   const clearFile = () => {
@@ -249,21 +252,64 @@ const RxUpload = () => {
               </div>
 
               <div className={`rx-dropzone ${file ? 'rx-dropzone--filled' : ''}`}>
-                <input type="file" id="rx-file" accept="image/jpeg,image/png,image/webp,image/*" onChange={handleFileChange} />
-                <label htmlFor="rx-file" className="rx-dropzone__label">
-                  {preview ? (
-                    <>
+                <input
+                  type="file"
+                  id="rx-file-desktop"
+                  tabIndex={-1}
+                  accept="image/jpeg,image/png,image/webp,image/*"
+                  onChange={handleFileChange}
+                />
+                <input
+                  type="file"
+                  id="rx-file-camera"
+                  tabIndex={-1}
+                  accept="image/jpeg,image/png,image/webp,image/*"
+                  capture="environment"
+                  onChange={handleFileChange}
+                />
+                <input
+                  type="file"
+                  id="rx-file-gallery"
+                  tabIndex={-1}
+                  accept="image/jpeg,image/png,image/webp,image/*"
+                  onChange={handleFileChange}
+                />
+
+                {preview ? (
+                  <>
+                    <label htmlFor="rx-file-desktop" className="rx-dropzone__label rx-dropzone__label--fill rx-dropzone__label--desktop-only">
                       <img src={preview} alt="Preview of selected prescription" className="rx-dropzone__preview" />
                       <span className="rx-dropzone__hint">Tap to replace image</span>
-                    </>
-                  ) : (
-                    <span className="rx-dropzone__placeholder">
-                      <Upload className="rx-dropzone__icon" strokeWidth={1.5} aria-hidden />
-                      <span className="rx-dropzone__title">Drop an image or click to browse</span>
-                      <span className="rx-dropzone__meta">JPG · PNG · WEBP · max 10 MB typical</span>
-                    </span>
-                  )}
-                </label>
+                    </label>
+                    <label htmlFor="rx-file-gallery" className="rx-dropzone__label rx-dropzone__label--fill rx-dropzone__label--mobile-only">
+                      <img src={preview} alt="Preview of selected prescription" className="rx-dropzone__preview" />
+                      <span className="rx-dropzone__hint">Tap to replace image</span>
+                    </label>
+                  </>
+                ) : (
+                  <>
+                    <label htmlFor="rx-file-desktop" className="rx-dropzone__label rx-dropzone__label--desktop-only">
+                      <span className="rx-dropzone__placeholder">
+                        <Upload className="rx-dropzone__icon" strokeWidth={1.5} aria-hidden />
+                        <span className="rx-dropzone__title">Drop an image or click to browse</span>
+                        <span className="rx-dropzone__meta">JPG · PNG · WEBP · max 10 MB typical</span>
+                      </span>
+                    </label>
+                    <div className="rx-dropzone__split-mobile" role="group" aria-label="Choose prescription photo source">
+                      <label htmlFor="rx-file-camera" className="rx-dropzone__half rx-dropzone__half--camera">
+                        <Camera className="rx-dropzone__half-icon" strokeWidth={1.75} aria-hidden />
+                        <span className="rx-dropzone__half-title">Camera</span>
+                        <span className="rx-dropzone__half-meta">Take a photo</span>
+                      </label>
+                      <span className="rx-dropzone__split-rule" aria-hidden />
+                      <label htmlFor="rx-file-gallery" className="rx-dropzone__half rx-dropzone__half--gallery">
+                        <Images className="rx-dropzone__half-icon" strokeWidth={1.75} aria-hidden />
+                        <span className="rx-dropzone__half-title">Gallery</span>
+                        <span className="rx-dropzone__half-meta">Choose a file</span>
+                      </label>
+                    </div>
+                  </>
+                )}
               </div>
 
               {file && (
@@ -316,8 +362,8 @@ const RxUpload = () => {
                   </div>
                   <h3 className="rx-empty__title">No analysis yet</h3>
                   <p className="rx-empty__text">
-                    Upload a prescription image on the left, then run analysis. Your matches and alternatives will show
-                    up here.
+                    Upload a prescription image above, then run analysis. Your matches and alternatives will show up
+                    here.
                   </p>
                 </div>
               )}
