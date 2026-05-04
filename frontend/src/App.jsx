@@ -16,6 +16,7 @@ import AdminSetting from "./pages/admin/adminsetting";
 import AdminSupplier from "./pages/admin/AdminSupplier";
 import AdminCategory from "./pages/admin/admincategory";
 import AdminPurchaseInvoice from "./pages/admin/AdminPurchaseInvoice";
+import AdminSalesReport from "./pages/admin/AdminSalesReport";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BuyerLogin from "./pages/customer/buyerlogin";
 import BuyerRegister from "./pages/customer/buyerregister";
@@ -26,6 +27,8 @@ import CategoryPage from "./pages/customer/CategoryPage";
 import BuyerOrders from "./pages/customer/buyerorders";
 import BuyerProfile from "./pages/customer/buyerprofile";
 import BuyerCart from "./pages/customer/buyercart";
+import FeaturedProducts from "./pages/customer/FeaturedProducts";
+
 
 import RxUpload from "./pages/customer/RxUpload";
 import { StockProvider } from "./context/StockContext";
@@ -56,7 +59,9 @@ function App() {
           </Route>
 
           <Route path="/buyer/category/:categoryId/:categoryName?" element={<CategoryPage />} />
+          <Route path="/products/featured" element={<FeaturedProducts />} />
           <Route path="/buyer/support" element={<BuyerSupport />} />
+
           <Route path="/buyer/prescriptions" element={<RxUpload />} />
 
           {/* Public Admin Routes */}
@@ -78,6 +83,7 @@ function App() {
             <Route path="/admin/suppliers" element={<AdminSupplier />} />
             <Route path="/admin/categories" element={<AdminCategory />} />
             <Route path="/admin/purchase-invoices" element={<AdminPurchaseInvoice />} />
+            <Route path="/admin/sales-report" element={<AdminSalesReport />} />
           </Route>
         </Routes>
       </StockProvider>
