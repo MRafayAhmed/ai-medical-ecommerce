@@ -126,7 +126,7 @@ class MedicalInventoryController extends Controller
             
             // 2. Call Python API
             // Using the provided ngrok URL
-            $pythonApiUrl = 'https://unsatirised-deathly-israel.ngrok-free.dev/ocr_api'; // Updated from user request
+            $pythonApiUrl = 'http://54.205.144.95/ocr_api'; // Updated from user request
             // Let's assume root or specific endpoint. User said "this is the python scipt ... url".
             // Usually APIs have an endpoint. If it's a script, maybe it's just POST /
             // I'll try POST / first or look at user prompt again. "upload a image to a python endpoint".

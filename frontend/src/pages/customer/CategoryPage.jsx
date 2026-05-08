@@ -47,7 +47,7 @@ const CategoryPage = () => {
             let url = `/medical-inventory?category_id=${categoryId}&page=${page}`;
             if (query) url += `&q=${encodeURIComponent(query)}`;
             const productRes = await api.get(url);
-            
+
             // Laravel pagination returns data in .data.data
             const responseData = productRes.data;
             if (responseData.data) {
@@ -200,13 +200,13 @@ const CategoryPage = () => {
                             {products.map((product, idx) => {
                                 const price = parseFloat(product.price || 0);
                                 const mrp = product.mrp ? parseFloat(product.mrp) : null;
-                                
+
                                 // Fix broken image path if it's 'N/A' or missing
                                 const hasValidImage = product.image && product.image !== 'N/A' && product.image !== 'null';
-                                const imageUrl = product.image?.startsWith('http') 
-                                    ? product.image 
-                                    : (hasValidImage 
-                                        ? `http://localhost:8000/storage/${product.image}` 
+                                const imageUrl = product.image?.startsWith('http')
+                                    ? product.image
+                                    : (hasValidImage
+                                        ? `http://52.2.144.198:8000/storage/${product.image}`
                                         : `https://via.placeholder.com/300?text=${encodeURIComponent(product.product_name || product.name || 'Product')}`);
 
                                 return (
@@ -226,18 +226,18 @@ const CategoryPage = () => {
                                 );
                             })}
                         </div>
-                        
+
                         {/* Pagination Controls */}
                         {pagination.last_page > 1 && (
-                            <div className="bm-pagination" style={{ 
-                                display: 'flex', 
-                                justifyContent: 'center', 
-                                alignItems: 'center', 
-                                gap: '20px', 
+                            <div className="bm-pagination" style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                gap: '20px',
                                 padding: '40px 0',
                                 borderTop: '1px solid #eee'
                             }}>
-                                <button 
+                                <button
                                     onClick={() => fetchData(searchQuery, pagination.current_page - 1)}
                                     disabled={pagination.current_page === 1}
                                     className="bm-pagination-btn"
@@ -253,12 +253,12 @@ const CategoryPage = () => {
                                 >
                                     Previous
                                 </button>
-                                
+
                                 <span style={{ fontWeight: '600' }}>
                                     Page {pagination.current_page} of {pagination.last_page}
                                 </span>
-                                
-                                <button 
+
+                                <button
                                     onClick={() => fetchData(searchQuery, pagination.current_page + 1)}
                                     disabled={pagination.current_page === pagination.last_page}
                                     className="bm-pagination-btn"

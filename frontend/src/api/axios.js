@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://127.0.0.1:8000/api',
+    baseURL: 'http://52.2.144.198:8000/api',
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
@@ -14,7 +14,7 @@ api.interceptors.request.use(
     (config) => {
         // Prioritize customer_token for buyer/customer routes
         const isBuyerRoute = config.url && (config.url.includes('/buyer/') || config.url.includes('/customer/'));
-        const token = isBuyerRoute 
+        const token = isBuyerRoute
             ? (localStorage.getItem('customer_token') || localStorage.getItem('token'))
             : (localStorage.getItem('token') || localStorage.getItem('customer_token'));
 
