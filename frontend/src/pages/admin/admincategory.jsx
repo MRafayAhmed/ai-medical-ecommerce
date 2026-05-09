@@ -120,7 +120,7 @@ export default function AdminCategory() {
                                         <td>{idx + 1}</td>
                                         <td>
                                             <img
-                                                src={cat.image ? `http://52.2.144.198:8000/storage/${cat.image}` : `https://via.placeholder.com/50?text=${cat.name}`}
+                                                src={cat.image ? `http://52.2.144.198:80/storage/${cat.image}` : `https://via.placeholder.com/50?text=${cat.name}`}
                                                 alt={cat.name}
                                                 className="cat-img-mini"
                                             />

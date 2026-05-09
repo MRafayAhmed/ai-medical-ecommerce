@@ -36,7 +36,7 @@ const ProductCard = ({ product, onToggleWishlist, onAddToCart }) => {
             {/* Product Image */}
             <div className="bm-product-img-wrap">
                 <img
-                    src={product.image?.startsWith('http') ? product.image : (product.image ? `http://52.2.144.198:8000/storage/${product.image}` : `https://via.placeholder.com/300?text=${encodeURIComponent(product.product_name || product.name || 'Product')}`)}
+                    src={product.image?.startsWith('http') ? product.image : (product.image ? `http://52.2.144.198:80/storage/${product.image}` : `https://via.placeholder.com/300?text=${encodeURIComponent(product.product_name || product.name || 'Product')}`)}
                     alt={product.name}
                     className="bm-product-img"
                     onError={(e) => {
