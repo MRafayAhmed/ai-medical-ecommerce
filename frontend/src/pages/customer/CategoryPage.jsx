@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Heart, Search, ShoppingCart, User, ArrowLeft, Loader2, X } from 'lucide-react';
 import api from '../../api/axios';
 import ProductCard from '../../components/ProductCard';
 import BuyerNavbar from '../../components/BuyerNavbar';
+import BuyerTopCategoryNav from '../../components/BuyerTopCategoryNav';
 import BuyerFooter from '../../components/BuyerFooter';
 import '../../styles/buyermainpage.css';
 
 const CategoryPage = () => {
     const { categoryId, categoryName } = useParams();
     const navigate = useNavigate();
+    const pageRef = useRef(null);
     const [products, setProducts] = useState([]);
     const [category, setCategory] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -164,13 +166,15 @@ const CategoryPage = () => {
     };
 
     return (
-        <div className="bm-page">
+        <div className="bm-page" ref={pageRef}>
             <BuyerNavbar onSearch={(q) => {
                 setSearchQuery(q);
                 fetchData(q);
             }} />
 
-            <main className="bm-main-container" style={{ paddingTop: '120px', minHeight: '80vh' }}>
+            <BuyerTopCategoryNav pageRef={pageRef} />
+
+            <main className="bm-main-container bm-category-page-main" style={{ minHeight: '80vh' }}>
                 <header className="bm-category-header">
                     <button onClick={() => navigate(-1)} className="bm-category-back">
                         <ArrowLeft size={18} />

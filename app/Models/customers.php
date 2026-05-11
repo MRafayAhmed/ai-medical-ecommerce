@@ -23,6 +23,7 @@ class customers extends Authenticatable
         'city',
         'username',
         'password',
+        'postal_code',
     ];
 
     protected $hidden = [

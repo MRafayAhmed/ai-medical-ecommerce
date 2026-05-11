@@ -1,0 +1,217 @@
+/**
+ * Buyer storefront header (BuyerNavbar)
+ * Layout, spacing, and breakpoints — works with or without .bm-page parent.
+ */
+
+.header.header--buyer {
+  --buyer-nav-pad-x: clamp(0.75rem, 3vw, 4rem);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: saturate(180%) blur(10px);
+  -webkit-backdrop-filter: saturate(180%) blur(10px);
+  border-bottom: none;
+  box-shadow: none;
+}
+
+.header.header--buyer .header__container {
+  max-width: var(--container-max, 1680px);
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.625rem var(--buyer-nav-pad-x);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: clamp(0.5rem, 2vw, 1.25rem);
+}
+
+.header.header--buyer .header__logo {
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.header.header--buyer .header__logo-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: min(42vw, 11rem);
+}
+
+@media (min-width: 480px) {
+  .header.header--buyer .header__logo-text {
+    max-width: none;
+  }
+}
+
+.header.header--buyer .header__search {
+  flex: 1 1 auto;
+  width: 100%;
+  margin: 0 auto;
+  min-width: 0;
+  justify-self: center;
+}
+
+/* Tablet / small laptop — max search length 2× previous (760px → 1520px) */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .header.header--buyer .header__search {
+    max-width: min(1520px, 100%);
+  }
+}
+
+/* Large laptop / desktop — 2× previous cap (980px → 1960px) */
+@media (min-width: 1200px) {
+  .header.header--buyer .header__search {
+    max-width: min(600px, 100%);
+  }
+}
+
+/* Stretch the pill input to use the full widened search area on laptop */
+@media (min-width: 768px) {
+  .header.header--buyer .header__search .header__search-wrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+.header.header--buyer .header__upload-pill {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 1024px) {
+  .header.header--buyer .header__upload-pill span {
+    display: none;
+  }
+
+  .header.header--buyer .header__upload-pill {
+    padding: 8px 12px;
+    border-radius: 999px;
+  }
+}
+
+.header.header--buyer .header__actions {
+  display: none;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .header.header--buyer .header__actions {
+    display: flex;
+  }
+}
+
+.header.header--buyer .header__mobile-toggle {
+  flex-shrink: 0;
+  border-radius: var(--radius-md, 0.5rem);
+}
+
+@media (min-width: 768px) {
+  .header.header--buyer .header__mobile-toggle {
+    display: none;
+  }
+}
+
+/* When dashboard adds outer gutters, keep header inner padding modest */
+@media (min-width: 768px) {
+  .bm-page .header.header--buyer {
+    --buyer-nav-pad-x: clamp(0.5rem, 1.75vw, 1.25rem);
+  }
+}
+
+/* Mobile / narrow: logo row + full-width search */
+@media (max-width: 767px) {
+  .header.header--buyer .header__container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 0.625rem;
+    column-gap: 0.75rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .header.header--buyer .header__logo {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .header.header--buyer .header__mobile-toggle {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .header.header--buyer .header__search {
+    order: 3;
+    flex: 1 1 100%;
+    max-width: none;
+    display: flex;
+    justify-content: stretch;
+  }
+
+  .header.header--buyer .header__upload-pill {
+    display: none;
+  }
+}
+
+.header.header--buyer .header__mobile-menu {
+  padding: 1rem var(--buyer-nav-pad-x);
+  border-bottom: none;
+}
+
+.header.header--buyer .header__mobile-menu--extras {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
+}
+
+.header.header--buyer .header__mobile-upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--color-secondary, #0ea5e9), var(--color-primary, #0d9488));
+  color: #fff !important;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.header.header--buyer .header__mobile-upload svg {
+  color: #fff;
+}
+
+.header.header--buyer .cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: bold;
+  min-width: 18px;
+  text-align: center;
+}
+
+.header.header--buyer .header__search-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.header.header--buyer .header__search-clear:hover {
+  color: #64748b;
+}
