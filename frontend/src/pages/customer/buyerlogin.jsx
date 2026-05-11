@@ -68,7 +68,7 @@ const BuyerLogin = () => {
           <h2 className="login-title">Welcome Back</h2>
           <p className="login-subtitle">Sign in to your account</p>
 
-          {error && <div className="login-error-message" style={{ color: '#ff4d4d', marginBottom: '1rem', textAlign: 'center', fontSize: '14px' }}>{error}</div>}
+          {error && <div className="login-error-message" role="alert">{error}</div>}
 
           <form onSubmit={handleSubmit} className="login-form">
             <div className="form-group">
