@@ -82,7 +82,7 @@ const BuyerRegister = () => {
         <main className="glass" role="main" aria-labelledby="register-title">
           <h1 id="register-title">CREATE YOUR BUYER ACCOUNT</h1>
           
-          {error && <div className="register-error-message" style={{ color: '#ff4d4d', marginBottom: '1rem', textAlign: 'center', fontSize: '14px' }}>{error}</div>}
+          {error && <div className="register-error-message" role="alert">{error}</div>}
 
 
           <div className="register-container">

@@ -20,6 +20,22 @@ import '../../styles/customerhome.css';
 import '../../styles/rxupload.css';
 import BuyerNavbar from '../../components/BuyerNavbar';
 import BuyerFooter from '../../components/BuyerFooter';
+import { useStock } from '../../context/StockContext';
+
+/** Resolved quantity available to sell — same idea as ProductCard (`getStock` then product.stock). */
+function resolveAvailableQty(product, getStock) {
+  let s = product?.id != null ? getStock(product.id) : null;
+  if (s === null || s === undefined) {
+    s = product?.stock;
+  }
+  const n = s === null || s === undefined || s === '' ? NaN : Number(s);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+function isPurchasable(product, getStock) {
+  const n = resolveAvailableQty(product, getStock);
+  return Number.isFinite(n) && n > 0;
+}
 
 const API_ORIGIN = 'http://127.0.0.1:8000';
 
@@ -39,6 +55,7 @@ const normalizeRxResponse = (data) => {
 
 const RxUpload = () => {
   const navigate = useNavigate();
+  const { getStock } = useStock();
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const previewRef = useRef(null);
@@ -138,9 +155,17 @@ const RxUpload = () => {
     }
   };
 
+  const closeAlternatives = (index) => {
+    setAlternatives((prev) => {
+      const next = { ...prev };
+      delete next[index];
+      return next;
+    });
+  };
+
   const addToCart = (product) => {
-    if (product.stock <= 0) {
-      showBanner('error', 'That item is out of stock.');
+    if (!isPurchasable(product, getStock)) {
+      showBanner('error', 'That item is out of stock or unavailable.');
       return;
     }
     const savedCart = localStorage.getItem('mediEcom_cart');
@@ -167,6 +192,10 @@ const RxUpload = () => {
           originalPrice: item.mrp ? parseFloat(item.mrp) : null,
           stock: item.stock,
         };
+        if (!isPurchasable(cartItem, getStock)) {
+          showBanner('error', 'That item is out of stock or unavailable.');
+          return;
+        }
         addToCart(cartItem);
       } else {
         showBanner('info', `"${medName}" was not found in our catalog. Try Find alternatives or search the shop.`);
@@ -424,12 +453,33 @@ const RxUpload = () => {
 
                       {alternatives[idx] && (
                         <div className="rx-alts rx-fade-in">
-                          <h4 className="rx-alts__title">
-                            Alternatives for <strong>{med.generic}</strong>
-                          </h4>
+                          <div className="rx-alts__head">
+                            <h4 className="rx-alts__title">
+                              Alternatives for <strong>{med.generic}</strong>
+                            </h4>
+                            <button
+                              type="button"
+                              className="rx-alts__close"
+                              onClick={() => closeAlternatives(idx)}
+                              aria-label={`Close alternatives for ${med.generic || med.name}`}
+                            >
+                              <X size={18} aria-hidden />
+                              <span className="rx-alts__close-text">Close</span>
+                            </button>
+                          </div>
                           {alternatives[idx].length > 0 ? (
                             <ul className="rx-alt-grid">
-                              {alternatives[idx].map((alt) => (
+                              {alternatives[idx].map((alt) => {
+                                const altCartShape = {
+                                  id: alt.id,
+                                  name: alt.product_name,
+                                  image: alt.image ? storageUrl(alt.image) : `https://via.placeholder.com/200x200?text=${encodeURIComponent(alt.product_name)}`,
+                                  price: parseFloat(alt.price),
+                                  originalPrice: alt.mrp ? parseFloat(alt.mrp) : null,
+                                  stock: alt.stock,
+                                };
+                                const canAddAlt = isPurchasable(altCartShape, getStock);
+                                return (
                                 <li key={alt.id} className="rx-alt-card">
                                   <div className="rx-alt-card__img">
                                     <img
@@ -443,22 +493,15 @@ const RxUpload = () => {
                                     <button
                                       type="button"
                                       className="rx-btn rx-btn--dark rx-btn--block"
-                                      onClick={() =>
-                                        addToCart({
-                                          id: alt.id,
-                                          name: alt.product_name,
-                                          image: alt.image ? storageUrl(alt.image) : `https://via.placeholder.com/200x200?text=${encodeURIComponent(alt.product_name)}`,
-                                          price: parseFloat(alt.price),
-                                          originalPrice: alt.mrp ? parseFloat(alt.mrp) : null,
-                                          stock: alt.stock,
-                                        })
-                                      }
+                                      disabled={!canAddAlt}
+                                      onClick={() => canAddAlt && addToCart(altCartShape)}
                                     >
-                                      Add to cart
+                                      {canAddAlt ? 'Add to cart' : 'Out of stock'}
                                     </button>
                                   </div>
                                 </li>
-                              ))}
+                                );
+                              })}
                             </ul>
                           ) : (
                             <p className="rx-alts__empty">No in-stock alternatives found for this generic.</p>

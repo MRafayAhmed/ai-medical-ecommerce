@@ -302,6 +302,121 @@ body {
   color: var(--color-secondary-dark);
 }
 
+.register-error-message {
+  color: #dc2626;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  word-break: break-word;
+  padding: 0 0.75rem;
+}
+
+/* Desktop / laptop: two-column form (all split-layout widths) */
+@media (min-width: 1001px) {
+  .register-container form > div:first-of-type {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: clamp(1rem, 2vw, 1.5rem);
+    row-gap: 0;
+    align-items: start;
+  }
+
+  .register-container form > div:first-of-type .input-field:nth-child(6) {
+    grid-column: 1 / -1;
+  }
+
+  .register-container form > div:first-of-type .input-field,
+  .register-container form > div:first-of-type .input-field input,
+  .register-container form > div:first-of-type .input-field select,
+  .register-container form > div:first-of-type .input-field textarea {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .register-container .btn-container {
+    max-width: none;
+    width: 100%;
+  }
+}
+
+/* Laptop & small desktop: wider form column, comfortable padding */
+@media (min-width: 1001px) and (max-width: 1199px) {
+  .left-visual {
+    flex: 0 0 44%;
+  }
+
+  .glass {
+    flex: 0 0 56%;
+    padding: 40px 28px 48px;
+  }
+
+  .glass h1 {
+    font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+    padding: 0 1rem;
+  }
+
+  .register-container,
+  .register-container form {
+    padding: 12px 24px 32px;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1599px) {
+  .left-visual {
+    flex: 0 0 48%;
+  }
+
+  .glass {
+    flex: 0 0 52%;
+    padding: 42px 32px 52px;
+  }
+
+  .glass h1 {
+    font-size: clamp(1.4rem, 2vw, 1.85rem);
+    padding: 0 1.25rem;
+  }
+
+  .register-container,
+  .register-container form {
+    padding: 12px 28px 36px;
+  }
+}
+
+/* Large desktop: balanced split so the form column stays usable */
+@media (min-width: 1600px) {
+  .left-visual {
+    flex: 0 0 50%;
+  }
+
+  .glass {
+    flex: 0 0 50%;
+    padding: 46px 36px 56px;
+  }
+
+  .register-container,
+  .register-container form {
+    padding: 12px 32px 40px;
+  }
+}
+
+/* Short laptop viewport: tighter vertical rhythm, less scroll */
+@media (min-width: 1001px) and (max-height: 760px) {
+  .input-field {
+    margin: 14px 0;
+  }
+
+  .glass {
+    padding-top: 32px;
+    padding-bottom: 36px;
+  }
+
+  .glass h1 {
+    margin-bottom: 0.15rem;
+  }
+}
+
 .divider {
   text-align: center;
   margin-top: 12px;
