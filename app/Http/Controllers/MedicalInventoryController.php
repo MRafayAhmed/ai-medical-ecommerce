@@ -36,7 +36,8 @@ class MedicalInventoryController extends Controller
         $search = request()->get('q');
         $categoryId = request()->get('category_id');
         
-        $query = MedicalInventory::with(['brand', 'category', 'branch']);
+        $query = MedicalInventory::with(['brand', 'category', 'branch'])
+            ->withSum('stockLedger as ledger_stock', 'qty');
         
         if ($search) {
             $query->where(function($q) use ($search) {

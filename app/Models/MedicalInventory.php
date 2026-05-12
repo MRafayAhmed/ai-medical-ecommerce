@@ -45,4 +45,9 @@ class MedicalInventory extends Model
     {
         return $this->belongsTo(Brand::class , 'brand_id');
     }
+
+    public function stockLedger()
+    {
+        return $this->hasMany(StockLedger::class, 'item_id');
+    }
 }

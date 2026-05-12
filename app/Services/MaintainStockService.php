@@ -63,6 +63,9 @@ class MaintainStockService
             ];
         }
         StockLedger::insert($data);
+        
+        // Clear inventory caches so changes show up immediately in admin
+        \Illuminate\Support\Facades\Cache::flush();
     }
     /**
      * Decrease the stock of a given inventory item.

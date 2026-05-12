@@ -46,8 +46,26 @@ const AdminDashboard = () => {
     returns: 0,
     deliveryDays: 0,
     supportTickets: 0,
-    avgOrderValue: 0
+    avgOrderValue: 0,
+    recentActivity: []
   });
+
+  const [pendingOrders, setPendingOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+
+  const fetchPendingOrders = async () => {
+    try {
+      setLoadingOrders(true);
+      const response = await api.get('/orders');
+      // Filter for 'pending' orders only
+      const all = response.data.data || response.data || [];
+      setPendingOrders(all.filter(o => o.status === 'pending'));
+    } catch (err) {
+      console.error('Error fetching pending orders:', err);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
 
   // Fetch real data from API
   useEffect(() => {
@@ -60,7 +78,34 @@ const AdminDashboard = () => {
       }
     };
     fetchStats();
+    fetchPendingOrders();
   }, []);
+
+  const handleUpdateStatus = async (orderId, newStatus) => {
+    if (!window.confirm(`Are you sure you want to mark this order as ${newStatus}?`)) return;
+    try {
+      await api.put(`/orders/${orderId}`, { status: newStatus });
+      fetchPendingOrders();
+    } catch (err) {
+      alert('Failed to update order status');
+    }
+  };
+
+  const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm('Permanently delete this order?')) return;
+    try {
+      await api.delete(`/orders/${orderId}`);
+      fetchPendingOrders();
+    } catch (err) {
+      alert('Failed to delete order');
+    }
+  };
+
+  const handleViewOrder = (order) => {
+    // For now, alert basic info or navigate. 
+    // Usually, you'd open a modal.
+    alert(`Order #${order.id}\nCustomer: ${order.customer?.name || 'Unknown'}\nTotal: Rs ${order.total_amount}\nAddress: ${order.address}`);
+  };
 
   const getPrimary = () => getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#0b5fb8';
 
@@ -290,6 +335,70 @@ const AdminDashboard = () => {
               </div>
             </div>
           )}
+
+          {/* Pending Orders Widget */}
+          <div className="pending-orders-widget" style={{ marginBottom: '30px', background: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '700', color: '#1a202c' }}>
+                <i className="bi bi-clock-history" style={{ marginRight: '8px', color: '#f6ad55' }}></i>
+                Pending Orders ({pendingOrders.length})
+              </h4>
+              <button className="control-btn" onClick={fetchPendingOrders} style={{ padding: '4px 12px', fontSize: '0.8rem' }}>
+                <i className="bi bi-arrow-clockwise"></i> Refresh
+              </button>
+            </div>
+            
+            <div className="pending-list" style={{ maxHeight: '400px', overflowY: 'auto', borderRadius: '8px', border: '1px solid #edf2f7' }}>
+              {loadingOrders ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: '#718096' }}>Loading orders...</div>
+              ) : pendingOrders.length > 0 ? (
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead style={{ position: 'sticky', top: 0, background: '#f8fafc', zIndex: 1 }}>
+                    <tr style={{ textAlign: 'left', borderBottom: '1px solid #edf2f7' }}>
+                      <th style={{ padding: '12px' }}>Order ID</th>
+                      <th style={{ padding: '12px' }}>Customer</th>
+                      <th style={{ padding: '12px' }}>Amount</th>
+                      <th style={{ padding: '12px' }}>Date</th>
+                      <th style={{ padding: '12px', textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingOrders.map((order) => (
+                      <tr key={order.id} style={{ borderBottom: '1px solid #f7fafc', transition: 'background 0.2s' }} className="hover-row">
+                        <td style={{ padding: '12px', fontWeight: '600' }}>#{order.id}</td>
+                        <td style={{ padding: '12px' }}>{order.customer?.name || 'Guest'}</td>
+                        <td style={{ padding: '12px', color: '#2d3748', fontWeight: '500' }}>Rs {order.total_amount}</td>
+                        <td style={{ padding: '12px', fontSize: '0.85rem', color: '#718096' }}>
+                          {new Date(order.order_date || order.created_at).toLocaleDateString()}
+                        </td>
+                        <td style={{ padding: '12px', textAlign: 'right' }}>
+                          <div style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end' }}>
+                            <button onClick={() => handleViewOrder(order)} title="View" style={{ border: 'none', background: '#edf2f7', color: '#4a5568', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer' }}>
+                              <i className="bi bi-eye"></i>
+                            </button>
+                            <button onClick={() => handleUpdateStatus(order.id, 'completed')} title="Approve" style={{ border: 'none', background: '#c6f6d5', color: '#22543d', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer' }}>
+                              <i className="bi bi-check-lg"></i>
+                            </button>
+                            <button onClick={() => handleUpdateStatus(order.id, 'cancelled')} title="Cancel" style={{ border: 'none', background: '#fed7d7', color: '#822727', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer' }}>
+                              <i className="bi bi-x-lg"></i>
+                            </button>
+                            <button onClick={() => handleDeleteOrder(order.id)} title="Delete" style={{ border: 'none', background: '#fff5f5', color: '#c53030', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer' }}>
+                              <i className="bi bi-trash"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div style={{ padding: '40px', textAlign: 'center', color: '#a0aec0' }}>
+                  <i className="bi bi-check2-circle" style={{ fontSize: '2rem', display: 'block', marginBottom: '10px' }}></i>
+                  No pending orders to process.
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Recent Activity */}
           <div className="recent-activity">

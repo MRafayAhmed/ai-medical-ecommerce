@@ -73,10 +73,9 @@ export default function AdminProduct() {
 
   const filtered = products.filter(p => {
     if (filter === 'all') return true;
-    const stock = Number(p.stock);
-    if (filter === 'instock') return stock > 10;
-    if (filter === 'lowstock') return stock > 0 && stock <= 10;
-    if (filter === 'outofstock') return stock === 0;
+    const stock = Number(p.ledger_stock ?? 0);
+    if (filter === 'instock') return stock > 0;
+    if (filter === 'outofstock') return stock <= 0;
     return true;
   });
 
@@ -222,7 +221,6 @@ export default function AdminProduct() {
               <select value={filter} onChange={(e) => setFilter(e.target.value)} className="control-select">
                 <option value="all">All</option>
                 <option value="instock">In Stock</option>
-                <option value="lowstock">Low Stock</option>
                 <option value="outofstock">Out of Stock</option>
               </select>
               <button className="control-btn" onClick={() => setShowAddModal(true)}><i className="bi bi-plus-lg" /> Add Product</button>
@@ -255,10 +253,10 @@ export default function AdminProduct() {
                       <td>{p.category ? p.category.name : p.category_id}</td>
                       <td>{p.brand ? p.brand.name : p.brand_id}</td>
                       <td>Rs {p.price}</td>
-                      <td>{p.stock}</td>
+                      <td>{p.ledger_stock ?? 0}</td>
                       <td>
-                        <span className={`status-badge ${p.stock <= 0 ? 'status-outofstock' : p.stock < 10 ? 'status-lowstock' : 'status-instock'}`}>
-                          {p.stock <= 0 ? 'Out of Stock' : p.stock < 10 ? 'Low Stock' : 'In Stock'}
+                        <span className={`status-badge ${(p.ledger_stock ?? 0) <= 0 ? 'status-outofstock' : 'status-instock'}`}>
+                          {(p.ledger_stock ?? 0) <= 0 ? 'Out of Stock' : 'In Stock'}
                         </span>
                       </td>
                       <td>
@@ -351,10 +349,6 @@ export default function AdminProduct() {
                   <label>Dosage</label>
                   <input name="dosage" placeholder="E.g. 500mg" value={form.dosage} onChange={handleAddChange} />
                 </div>
-                <div className="input-group">
-                  <label>Stock Quantity</label>
-                  <input name="stock" type="number" placeholder="0" value={form.stock} onChange={handleAddChange} required />
-                </div>
               </div>
               <div className="form-row">
                 <div className="input-group">
@@ -408,8 +402,8 @@ export default function AdminProduct() {
               )}
               <div className="detail-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h4>{selectedProduct.product_name}</h4>
-                <span className={`status-badge ${selectedProduct.stock <= 0 ? 'status-outofstock' : selectedProduct.stock < 10 ? 'status-lowstock' : 'status-instock'}`}>
-                  {selectedProduct.stock <= 0 ? 'Out of Stock' : selectedProduct.stock < 10 ? 'Low Stock' : 'In Stock'}
+                <span className={`status-badge ${(selectedProduct.ledger_stock ?? 0) <= 0 ? 'status-outofstock' : 'status-instock'}`}>
+                  {(selectedProduct.ledger_stock ?? 0) <= 0 ? 'Out of Stock' : 'In Stock'}
                 </span>
               </div>
               <div className="detail-grid">
@@ -417,11 +411,10 @@ export default function AdminProduct() {
                 <p><strong>Brand:</strong> {selectedProduct.brand?.name || selectedProduct.brand_name || 'N/A'}</p>
                 <p><strong>Category:</strong> {selectedProduct.category?.name || 'N/A'}</p>
                 <p><strong>Branch:</strong> {selectedProduct.branch?.name || 'N/A'}</p>
-
                 <p><strong>Price:</strong> Rs {selectedProduct.price || '0'}</p>
                 <p><strong>MRP:</strong> Rs {selectedProduct.mrp || '0'}</p>
                 <p><strong>Discount:</strong> {selectedProduct.discount || '0'}%</p>
-                <p><strong>Stock:</strong> {selectedProduct.stock || '0'}</p>
+                <p><strong>Stock:</strong> {selectedProduct.ledger_stock ?? 0}</p>
 
                 <p><strong>Dosage:</strong> {selectedProduct.dosage || 'N/A'}</p>
                 <p><strong>Pack Size:</strong> {selectedProduct.pack_size || 'N/A'}</p>

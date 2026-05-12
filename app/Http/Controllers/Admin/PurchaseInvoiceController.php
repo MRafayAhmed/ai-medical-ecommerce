@@ -144,6 +144,9 @@ class PurchaseInvoiceController extends Controller
                 StockLedger::insert($data);
             }
             
+            // Clear inventory caches so new stock shows up in admin
+            \Illuminate\Support\Facades\Cache::flush();
+            
             DB::commit();
             return $this->index();
         } catch (\Exception $e) {
