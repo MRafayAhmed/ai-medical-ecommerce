@@ -234,6 +234,11 @@ class MedicalInventoryController extends Controller
             $product->description = $request->description;
             $product->mrp = $request->mrp;
             $product->stock = $request->stock;
+
+            if ($request->hasFile('image')) {
+                $product->image = $request->file('image')->store('products', 'public');
+            }
+
             $product->save();
 
             $this->clearCache();
