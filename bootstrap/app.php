@@ -12,26 +12,29 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-    $middleware->group('web', [
-        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-        \Illuminate\Session\Middleware\StartSession::class,
-        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-    ]);
+        $middleware->group('web', [
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        ]);
 
-    $middleware->group('api', [
-        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        'throttle:api',
-        \Illuminate\Routing\Middleware\SubstituteBindings::class,
-    ]);
+        $middleware->group('api', [
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            'throttle:api',
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ]);
 
-    $middleware->alias([
-        'seller' => \App\Http\Middleware\EnsureUserIsSeller::class,
-    ]);
+        $middleware->alias([
+            'seller' => \App\Http\Middleware\EnsureUserIsSeller::class,
+        ]);
 
-    $middleware->validateCsrfTokens(except: [
-        'api/*',
-    ]);
-})
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+        ]);
+
+        // Explicitly enable CORS for all routes if needed, 
+        // though Laravel 11/12 should handle it via config/cors.php
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

@@ -8,7 +8,7 @@ import BuyerTopCategoryNav from '../../components/BuyerTopCategoryNav';
 import BuyerFooter from '../../components/BuyerFooter';
 import '../../styles/buyermainpage.css';
 
-const API_ORIGIN = 'http://127.0.0.1:8000';
+const API_ORIGIN = 'http://52.2.144.198';
 
 function productImageUrl(product) {
   const raw = product.image;

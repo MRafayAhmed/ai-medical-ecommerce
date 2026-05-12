@@ -53,8 +53,8 @@ class MedicalInventoryController extends Controller
         // Cache based on page, search query, and category
         $cacheKey = 'inventory_page_' . $page . '_search_' . md5($search) . '_cat_' . $categoryId;
         
-        $inventories = Cache::remember($cacheKey, 86400, function () use ($query) {
-            return $query->paginate(20); // Increased page size for fewer round-trips if navigating
+        $inventories = Cache::remember($cacheKey, 3600, function () use ($query) {
+            return $query->paginate(100); // Increased from 20 to 100 to show more medicines in admin
         });
         
         return response()->json($inventories);

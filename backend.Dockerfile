@@ -31,6 +31,9 @@ COPY --from=builder /app/vendor /app/vendor
 # Copy application files
 COPY . .
 
+# Remove existing caches to prevent CollisionServiceProvider error
+RUN rm -rf bootstrap/cache/*.php
+
 # Exclude frontend folder if it exists in root (handled by .dockerignore, but just in case)
 # Ensure storage and bootstrap/cache are writable
 RUN mkdir -p storage/framework/{sessions,views,cache} \

@@ -28,7 +28,7 @@ const FeaturedProducts = () => {
             const mappedProducts = prodItems.map(item => ({
                 id: item.id,
                 name: item.product_name,
-                image: item.image ? `http://127.0.0.1:8000/storage/${item.image}` : ('https://via.placeholder.com/200x200/f8f9fa/333?text=' + encodeURIComponent(item.product_name)),
+                image: item.image ? `http://52.2.144.198/storage/${item.image}` : ('https://via.placeholder.com/200x200/f8f9fa/333?text=' + encodeURIComponent(item.product_name)),
                 price: parseFloat(item.price),
                 originalPrice: item.mrp ? parseFloat(item.mrp) : null,
                 stock: item.stock,

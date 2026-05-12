@@ -12,6 +12,7 @@ export default function AdminProduct() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, total: 0 });
 
   const [form, setForm] = useState({
     product_name: '',
@@ -34,15 +35,24 @@ export default function AdminProduct() {
   const [branches, setBranches] = useState([]);
 
   // Fetch products and auxiliary data
-  const fetchData = async () => {
+  const fetchData = async (page = 1) => {
     try {
+      setLoading(true);
       const [prodRes, attrRes] = await Promise.all([
-        api.get('/medical-inventory'),
+        api.get(`/medical-inventory?page=${page}`),
         api.get('/medical-inventory/attributes')
       ]);
 
-      if (prodRes.data && prodRes.data.data) setProducts(prodRes.data.data);
-      else setProducts(prodRes.data || []);
+      if (prodRes.data && prodRes.data.data) {
+        setProducts(prodRes.data.data);
+        setPagination({
+          current_page: prodRes.data.current_page,
+          last_page: prodRes.data.last_page,
+          total: prodRes.data.total
+        });
+      } else {
+        setProducts(prodRes.data || []);
+      }
 
       if (attrRes.data) {
         setBrands(attrRes.data.brands || []);
@@ -52,6 +62,8 @@ export default function AdminProduct() {
 
     } catch (error) {
       console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -237,7 +249,7 @@ export default function AdminProduct() {
                 <tbody>
                   {filtered.map((p, idx) => (
                     <tr key={p.id} data-status={p.status}>
-                      <td>{idx + 1}</td>
+                      <td>{(pagination.current_page - 1) * (products.length > 0 ? 100 : 0) + idx + 1}</td>
                       <td>{p.product_name}</td>
                       <td>{p.generic_name}</td>
                       <td>{p.category ? p.category.name : p.category_id}</td>
@@ -259,6 +271,30 @@ export default function AdminProduct() {
                 </tbody>
               </table>
             </div>
+            
+            {pagination.last_page > 1 && (
+              <div className="pagination-controls" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', padding: '20px 0' }}>
+                <button 
+                  className="control-btn" 
+                  disabled={pagination.current_page === 1 || loading}
+                  onClick={() => fetchData(pagination.current_page - 1)}
+                  style={{ opacity: pagination.current_page === 1 ? 0.5 : 1 }}
+                >
+                  <i className="bi bi-chevron-left" /> Previous
+                </button>
+                <span style={{ fontWeight: '600', color: '#64748b' }}>
+                  Page {pagination.current_page} of {pagination.last_page}
+                </span>
+                <button 
+                  className="control-btn" 
+                  disabled={pagination.current_page === pagination.last_page || loading}
+                  onClick={() => fetchData(pagination.current_page + 1)}
+                  style={{ opacity: pagination.current_page === pagination.last_page ? 0.5 : 1 }}
+                >
+                  Next <i className="bi bi-chevron-right" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

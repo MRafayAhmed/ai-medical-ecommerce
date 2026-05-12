@@ -37,7 +37,7 @@ function isPurchasable(product, getStock) {
   return Number.isFinite(n) && n > 0;
 }
 
-const API_ORIGIN = 'http://127.0.0.1:8000';
+const API_ORIGIN = 'http://52.2.144.198';
 
 const storageUrl = (path) => {
   if (!path) return null;

@@ -35,6 +35,7 @@ import BuyerFeaturedProducts from "./pages/customer/BuyerFeaturedProducts";
 
 import RxUpload from "./pages/customer/RxUpload";
 import BuyerSupport from "./pages/customer/BuyerSupport";
+import FeaturedProducts from "./pages/customer/FeaturedProducts";
 import ScrollToTop from "./components/ScrollToTop";
 import { StockProvider } from "./context/StockContext";
 

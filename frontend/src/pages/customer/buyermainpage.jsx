@@ -12,6 +12,7 @@ import { CategorySkeleton, ProductCardSkeleton } from '../../components/Skeleton
 import api from '../../api/axios';
 import { getBlogPreviewPosts } from '../../data/blogPreviews';
 import { getDashboardBrands } from '../../data/brandLogos';
+import premiumBanner from '../../assets/images/premium_banner.png';
 
 /**
  * Turn vertical wheel (or dominant trackpad delta) into horizontal scroll.
@@ -79,7 +80,7 @@ const defaultCategories = [
 const CATEGORY_CARDS_LIMIT = 12;
 
 /** Same host as `api/axios.js` baseURL — used for `/storage/...` category images from Laravel */
-const API_ORIGIN = 'http://127.0.0.1:8000';
+const API_ORIGIN = 'http://52.2.144.198';
 
 function categoryStorageUrl(imagePath) {
   if (imagePath == null || !String(imagePath).trim()) return null;
