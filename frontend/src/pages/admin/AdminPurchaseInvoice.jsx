@@ -214,7 +214,7 @@ const AdminPurchaseInvoice = () => {
                                                     </>
                                                 )}
                                                 {invoice.is_post && (
-                                                    <span style={{ fontSize: '12px', color: '#64748b' }}>No actions available</span>
+                                                    <span className="invoice-no-actions">No actions available</span>
                                                 )}
                                             </div>
                                         </td>

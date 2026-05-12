@@ -19,6 +19,7 @@ import AdminPurchaseInvoice from "./pages/admin/AdminPurchaseInvoice";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BuyerLogin from "./pages/customer/buyerlogin";
 import BuyerRegister from "./pages/customer/buyerregister";
+import BuyerForgotPass from "./pages/customer/buyerforgotpass";
 import BuyerWishlist from "./pages/customer/buyerwishlist";
 import Buyermainpage from "./pages/customer/buyermainpage";
 import CheckoutPage from "./pages/customer/checkout";
@@ -48,6 +49,7 @@ function App() {
           {/* Customer/Buyer Routes */}
           <Route path="/buyer/login" element={<BuyerLogin />} />
           <Route path="/buyer/register" element={<BuyerRegister />} />
+          <Route path="/buyer/forgot-password" element={<BuyerForgotPass />} />
           <Route path="/buyer/dashboard" element={<Buyermainpage />} />
           <Route path="/buyer/featured" element={<BuyerFeaturedProducts />} />
           <Route path="/products/featured" element={<Navigate to="/buyer/featured" replace />} />

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../../styles/adminforgotpass.css';
+import adminLoginHero from '../../assets/images/adminlogin.jpg';
+import '../../styles/adminlogin.css';
+import '../../styles/adminregister.css';
 
 const AdminForgotPass = () => {
   const [email, setEmail] = useState('');
@@ -12,7 +14,7 @@ const AdminForgotPass = () => {
     setErrors([]);
     setStatus('');
 
-    if (!email) {
+    if (!email.trim()) {
       setErrors(['Email is required.']);
       return;
     }
@@ -22,41 +24,62 @@ const AdminForgotPass = () => {
   };
 
   return (
-    <div className="admin-forgot-container">
-      <div className="brand-logo">Medi-Ecom</div>
+    <div className="admin-login-container">
+      <div className="background-image">
+        <img src={adminLoginHero} alt="" />
+      </div>
 
-      <div className="forgot-wrapper">
-        <div className="glass-box">
-          <h4>Reset Password</h4>
+      <header className="admin-login-header">
+        <Link to="/" className="back-home-btn">
+          ← Back to Home
+        </Link>
+      </header>
 
-          {status && <div className="alert alert-success">{status}</div>}
-          {errors.length > 0 && (
-            <div className="alert alert-danger">
-              <ul className="mb-0">{errors.map((err, i) => <li key={i}>{err}</li>)}</ul>
+      <div className="login-form-wrapper">
+        <div className="login-form-container">
+          <h2 className="login-title">Reset password</h2>
+          <p className="login-subtitle">Enter your work email and we&apos;ll send reset instructions if an account exists.</p>
+
+          {status && (
+            <div className="admin-register-success" role="status">
+              {status}
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <label>Email Address</label>
+          {errors.length > 0 && (
+            <div className="login-error-message admin-register-error-list" role="alert">
+              <ul>
+                {errors.map((err, i) => (
+                  <li key={i}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="login-form">
+            <div className="form-group">
+              <label htmlFor="forgot-email">Email</label>
               <input
+                id="forgot-email"
                 type="email"
                 name="email"
-                className="form-control"
-                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your work email"
+                autoComplete="email"
                 required
               />
             </div>
 
-            <div className="d-grid">
-              <button type="submit" className="btn btn-register">Send Reset Link</button>
-            </div>
+            <button type="submit" className="login-btn">
+              Send reset link
+            </button>
           </form>
 
-          <div className="login-link">
-            <p>Remembered? <Link to="/admin/login">Login</Link></p>
+          <div className="register-link">
+            <p>
+              Remembered your password? <Link to="/admin/login">Sign in</Link>
+            </p>
           </div>
         </div>
       </div>
