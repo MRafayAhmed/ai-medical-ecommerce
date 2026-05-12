@@ -1,6 +1,7 @@
 import React from 'react';
 import { Heart, ShoppingCart } from 'lucide-react';
 import { useStock } from '../context/StockContext';
+import { getMedicineImage } from '../utils/medicineImages';
 
 /**
  * ProductCard Component
@@ -22,6 +23,18 @@ const ProductCard = ({ product, onToggleWishlist, onAddToCart }) => {
     
     const isOutOfStock = currentStock <= 0;
 
+    // Prefer a local category-based asset under
+    // `src/assets/images/medicine/`; fall back to the backend image,
+    // then a generic placeholder.
+    const localImage = getMedicineImage(product);
+    const remoteImage = product.image?.startsWith('http')
+        ? product.image
+        : (product.image ? `/storage/${product.image}` : null);
+    const resolvedImage =
+        localImage ||
+        remoteImage ||
+        `https://via.placeholder.com/300?text=${encodeURIComponent(product.product_name || product.name || 'Product')}`;
+
     return (
         <div className="bm-product-card">
             {/* Wishlist Button */}
@@ -36,7 +49,7 @@ const ProductCard = ({ product, onToggleWishlist, onAddToCart }) => {
             {/* Product Image */}
             <div className="bm-product-img-wrap">
                 <img
-                    src={product.image?.startsWith('http') ? product.image : (product.image ? `/storage/${product.image}` : `https://via.placeholder.com/300?text=${encodeURIComponent(product.product_name || product.name || 'Product')}`)}
+                    src={resolvedImage}
                     alt={product.name}
                     className="bm-product-img"
                     onError={(e) => {
