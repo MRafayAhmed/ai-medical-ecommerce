@@ -42,6 +42,7 @@ const BuyerCart = () => {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate cart + user from localStorage on mount
     refreshCart();
     const u = localStorage.getItem('customer_user');
     if (u) {

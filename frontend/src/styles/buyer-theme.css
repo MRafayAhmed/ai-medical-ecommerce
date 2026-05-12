@@ -51,3 +51,24 @@
   --container-max: 1680px;
   --container-padding: clamp(0.75rem, 2.75vw, 5rem);
 }
+
+/**
+ * Landing-style footer on buyer shell: same dark theme as public home (home.css base rules).
+ * Full-bleed on .bm-page so the bar spans the viewport; inner padding matches dashboard columns.
+ */
+.buyer-shell-footer {
+  --hl-max: var(--container-max);
+  --hl-pad: var(--container-padding);
+  width: 100%;
+  margin-top: auto;
+  box-sizing: border-box;
+}
+
+/* Edge-to-edge footer background on dashboard; align inner content with sections (gutter + section pad) */
+.bm-page .buyer-shell-footer {
+  --hl-pad: calc(var(--bm-page-gutter-x, 0px) + var(--container-padding));
+  width: calc(100% + 2 * var(--bm-page-gutter-x, 0px));
+  max-width: none;
+  margin-left: calc(-1 * var(--bm-page-gutter-x, 0px));
+  margin-right: calc(-1 * var(--bm-page-gutter-x, 0px));
+}

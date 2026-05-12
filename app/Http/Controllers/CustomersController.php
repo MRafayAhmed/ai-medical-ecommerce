@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\customers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class CustomersController extends Controller
 {
@@ -38,11 +39,11 @@ class CustomersController extends Controller
             $customers->cnic = $request->cnic;
             $customers->address = $request->address;
             $customers->city = $request->city;
-            $customers->email = $request->email;
-            $customers->username = $request->username;
+            $customers->email = strtolower(trim((string) $request->email));
+            $customers->username = trim((string) $request->username);
             $customers->phone_number = $request->phone_number;
             $customers->postal_code = filled($request->postal_code) ? $request->postal_code : "";
-            $customers->password = bcrypt($request->input('password'));
+            $customers->password = Hash::make($request->input('password'));
             $customers->save();
             return response()->json(['message' => 'Customer created successfully', 'data' => $customers], 201);
         } catch (\Throwable $th) {
@@ -82,13 +83,13 @@ class CustomersController extends Controller
             $customers->cnic = $request->cnic;
             $customers->address = $request->address;
             $customers->city = $request->city;
-            $customers->email = $request->email;
-            $customers->username = $request->username;
+            $customers->email = strtolower(trim((string) $request->email));
+            $customers->username = trim((string) $request->username);
             $customers->phone_number = $request->phone_number;
             $customers->postal_code = filled($request->postal_code) ? $request->postal_code : "";
             
             if ($request->filled('password')) {
-                $customers->password = bcrypt($request->input('password'));
+                $customers->password = Hash::make($request->input('password'));
             }
             
             $customers->save();

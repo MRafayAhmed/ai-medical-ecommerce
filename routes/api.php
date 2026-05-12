@@ -88,20 +88,32 @@ Route::match(['get', 'post'], '/customer/login', function (Request $request) {
     }
 
     try {
-        // 3. DB Check
+        // 3. DB Check (group OR so it stays correct if more conditions are added later)
         $identifier = trim((string) $request->email);
 
-        $user = \App\Models\customers::where('email', $identifier)
-            ->orWhere('username', $identifier)
-            ->first();
+        $user = \App\Models\customers::where(function ($query) use ($identifier) {
+            $query->where('email', $identifier)
+                ->orWhere('username', $identifier);
+        })->first();
+
+        // Case-insensitive email match (helps if older rows were stored with mixed case)
+        if (! $user && str_contains($identifier, '@')) {
+            $user = \App\Models\customers::whereRaw('LOWER(TRIM(email)) = ?', [strtolower($identifier)])->first();
+        }
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        // 4. Generate Token
+        // 4. Generate Token (include access_token for clients that expect OAuth-style keys)
         $token = $user->createToken('customer-api-token')->plainTextToken;
-        return response()->json(['token' => $token, 'user' => $user]);
+
+        return response()->json([
+            'token' => $token,
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user,
+        ]);
 
     } catch (\Exception $e) {
         // 5. Catch DB/Server errors

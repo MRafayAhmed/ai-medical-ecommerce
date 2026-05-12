@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, Menu, X, Search, UploadCloud } from 'lucide-react';
 import { User, ShoppingCart, Info } from 'lucide-react';
@@ -10,6 +10,50 @@ import BuyerTopCategoryNav from '../../components/BuyerTopCategoryNav';
 import BuyerFooter from '../../components/BuyerFooter';
 import { CategorySkeleton, ProductCardSkeleton } from '../../components/Skeletons';
 import api from '../../api/axios';
+import { getBlogPreviewPosts } from '../../data/blogPreviews';
+import { getDashboardBrands } from '../../data/brandLogos';
+
+/**
+ * Turn vertical wheel (or dominant trackpad delta) into horizontal scroll.
+ * Uses native listener with { passive: false, capture: true } so preventDefault works
+ * and events from nested cards still hit the scroller.
+ */
+function wheelToHorizontalScroll(e) {
+  if (e.ctrlKey) return;
+  const el = e.currentTarget;
+  if (!(el instanceof HTMLElement)) return;
+  if (el.scrollWidth <= el.clientWidth + 1) return;
+
+  let dxPix = e.deltaX;
+  let dyPix = e.deltaY;
+  if (e.deltaMode === 1) {
+    const line = 16;
+    dxPix *= line;
+    dyPix *= line;
+  } else if (e.deltaMode === 2) {
+    dxPix *= el.clientWidth;
+    dyPix *= el.clientHeight;
+  }
+
+  const maxScroll = el.scrollWidth - el.clientWidth;
+  const dominantX = Math.abs(dxPix) > Math.abs(dyPix);
+  const dx = dominantX ? dxPix : dyPix;
+  if (dx === 0) return;
+
+  const prev = el.scrollLeft;
+  el.scrollLeft += dx;
+  if (el.scrollLeft !== prev) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+
+  const atStart = prev <= 0;
+  const atEnd = prev >= maxScroll - 1;
+  if ((dx > 0 && atEnd) || (dx < 0 && atStart)) return;
+  e.preventDefault();
+  e.stopPropagation();
+}
 
 const defaultCategories = [
   {
@@ -57,16 +101,32 @@ function humanizeFilename(name) {
 }
 
 const Buyermainpage = () => {
-  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const pageRef = useRef(null);
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('customer_token'));
+  const [isLoggedIn] = useState(() => !!localStorage.getItem('customer_token'));
   const [wishlistIds, setWishlistIds] = useState(new Set());
   const [recentOrders, setRecentOrders] = useState([]);
+
+  const blogPreviewPosts = useMemo(() => getBlogPreviewPosts(), []);
+  const dashboardBrands = useMemo(() => getDashboardBrands(), []);
+
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setPrefersReducedMotion(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
+  const brandsMarqueeItems = useMemo(
+    () => (prefersReducedMotion ? dashboardBrands : [...dashboardBrands, ...dashboardBrands]),
+    [prefersReducedMotion, dashboardBrands]
+  );
 
   // Wishlist logic remains for product cards
 
@@ -74,6 +134,51 @@ const Buyermainpage = () => {
 
 
   const fetchRef = useRef(false);
+
+  const categoryImagesGlob = import.meta.glob('/src/assets/images/category/*.{png,jpg,jpeg,webp}', { eager: true, as: 'url' });
+  const imageEntries = useMemo(() => Object.keys(categoryImagesGlob).map((p) => ({
+    path: p,
+    name: p.split('/').pop().replace(/\.[^.]+$/, ''),
+    url: categoryImagesGlob[p],
+  })), [categoryImagesGlob]);
+
+  const normalize = (s) =>
+    s
+      .toLowerCase()
+      .trim()
+      .replace(/&amp;|&/g, 'and')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
+  const findImageForLabel = (label) => {
+    if (!label) return null;
+    const labelNorm = normalize(label);
+
+    for (const entry of imageEntries) {
+      const nameNorm = normalize(entry.name);
+      if (nameNorm === labelNorm || nameNorm.includes(labelNorm) || labelNorm.includes(nameNorm)) return entry.url;
+    }
+
+    const labelTokens = labelNorm.split('-').filter(Boolean);
+    for (const entry of imageEntries) {
+      const nameNorm = normalize(entry.name);
+      const nameTokens = nameNorm.split('-').filter(Boolean);
+      const common = labelTokens.filter((t) => nameTokens.includes(t)).length;
+      const needed = Math.max(1, Math.ceil(labelTokens.length / 2));
+      if (common >= needed) return entry.url;
+    }
+
+    return null;
+  };
+
+  const slugify = (label) =>
+    label
+      .toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/[^\w]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/(^-|-$)/g, '');
 
   // Parallel fetch logic for better speed
   const fetchAllData = async (query = '') => {
@@ -135,8 +240,8 @@ const Buyermainpage = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const q = params.get('q') || '';
-    setSearchQuery(q);
     fetchAllData(q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount; URL ?q= handled via navbar + onSearch
   }, []);
 
   // Separate effect for authenticated data
@@ -153,54 +258,6 @@ const Buyermainpage = () => {
       fetchRecentOrders();
     }
   }, [isLoggedIn]);
-
-  // 1. Memoize category image glob entries once
-  const categoryImagesGlob = import.meta.glob('/src/assets/images/category/*.{png,jpg,jpeg,webp}', { eager: true, as: 'url' });
-  const imageEntries = useMemo(() => Object.keys(categoryImagesGlob).map((p) => ({
-    path: p,
-    name: p.split('/').pop().replace(/\.[^.]+$/, ''),
-    url: categoryImagesGlob[p],
-  })), []);
-
-  const normalize = (s) =>
-    s
-      .toLowerCase()
-      .trim()
-      .replace(/&amp;|&/g, 'and')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/(^-|-$)/g, '');
-
-  const findImageForLabel = (label) => {
-    if (!label) return null;
-    const labelNorm = normalize(label);
-
-    // first try simple equality / substring on normalized names
-    for (const entry of imageEntries) {
-      const nameNorm = normalize(entry.name);
-      if (nameNorm === labelNorm || nameNorm.includes(labelNorm) || labelNorm.includes(nameNorm)) return entry.url;
-    }
-
-    // token-based matching: require partial overlap of meaningful tokens
-    const labelTokens = labelNorm.split('-').filter(Boolean);
-    for (const entry of imageEntries) {
-      const nameNorm = normalize(entry.name);
-      const nameTokens = nameNorm.split('-').filter(Boolean);
-      const common = labelTokens.filter((t) => nameTokens.includes(t)).length;
-      const needed = Math.max(1, Math.ceil(labelTokens.length / 2));
-      if (common >= needed) return entry.url;
-    }
-
-    return null;
-  };
-
-  const slugify = (label) =>
-    label
-      .toLowerCase()
-      .replace(/&/g, 'and')
-      .replace(/[^\w]+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/(^-|-$)/g, '');
 
   // 2. Memoize fully resolved categories with images
   // While the first fetch runs, avoid `defaultCategories` in the top nav — it caused a visible
@@ -226,6 +283,8 @@ const Buyermainpage = () => {
         resolvedImage,
       };
     });
+  // findImageForLabel / slugify align with imageEntries; listing them would change every render
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categories, imageEntries, loadingCategories]);
 
   /**
@@ -345,7 +404,6 @@ const Buyermainpage = () => {
       return;
     }
 
-    // eslint-disable-next-line no-console
     console.log('Adding to cart:', product);
     // TODO: Integrate with cart context/state management
     const savedCart = localStorage.getItem('mediEcom_cart');
@@ -355,13 +413,6 @@ const Buyermainpage = () => {
 
     // alert(`${product.name} added to cart!`);
   };
-
-  const clearSearch = () => {
-    setSearchQuery('');
-    fetchAllData('');
-    navigate('/buyer/dashboard');
-  };
-
 
   // Categories fallback logic moved to useMemo
 
@@ -475,35 +526,32 @@ const Buyermainpage = () => {
 
   useEffect(() => () => stopCatHoverScroll(), []);
 
-  // Featured products scroll ref and handler
   const featuredRef = useRef(null);
-  const scrollFeatured = (dir = 1) => {
-    const el = featuredRef.current;
-    if (!el) return;
-    const amount = Math.round(el.clientWidth * 0.6);
-    el.scrollBy({ left: dir * amount, behavior: 'smooth' });
-  };
 
+  useLayoutEffect(() => {
+    const root = pageRef.current;
+    if (!root) return undefined;
 
-  // Build extra cards from any images in the folder that don't match the
-  // existing `categories` list (so we use all remaining images as cards).
-  const existingNorms = new Set(displayCategories.map((c) => normalize(c.label)));
-  const extraImageCards = imageEntries
-    .filter((e) => !existingNorms.has(normalize(e.name)))
-    .map((e) => ({
-      label: humanizeFilename(e.name),
-      to: `/buyer/category/extra/${slugify(e.name)}`,
-      image: e.url,
-      name: e.name,
-    }));
+    const cats = root.querySelector('.bm-cats-list');
+    const feat = root.querySelector('.bm-fp-list');
+    if (!cats && !feat) return undefined;
+
+    const opts = { passive: false, capture: true };
+    cats?.addEventListener('wheel', wheelToHorizontalScroll, opts);
+    feat?.addEventListener('wheel', wheelToHorizontalScroll, opts);
+
+    return () => {
+      cats?.removeEventListener('wheel', wheelToHorizontalScroll, opts);
+      feat?.removeEventListener('wheel', wheelToHorizontalScroll, opts);
+    };
+  }, [loadingProducts, loadingCategories]);
 
   // Debug: log resolved images for categories in dev mode
   if (import.meta.env.DEV) {
     try {
       const map = categories.map((c) => ({ label: c.label, image: findImageForLabel(c.label) }));
-      // eslint-disable-next-line no-console
       console.log('Category image mapping:', map, 'available images:', imageEntries.map((i) => i.name));
-    } catch (e) {
+    } catch {
       // ignore
     }
   }
@@ -570,11 +618,12 @@ const Buyermainpage = () => {
 
   return (
     <div className="bm-page" ref={pageRef}>
-      <BuyerNavbar onSearch={(q) => {
-        setSearchQuery(q);
-        fetchAllData(q);
-        navigate(`/buyer/dashboard?q=${encodeURIComponent(q)}`);
-      }} />
+      <BuyerNavbar
+        onSearch={(q) => {
+          fetchAllData(q);
+          navigate(`/buyer/dashboard?q=${encodeURIComponent(q)}`);
+        }}
+      />
 
       <BuyerTopCategoryNav pageRef={pageRef} categories={categories} loadingCategories={loadingCategories} />
 
@@ -593,7 +642,7 @@ const Buyermainpage = () => {
       {/* Quick Actions */}
       <section className="bm-quick-actions" aria-label="Quick Actions">
         <div className="header__container">
-          <h3 className="bm-qa-title">Quick Actions</h3>
+          <h3 className="bm-dashboard-heading bm-qa-title">Quick Actions</h3>
           <div className="bm-qa-grid">
             <Link to="/buyer/prescriptions" className="bm-action-card">
               <span className="bm-action-card-icon"><i className="bi bi-cloud-upload" aria-hidden="true"></i></span>
@@ -616,7 +665,7 @@ const Buyermainpage = () => {
       {/* Categories cards (image tiles) */}
       <section className="bm-category-cards" aria-label="Popular categories">
         <div className="header__container">
-          <h3 className="bm-cats-title">Categories</h3>
+          <h3 className="bm-dashboard-heading bm-cats-title">Categories</h3>
           <div
             className="bm-cats-wrap"
             onMouseEnter={startCatHoverScroll}
@@ -652,7 +701,7 @@ const Buyermainpage = () => {
         <section className="bm-recent-orders" aria-label="Recent Orders">
           <div className="header__container">
             <div className="bm-ro-header">
-              <h3 className="bm-ro-title">Recent Orders</h3>
+              <h3 className="bm-dashboard-heading bm-ro-title">Recent Orders</h3>
               <Link to="/buyer/orders" className="bm-view-all-btn bm-ro-view-all">VIEW ALL</Link>
             </div>
             <div className="bm-ro-wrap">
@@ -684,11 +733,11 @@ const Buyermainpage = () => {
       <section className="bm-featured-products" aria-label="Featured Products">
         <div className="header__container">
           <div className="bm-ro-header">
-            <h3 className="bm-featured-title">Featured Products</h3>
-            <Link to="/products/featured" className="bm-view-all-btn bm-ro-view-all">VIEW ALL</Link>
+            <h3 className="bm-dashboard-heading bm-featured-title">Featured Products</h3>
+            <Link to="/buyer/featured" className="bm-view-all-btn bm-ro-view-all">VIEW ALL</Link>
           </div>
           <div className="bm-fp-wrap">
-            <div className="bm-fp-list">
+            <div className="bm-fp-list" ref={featuredRef}>
               {loadingProducts ? (
                 Array(6).fill(0).map((_, i) => (
                   <div className="bm-fp-card-slot" key={`prod-skeleton-${i}`}>
@@ -712,6 +761,81 @@ const Buyermainpage = () => {
           </div>
         </div>
       </section>
+
+      {/* Blogs — add images under `src/assets/images/blogs/` (see `data/blogPreviews.js`) */}
+      <section className="bm-blogs" aria-label="Health blogs">
+        <div className="header__container">
+          <div className="bm-ro-header">
+            <h3 className="bm-dashboard-heading bm-blogs-title">Blogs</h3>
+            <Link to="/buyer/blogs" className="bm-view-all-btn bm-ro-view-all">
+              VIEW ALL
+            </Link>
+          </div>
+          <div className="bm-blogs-row">
+            {blogPreviewPosts.map((post) => (
+              <Link key={post.id} to={`/buyer/blogs/${post.slug}`} className="bm-blog-item">
+                <img
+                  className="bm-blog-thumb"
+                  src={post.imageUrl}
+                  alt=""
+                  width={96}
+                  height={96}
+                  loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.src =
+                      'data:image/svg+xml,' +
+                      encodeURIComponent(
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"><circle cx="48" cy="48" r="48" fill="#e0f2fe"/><text x="48" y="52" text-anchor="middle" font-size="11" fill="#0369a1" font-family="system-ui,sans-serif">Blog</text></svg>'
+                      );
+                  }}
+                />
+                <span className="bm-blog-title">{post.title}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {dashboardBrands.length > 0 && (
+        <section className="bm-brands" aria-label="Featured brands">
+          <div className="header__container">
+            <div className="bm-ro-header">
+              <h3 className="bm-dashboard-heading bm-brands-title">Brands</h3>
+              <Link to="/buyer/brands" className="bm-view-all-btn bm-ro-view-all">
+                VIEW ALL
+              </Link>
+            </div>
+            <div
+              className="bm-brands-marquee"
+              style={{
+                '--bm-brands-duration': `${Math.max(28, dashboardBrands.length * 5)}s`,
+              }}
+            >
+              <div className="bm-brands-track">
+                {brandsMarqueeItems.map((brand, idx) => (
+                  <Link
+                    key={`${brand.id}-${idx}`}
+                    to={`/buyer/brands#${encodeURIComponent(brand.slug)}`}
+                    className="bm-brand-item"
+                    title={brand.name}
+                  >
+                    <img
+                      className="bm-brand-logo"
+                      src={brand.url}
+                      alt={brand.name}
+                      loading={idx < dashboardBrands.length ? 'eager' : 'lazy'}
+                      decoding="async"
+                      onError={(e) => {
+                        e.currentTarget.style.opacity = '0.35';
+                      }}
+                    />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       <main className="bm-main"></main>
       <BuyerFooter />
