@@ -5,7 +5,6 @@ import '../styles/buyernavbar.css';
 
 const BuyerNavbar = ({ onSearch }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
     const [cartCount, setCartCount] = useState(0);
     const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('customer_token'));
     const navigate = useNavigate();
@@ -13,9 +12,12 @@ const BuyerNavbar = ({ onSearch }) => {
 
     const isActive = (path) => location.pathname === path ? 'active' : '';
 
+    const [searchQuery, setSearchQuery] = useState('');
+
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const q = params.get('q') ?? '';
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- keep search input in sync with ?q= (back/forward, dashboard navigation)
         setSearchQuery(q);
     }, [location.search]);
 

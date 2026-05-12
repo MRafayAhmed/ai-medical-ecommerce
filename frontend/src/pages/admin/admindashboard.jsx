@@ -32,6 +32,9 @@ ChartJS.register(
   Filler
 );
 
+/** Set true when charts are backed by real admin APIs (currently sample data). */
+const SHOW_DASHBOARD_CHARTS = false;
+
 const AdminDashboard = () => {
   const [counts, setCounts] = useState({
     buyers: 0,
@@ -245,47 +248,48 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Charts Section */}
-          <div className="chart-section">
-            <div className="chart-row row-1">
-              <div className="chart-box">
-                <h4>Order Trends</h4>
-                <div className="chart-inner">
-                  <Line data={orderTrendData()} options={chartOptions} key={themeKey} />
+          {SHOW_DASHBOARD_CHARTS && (
+            <div className="chart-section">
+              <div className="chart-row row-1">
+                <div className="chart-box">
+                  <h4>Order Trends</h4>
+                  <div className="chart-inner">
+                    <Line data={orderTrendData()} options={chartOptions} key={themeKey} />
+                  </div>
+                </div>
+
+                <div className="chart-box">
+                  <h4>Revenue</h4>
+                  <div className="chart-inner">
+                    <Bar data={revenueData()} options={chartOptions} key={themeKey + 1} />
+                  </div>
                 </div>
               </div>
 
-              <div className="chart-box">
-                <h4>Revenue</h4>
-                <div className="chart-inner">
-                  <Bar data={revenueData()} options={chartOptions} key={themeKey + 1} />
+              <div className="chart-row row-2">
+                <div className="chart-box">
+                  <h4>Category Distribution</h4>
+                  <div className="chart-inner">
+                    <Doughnut data={categoryData()} options={chartOptions} key={themeKey + 2} />
+                  </div>
+                </div>
+
+                <div className="chart-box">
+                  <h4>User Growth</h4>
+                  <div className="chart-inner">
+                    <Line data={userGrowthData()} options={chartOptions} key={themeKey + 3} />
+                  </div>
+                </div>
+
+                <div className="chart-box">
+                  <h4>Top Products</h4>
+                  <div className="chart-inner">
+                    <Bar data={topProductsData()} options={{ ...chartOptions, indexAxis: 'y' }} key={themeKey + 4} />
+                  </div>
                 </div>
               </div>
             </div>
-
-            <div className="chart-row row-2">
-              <div className="chart-box">
-                <h4>Category Distribution</h4>
-                <div className="chart-inner">
-                  <Doughnut data={categoryData()} options={chartOptions} key={themeKey + 2} />
-                </div>
-              </div>
-
-              <div className="chart-box">
-                <h4>User Growth</h4>
-                <div className="chart-inner">
-                  <Line data={userGrowthData()} options={chartOptions} key={themeKey + 3} />
-                </div>
-              </div>
-
-              <div className="chart-box">
-                <h4>Top Products</h4>
-                <div className="chart-inner">
-                  <Bar data={topProductsData()} options={{ ...chartOptions, indexAxis: 'y' }} key={themeKey + 4} />
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* Recent Activity */}
           <div className="recent-activity">

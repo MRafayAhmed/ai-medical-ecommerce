@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import loginBg from '../../assets/images/cus_login.PNG';
+import buyerForgotHero from '../../assets/images/main.webp';
+import '../../styles/buyerlogin.css';
 import '../../styles/buyerforgotpass.css';
 
 const BuyerForgotPass = () => {
@@ -13,48 +14,58 @@ const BuyerForgotPass = () => {
     // TODO: call API to send reset email
     console.log('Forgot password request for:', email);
     setSent(true);
-    // optionally redirect after a moment
     setTimeout(() => navigate('/buyer/login'), 2500);
   };
 
   return (
-    <div className="buyer-forgot-container">
+    <div className="buyer-login-container">
       <div className="background-image">
-        <img src={loginBg} alt="Background" />
+        <img src={buyerForgotHero} alt="" />
       </div>
 
       <header className="buyer-header">
-        <Link to="/" className="back-home-btn">← Back to Home</Link>
+        <Link to="/" className="back-home-btn">
+          ← Back to Home
+        </Link>
       </header>
 
-      <div className="forgot-form-wrapper">
-        <div className="forgot-form-container">
-          <h2 className="forgot-title">Forgot your password?</h2>
-          <p className="forgot-subtitle">Enter your account email and we'll send a reset link.</p>
+      <div className="login-form-wrapper">
+        <div className="login-form-container">
+          <h2 className="login-title">Reset password</h2>
+          <p className="login-subtitle">
+            Enter your email or username. If an account exists, we&apos;ll send reset instructions.
+          </p>
 
-          {!sent ? (
-            <form onSubmit={handleSubmit} className="forgot-form">
+          {sent ? (
+            <div className="buyer-forgot-sent" role="status">
+              If this email is registered, check your inbox — redirecting to sign in…
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="login-form">
               <div className="form-group">
-                <label htmlFor="email">Email Address</label>
+                <label htmlFor="buyer-forgot-email">Email or username</label>
                 <input
-                  id="email"
+                  id="buyer-forgot-email"
                   name="email"
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder="Email address or username"
+                  autoComplete="username"
                   required
                 />
               </div>
 
-              <button type="submit" className="forgot-btn">Send Reset Link</button>
+              <button type="submit" className="login-btn">
+                Send reset link
+              </button>
             </form>
-          ) : (
-            <div className="sent-note">A reset link has been sent — redirecting to login...</div>
           )}
 
           <div className="register-link">
-            <p>Remembered? <Link to="/buyer/login">Sign in</Link></p>
+            <p>
+              Remembered your password? <Link to="/buyer/login">Sign in</Link>
+            </p>
           </div>
         </div>
       </div>

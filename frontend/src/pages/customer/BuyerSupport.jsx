@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ChevronRight,
@@ -41,28 +41,28 @@ const FAQS = [
   },
 ];
 
+function initialFromCustomerUser(field) {
+  try {
+    const raw = localStorage.getItem('customer_user');
+    if (!raw) return '';
+    const u = JSON.parse(raw);
+    const v = u?.[field];
+    return v != null && v !== '' ? String(v) : '';
+  } catch {
+    return '';
+  }
+}
+
 const BuyerSupport = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState(() => initialFromCustomerUser('name'));
+  const [email, setEmail] = useState(() => initialFromCustomerUser('email'));
   const [topic, setTopic] = useState('orders');
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [banner, setBanner] = useState(null);
   const [openFaq, setOpenFaq] = useState(0);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('customer_user');
-      if (!raw) return;
-      const u = JSON.parse(raw);
-      if (u?.name) setName(String(u.name));
-      if (u?.email) setEmail(String(u.email));
-    } catch {
-      /* ignore */
-    }
-  }, []);
 
   const mailtoHref = useMemo(() => {
     const sub = encodeURIComponent(`[${topic}] Support request`);

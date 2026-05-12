@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import api from '../../api/axios';
+import adminLoginHero from '../../assets/images/adminlogin.jpg';
 import '../../styles/adminlogin.css';
 
 const AdminLogin = () => {
@@ -12,6 +14,7 @@ const AdminLogin = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -19,7 +22,6 @@ const AdminLogin = () => {
       ...prevState,
       [name]: type === 'checkbox' ? checked : value
     }));
-    // Clear error when user types
     if (error) setError('');
   };
 
@@ -29,34 +31,26 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      // Using the Seller Login endpoint as requested
       const response = await api.post('/seller/login', {
-        email: formData.email,
+        email: formData.email.trim(),
         password: formData.password
       });
 
       if (response.status === 200) {
         const { token, user } = response.data;
 
-        // Store token and user info
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
 
-        console.log('Login successful:', user);
-
-        // Redirect to dashboard
         navigate('/admin/dashboard');
       }
     } catch (err) {
       console.error('Login error:', err);
       if (err.response) {
-        // Server responded with non-2xx status
         setError(err.response.data.message || 'Invalid credentials');
       } else if (err.request) {
-        // Request made but no response
         setError('No response from server. Please check your connection.');
       } else {
-        // Other errors
         setError('An error occurred. Please try again.');
       }
     } finally {
@@ -66,25 +60,26 @@ const AdminLogin = () => {
 
   return (
     <div className="admin-login-container">
-      {/* Background Animation */}
-      <div className="background-animation">
-        <div className="neural-network"></div>
-        <div className="data-particles"></div>
+      <div className="background-image">
+        <img src={adminLoginHero} alt="" />
       </div>
 
-      {/* Header */}
-      <header className="admin-header">
-        <div className="brand-logo">
-          <h1>Medi-Ecom</h1>
-        </div>
+      <header className="admin-login-header">
+        <Link to="/" className="back-home-btn">
+          ← Back to Home
+        </Link>
       </header>
 
-      {/* Login Form */}
       <div className="login-form-wrapper">
         <div className="login-form-container">
-          <h2 className="login-title">Seller Login</h2>
+          <h2 className="login-title">Staff login</h2>
+          <p className="login-subtitle">Sign in to the Medi-Ecom admin portal</p>
 
-          {error && <div className="error-message" style={{ color: 'red', marginBottom: '10px', textAlign: 'center' }}>{error}</div>}
+          {error && (
+            <div className="login-error-message" role="alert">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="login-form">
             <div className="form-group">
@@ -95,22 +90,34 @@ const AdminLogin = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter your email"
+                placeholder="Enter your work email"
+                autoComplete="email"
                 required
               />
             </div>
 
             <div className="form-group">
               <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-                required
-              />
+              <div className="password-input-container">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
 
             <div className="form-options">
@@ -122,18 +129,23 @@ const AdminLogin = () => {
                   checked={formData.rememberMe}
                   onChange={handleChange}
                 />
-                <label htmlFor="rememberMe">Remember Me</label>
+                <label htmlFor="rememberMe">Remember me</label>
               </div>
-              <Link to="/admin/forgot-password" className="forgot-password">Forgot Password?</Link>
+              <Link to="/admin/forgot-password" className="forgot-password">
+                Forgot password?
+              </Link>
             </div>
 
             <button type="submit" className="login-btn" disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? 'Signing in…' : 'Sign in'}
             </button>
           </form>
 
           <div className="register-link">
-            <p>Don't have an account? <Link to="/admin/register">Register</Link></p>
+            <p>
+              Need an account?{' '}
+              <Link to="/admin/setup/register">Create seller account</Link>
+            </p>
           </div>
         </div>
       </div>

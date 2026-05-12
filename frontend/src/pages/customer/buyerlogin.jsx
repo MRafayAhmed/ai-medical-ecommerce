@@ -5,6 +5,41 @@ import api from '../../api/axios';
 import loginBg from '../../assets/images/cus_login.PNG';
 import '../../styles/buyerlogin.css';
 
+/** Normalize axios `response.data` (object, JSON string, or accidental HTML). */
+function parseLoginPayload(raw) {
+  if (raw == null) return {};
+  if (typeof raw === 'string') {
+    const t = raw.trim();
+    if (t.startsWith('<') || t.startsWith('<!')) return { __nonJson: 'html' };
+    try {
+      const parsed = JSON.parse(t);
+      return typeof parsed === 'object' && parsed !== null ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+  return typeof raw === 'object' ? raw : {};
+}
+
+function extractLoginToken(payload) {
+  if (!payload || typeof payload !== 'object') return null;
+  const nested = payload.data && typeof payload.data === 'object' ? payload.data : null;
+  return (
+    (typeof payload.token === 'string' && payload.token) ||
+    (typeof payload.access_token === 'string' && payload.access_token) ||
+    (typeof payload.plainTextToken === 'string' && payload.plainTextToken) ||
+    (nested && typeof nested.token === 'string' && nested.token) ||
+    (nested && typeof nested.access_token === 'string' && nested.access_token) ||
+    null
+  );
+}
+
+function extractLoginUser(payload) {
+  if (!payload || typeof payload !== 'object') return {};
+  const nested = payload.data && typeof payload.data === 'object' ? payload.data : null;
+  return payload.user ?? nested?.user ?? {};
+}
+
 const BuyerLogin = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -32,17 +67,34 @@ const BuyerLogin = () => {
 
     try {
       const response = await api.post('/customer/login', {
-        email: formData.email,
+        email: formData.email.trim(),
         password: formData.password
       });
 
-      if (response.data.token) {
-        localStorage.setItem('customer_token', response.data.token);
-        localStorage.setItem('customer_user', JSON.stringify(response.data.user));
+      const payload = parseLoginPayload(response.data);
+      const token = extractLoginToken(payload);
+      const user = extractLoginUser(payload);
+
+      if (token) {
+        localStorage.setItem('customer_token', token);
+        localStorage.setItem('customer_user', JSON.stringify(user));
         navigate('/buyer/dashboard');
+      } else if (payload.__nonJson === 'html') {
+        setError(
+          'The server returned a web page instead of JSON. Check that the API URL is http://127.0.0.1:8000/api and the POST path is /customer/login.'
+        );
+      } else {
+        setError(
+          payload.message ||
+            'Login returned 200 but no token in the response. In DevTools → Network, open the POST customer/login row and confirm the JSON body includes "token".'
+        );
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      const msg = err.response?.data?.message
+        || err.response?.data?.error
+        || err.message
+        || 'Login failed. Please check your credentials.';
+      setError(msg);
       console.error('Buyer Login error:', err);
     } finally {
       setLoading(false);
@@ -73,14 +125,15 @@ const BuyerLogin = () => {
 
           <form onSubmit={handleSubmit} className="login-form">
             <div className="form-group">
-              <label htmlFor="email">Email Address</label>
+              <label htmlFor="email">Email or username</label>
               <input
-                type="email"
+                type="text"
                 id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter your email"
+                placeholder="Email address or username"
+                autoComplete="username"
                 required
               />
             </div>

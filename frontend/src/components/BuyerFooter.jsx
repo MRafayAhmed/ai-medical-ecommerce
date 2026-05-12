@@ -1,6 +1,10 @@
 import React from 'react';
-import SiteFooter from './SiteFooter';
+import HomeLandingFooter from './HomeLandingFooter';
 
-const BuyerFooter = () => <SiteFooter />;
+const BuyerFooter = () => (
+  <div className="buyer-shell-footer">
+    <HomeLandingFooter id="buyer-site-footer" />
+  </div>
+);
 
 export default BuyerFooter;

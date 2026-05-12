@@ -217,7 +217,7 @@ const AdminPurchaseInvoice = () => {
                                                 {invoice.is_post ? 'Posted' : 'Draft'}
                                             </span>
                                         </td>
-                                         <td>
+                                        <td>
                                             <div className="action-btns">
                                                 <button className="icon-btn-view" onClick={() => handleView(invoice)} title="View" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer' }}>
                                                     <i className="bi bi-eye"></i>
@@ -234,6 +234,9 @@ const AdminPurchaseInvoice = () => {
                                                             <i className="bi bi-check-all"></i> Post
                                                         </button>
                                                     </>
+                                                )}
+                                                {invoice.is_post && (
+                                                    <span className="invoice-no-actions">No actions available</span>
                                                 )}
                                             </div>
                                         </td>
@@ -261,19 +264,19 @@ const AdminPurchaseInvoice = () => {
                                 </div>
                                 <div className="form-group">
                                     <label>Invoice Date</label>
-                                    <input 
-                                        type="date" 
-                                        value={formData.document_date} 
-                                        onChange={(e) => setFormData({...formData, document_date: e.target.value})}
+                                    <input
+                                        type="date"
+                                        value={formData.document_date}
+                                        onChange={(e) => setFormData({ ...formData, document_date: e.target.value })}
                                         required
                                     />
                                 </div>
                                 <div className="form-group">
                                     <label>Branch ID</label>
-                                    <input 
-                                        type="number" 
-                                        value={formData.branch_id} 
-                                        onChange={(e) => setFormData({...formData, branch_id: e.target.value})}
+                                    <input
+                                        type="number"
+                                        value={formData.branch_id}
+                                        onChange={(e) => setFormData({ ...formData, branch_id: e.target.value })}
                                         required
                                     />
                                 </div>
@@ -294,8 +297,8 @@ const AdminPurchaseInvoice = () => {
                                         {formData.items.map((item, index) => (
                                             <tr key={index}>
                                                 <td>
-                                                    <select 
-                                                        value={item.item_id} 
+                                                    <select
+                                                        value={item.item_id}
                                                         onChange={(e) => handleItemChange(index, 'item_id', e.target.value)}
                                                         required
                                                     >
@@ -306,18 +309,18 @@ const AdminPurchaseInvoice = () => {
                                                     </select>
                                                 </td>
                                                 <td>
-                                                    <input 
-                                                        type="number" 
-                                                        value={item.qty} 
+                                                    <input
+                                                        type="number"
+                                                        value={item.qty}
                                                         onChange={(e) => handleItemChange(index, 'qty', parseInt(e.target.value))}
                                                         min="1"
                                                         required
                                                     />
                                                 </td>
                                                 <td>
-                                                    <input 
-                                                        type="number" 
-                                                        value={item.rate} 
+                                                    <input
+                                                        type="number"
+                                                        value={item.rate}
                                                         onChange={(e) => handleItemChange(index, 'rate', parseFloat(e.target.value))}
                                                         step="0.01"
                                                         required
@@ -363,7 +366,7 @@ const AdminPurchaseInvoice = () => {
                             <h3 style={{ margin: 0 }}>Purchase Invoice Details</h3>
                             <button className="close-btn" onClick={() => setShowViewModal(false)} style={{ border: 'none', background: 'none', fontSize: '24px', cursor: 'pointer' }}>&times;</button>
                         </div>
-                        
+
                         <div style={{ padding: '20px' }}>
                             {!selectedInvoice ? (
                                 <div style={{ textAlign: 'center', padding: '40px' }}>Loading...</div>
@@ -432,9 +435,9 @@ const AdminPurchaseInvoice = () => {
                                 </>
                             )}
                         </div>
-                        
+
                         <div style={{ padding: '20px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'flex-end' }}>
-                            <button 
+                            <button
                                 onClick={() => setShowViewModal(false)}
                                 style={{ padding: '10px 20px', background: '#64748b', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
                             >

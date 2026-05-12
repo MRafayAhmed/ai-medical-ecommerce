@@ -10,7 +10,6 @@ import '../../styles/buyermainpage.css';
 import '../../styles/buyerwishlist.css';
 
 const BuyerWishlist = () => {
-    const [searchQuery, setSearchQuery] = useState('');
     const [wishlist, setWishlist] = useState([]);
     const [loading, setLoading] = useState(true);
     const pageRef = useRef(null);
@@ -81,10 +80,11 @@ const BuyerWishlist = () => {
     return (
         <div className="bm-page bw-page" ref={pageRef}>
             {/* Reused Header from main page */}
-            <BuyerNavbar onSearch={(q) => {
-                setSearchQuery(q);
-                navigate(`/buyer/dashboard?q=${encodeURIComponent(q)}`);
-            }} />
+            <BuyerNavbar
+                onSearch={(q) => {
+                    navigate(`/buyer/dashboard?q=${encodeURIComponent(q)}`);
+                }}
+            />
 
             {/* Wishlist Content */}
             <main className="bw-container">

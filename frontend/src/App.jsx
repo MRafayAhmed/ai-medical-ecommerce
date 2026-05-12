@@ -20,6 +20,7 @@ import AdminSalesReport from "./pages/admin/AdminSalesReport";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BuyerLogin from "./pages/customer/buyerlogin";
 import BuyerRegister from "./pages/customer/buyerregister";
+import BuyerForgotPass from "./pages/customer/buyerforgotpass";
 import BuyerWishlist from "./pages/customer/buyerwishlist";
 import Buyermainpage from "./pages/customer/buyermainpage";
 import CheckoutPage from "./pages/customer/checkout";
@@ -27,8 +28,10 @@ import CategoryPage from "./pages/customer/CategoryPage";
 import BuyerOrders from "./pages/customer/buyerorders";
 import BuyerProfile from "./pages/customer/buyerprofile";
 import BuyerCart from "./pages/customer/buyercart";
-import FeaturedProducts from "./pages/customer/FeaturedProducts";
-
+import BuyerBlogs from "./pages/customer/BuyerBlogs";
+import BuyerBlogPost from "./pages/customer/BuyerBlogPost";
+import BuyerBrands from "./pages/customer/BuyerBrands";
+import BuyerFeaturedProducts from "./pages/customer/BuyerFeaturedProducts";
 
 import RxUpload from "./pages/customer/RxUpload";
 import BuyerSupport from "./pages/customer/BuyerSupport";
@@ -47,7 +50,10 @@ function App() {
           {/* Customer/Buyer Routes */}
           <Route path="/buyer/login" element={<BuyerLogin />} />
           <Route path="/buyer/register" element={<BuyerRegister />} />
+          <Route path="/buyer/forgot-password" element={<BuyerForgotPass />} />
           <Route path="/buyer/dashboard" element={<Buyermainpage />} />
+          <Route path="/buyer/featured" element={<BuyerFeaturedProducts />} />
+          <Route path="/products/featured" element={<Navigate to="/buyer/featured" replace />} />
           {/* Protected Customer Routes */}
           <Route element={<ProtectedRoute redirectPath="/buyer/login" tokenKey="customer_token" />}>
             <Route path="/buyer/checkout" element={<CheckoutPage />} />
@@ -62,6 +68,9 @@ function App() {
           <Route path="/buyer/support" element={<BuyerSupport />} />
 
           <Route path="/buyer/prescriptions" element={<RxUpload />} />
+          <Route path="/buyer/blogs" element={<BuyerBlogs />} />
+          <Route path="/buyer/blogs/:slug" element={<BuyerBlogPost />} />
+          <Route path="/buyer/brands" element={<BuyerBrands />} />
 
           {/* Public Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />

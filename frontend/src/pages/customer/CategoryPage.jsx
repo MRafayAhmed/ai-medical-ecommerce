@@ -43,8 +43,13 @@ const CategoryPage = () => {
 
     const fetchData = async (query = '', page = 1) => {
         setLoading(true);
+        const id = categoryId;
+        if (!id) {
+            setLoading(false);
+            return;
+        }
         try {
-            let url = `/medical-inventory?category_id=${categoryId}&page=${page}`;
+            let url = `/medical-inventory?category_id=${id}&page=${page}`;
             if (query) url += `&q=${encodeURIComponent(query)}`;
             const productRes = await api.get(url);
 
@@ -61,11 +66,6 @@ const CategoryPage = () => {
                 setProducts(responseData || []);
                 setPagination({ current_page: 1, last_page: 1, total: (responseData || []).length });
             }
-
-            if (!category) {
-                const catRes = await api.get(`/categories/${categoryId}`);
-                setCategory(catRes.data.data || catRes.data);
-            }
         } catch (err) {
             console.error('Error fetching category data:', err);
         } finally {
@@ -73,19 +73,30 @@ const CategoryPage = () => {
         }
     };
 
+    // Category title: fetch whenever `categoryId` changes (same page component is reused between routes).
     useEffect(() => {
-        if (categoryId) fetchData();
+        if (!categoryId) return;
+        setCategory(null);
+        let cancelled = false;
+        (async () => {
+            try {
+                const catRes = await api.get(`/categories/${categoryId}`);
+                if (!cancelled) setCategory(catRes.data.data || catRes.data);
+            } catch (err) {
+                console.error('Error fetching category:', err);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
     }, [categoryId]);
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        fetchData(searchQuery);
-    };
-
-    const clearSearch = () => {
-        setSearchQuery('');
-        fetchData('');
-    };
+    useEffect(() => {
+        if (!categoryId) return;
+        setProducts([]);
+        fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload when categoryId changes; fetchData tracks categoryId from route
+    }, [categoryId]);
 
     const addToCart = async (product) => {
         // Frontend stock guard (uses stock field from product if available)
@@ -128,6 +139,20 @@ const CategoryPage = () => {
             }
         }
     };
+
+    const titleFromRouteSlug = (slug) => {
+        if (!slug) return 'Category';
+        try {
+            return decodeURIComponent(slug)
+                .replace(/-/g, ' ')
+                .replace(/\b\w/g, (c) => c.toUpperCase());
+        } catch {
+            return slug;
+        }
+    };
+
+    const categoryDisplayName =
+        category ? (category.name || category.product_name) : titleFromRouteSlug(categoryName);
 
     const toggleWishlist = async (productId) => {
         if (!isLoggedIn) {
@@ -181,9 +206,7 @@ const CategoryPage = () => {
                         <span>Back</span>
                     </button>
                     <div className="bm-category-title-row">
-                        <h1 className="bm-category-name">
-                            {category ? (category.name || category.product_name) : (categoryName || 'Category')}
-                        </h1>
+                        <h1 className="bm-category-name">{categoryDisplayName}</h1>
                         {!loading && products.length > 0 && (
                             <span className="bm-category-count">({pagination.total} Products Found)</span>
                         )}

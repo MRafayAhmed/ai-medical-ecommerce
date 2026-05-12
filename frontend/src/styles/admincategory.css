@@ -188,3 +188,90 @@
     border-radius: 6px;
     cursor: pointer;
 }
+
+/* —— Dark mode (body.dark-mode from AdminNavbar) —— */
+body.dark-mode .admin-categories .main-content {
+    background-color: var(--bg-light, #0b1220);
+}
+
+body.dark-mode .admin-categories h2 {
+    color: #f8fafc;
+}
+
+body.dark-mode .admin-categories .page-sub {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+body.dark-mode .admin-categories .categories-table {
+    background: var(--card-bg, #0f1724);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body.dark-mode .admin-categories th {
+    background: #111c2e;
+    color: rgba(255, 255, 255, 0.92);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .admin-categories td {
+    color: #e2e8f0;
+    border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+
+body.dark-mode .admin-categories tbody tr:hover td {
+    background: rgba(96, 165, 250, 0.06);
+}
+
+body.dark-mode .admin-categories .cat-img-mini {
+    background: #1e293b;
+}
+
+body.dark-mode .admin-categories .action-btn {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+}
+
+body.dark-mode .admin-categories .action-btn:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+body.dark-mode .admin-categories .action-delete:hover {
+    background: rgba(220, 38, 38, 0.35);
+    color: #fff;
+}
+
+body.dark-mode .admin-categories .modal-content {
+    background: var(--card-bg, #0f1724);
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .admin-categories .modal-header h3 {
+    color: #f8fafc;
+}
+
+body.dark-mode .admin-categories .close-btn {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+body.dark-mode .admin-categories label,
+body.dark-mode .admin-categories .input-group small {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+body.dark-mode .admin-categories input[type="text"],
+body.dark-mode .admin-categories input[type="file"] {
+    background: #151f30;
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #f1f5f9;
+}
+
+body.dark-mode .admin-categories .btn-cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+}
+
+body.dark-mode .admin-categories .btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
